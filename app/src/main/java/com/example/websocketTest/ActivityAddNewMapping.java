@@ -88,7 +88,11 @@ public class ActivityAddNewMapping extends AppCompatActivity {
                             final TextView actionType = actionTypeSelection.findViewById(R.id.mappingDescripiton);
                             final Button selectActionType = actionTypeSelection.findViewById(R.id.performAction);
                             actionType.setText(" " + Controls.getReadableDefinedAction((byte) i, null));
-                            selectActionType.setText("SELECT");
+                            if (currentSettings.get(combinedAction + i) != null) {
+                                selectActionType.setText("REPLACE");
+                            } else {
+                                selectActionType.setText("SELECT");
+                            }
                             selectActionType.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
