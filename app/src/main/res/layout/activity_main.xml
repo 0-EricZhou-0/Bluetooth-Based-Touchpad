@@ -1,23 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainWindow"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
-
-    <EditText
-        android:id="@+id/textSend"
-        android:layout_width="328dp"
-        android:layout_height="59dp"
-        android:layout_marginStart="41dp"
-        android:layout_marginTop="27dp"
-        android:layout_marginEnd="42dp"
-        android:layout_marginBottom="645dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/tryConnect"
@@ -26,57 +15,43 @@
         android:layout_marginStart="41dp"
         android:layout_marginTop="123dp"
         android:layout_marginEnd="42dp"
-        android:layout_marginBottom="549dp"
         android:text="Try to Connect to a Computer"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/absorbMotionEvent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/establishSocket"
-        android:layout_width="328dp"
-        android:layout_height="59dp"
-        android:layout_marginStart="41dp"
-        android:layout_marginTop="217dp"
-        android:layout_marginEnd="42dp"
-        android:layout_marginBottom="455dp"
-        android:text="Establish Connection"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/trySend"
-        android:layout_width="328dp"
-        android:layout_height="59dp"
-        android:layout_marginStart="41dp"
-        android:layout_marginTop="317dp"
-        android:layout_marginEnd="42dp"
-        android:layout_marginBottom="355dp"
-        android:text="Send"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.534"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintVertical_bias="0.0" />
 
     <Button
-        android:id="@+id/tryReceieve"
+        android:id="@+id/settingInMainScreen"
         android:layout_width="328dp"
         android:layout_height="59dp"
-        android:layout_marginStart="41dp"
-        android:layout_marginTop="417dp"
-        android:layout_marginEnd="42dp"
-        android:layout_marginBottom="255dp"
-        android:text="Receieve"
+        android:text="Settings"
+        app:layout_constraintBottom_toBottomOf="@+id/absorbMotionEvent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tryConnect"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <Button
+        android:id="@+id/exit"
+        android:layout_width="328dp"
+        android:layout_height="59dp"
+        android:text="Exit Application"
+        app:layout_constraintBottom_toBottomOf="@+id/absorbMotionEvent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/settingInMainScreen"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/absorbMotionEvent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:elevation="100dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

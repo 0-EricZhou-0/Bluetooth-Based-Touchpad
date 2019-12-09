@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/settingWindow"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Settings" />
+
+    <Button
+        android:id="@+id/orientationSetting"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Orientation: Vertical" />
+
+    <TextView
+        android:id="@+id/orientationDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Orientation will only work in touchpad mode, the launch screen orientation will not be changed by this setting."
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/scrollModeSetting"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Scroll Mode: Forward" />
+
+    <TextView
+        android:id="@+id/scrollModeDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Normally, the setting for a computer run on Mac OS is FORWARD, and the scroll mode for a computer run on Windows is REVERSE"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/touchWarningSetting"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Touch Warnings: ON" />
+
+    <TextView
+        android:id="@+id/touchWarningDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="This controls if a warning message box is showed in any touchpad mode when the number of fingers detected on the screen is more than 5. (For accuracy reason, those events will be ignored.)"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="\n\n  Current Actions" />
+
+    <Button
+        android:id="@+id/addNewMapping"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add new" />
+
+    <ScrollView
+        android:id="@+id/scrollView1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/definedAction"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+
+</LinearLayout>
