@@ -146,16 +146,19 @@ public class ActivityTouchPad extends AppCompatActivity implements
         forwardScrollMode = Controls.getSetting(null, 'S').equals("FORWARD");
         touchWarningMode = Controls.getSetting(null, 'T').equals("ENABLED");
 
-        eventGroup[0] = new FingerEvent(1.2F);
-        eventGroup[1] = new FingerEvent(20F);
-        eventGroup[2] = new FingerEvent(60F);
-        eventGroup[3] = new FingerEvent(60F);
-        eventGroup[4] = new FingerEvent(60F);
-        // eventGroup[5] = new FingerEvent(1F);
-        // eventGroup[6] = new FingerEvent(1F);
-        // eventGroup[7] = new FingerEvent(1F);
-        // eventGroup[8] = new FingerEvent(1F);
-        // eventGroup[9] = new FingerEvent(1F);
+        try {
+            eventGroup[0] = new FingerEvent(1.2F);
+            eventGroup[1] = new FingerEvent(20F);
+            eventGroup[2] = new FingerEvent(60F);
+            eventGroup[3] = new FingerEvent(60F);
+            eventGroup[4] = new FingerEvent(60F);
+            eventGroup[5] = new FingerEvent(60F);
+            eventGroup[6] = new FingerEvent(60F);
+            eventGroup[7] = new FingerEvent(60F);
+            eventGroup[8] = new FingerEvent(60F);
+            eventGroup[9] = new FingerEvent(60F);
+        } catch (Exception ignore) {
+        }
 
         final View decorView = getWindow().getDecorView();
         Controls.maximumWindow(decorView);
@@ -206,6 +209,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                             int deltaY = (int) pair.getY();
                             if (!pair.equals(ZERO)) {
                                 PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), deltaX, deltaY);
+                                // PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), (int) currentX, (int) currentY);
                             }
                         }
                         break;
