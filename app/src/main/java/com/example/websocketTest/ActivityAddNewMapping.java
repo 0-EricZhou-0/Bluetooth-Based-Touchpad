@@ -22,7 +22,7 @@ public class ActivityAddNewMapping extends AppCompatActivity {
     private byte combinedAction;
     private String taskType;
     Intent returnIntent = new Intent();
-    private SparseArray<Controls.OutControlDetail> currentSettings;
+    private SparseArray<Controls.TaskDetail> currentSettings;
     private AlertDialog.Builder exitDialog;
 
     @SuppressLint("SetTextI18n")
@@ -102,7 +102,7 @@ public class ActivityAddNewMapping extends AppCompatActivity {
                                     mappingSettings.removeAllViews();
                                     Set<String> allActions = Controls.getAllOuterControls();
                                     for (final String action : allActions) {
-                                        final String readableAction = Controls.getReadableAction(action);
+                                        final String readableAction = Controls.getReadableTask(action);
                                         if (readableAction.contains("Basic")
                                                 || readableAction.contains("Switch") && (actionNum != Controls.MOVE_LEFT && actionNum != Controls.MOVE_RIGHT)) {
                                             continue;

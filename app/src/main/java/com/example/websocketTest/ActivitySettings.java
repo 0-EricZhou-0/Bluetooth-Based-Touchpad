@@ -27,7 +27,7 @@ public class ActivitySettings extends AppCompatActivity {
 
     private GestureDetectorCompat mDetector;
     ArrayList<View> actionList = new ArrayList<>();
-    SparseArray<Controls.OutControlDetail> currentSettings = new SparseArray<>();
+    SparseArray<Controls.TaskDetail> currentSettings = new SparseArray<>();
     SparseBooleanArray currentGeneralSetting = Controls.getCurrentSettingStatus();
     private LinearLayout container;
     private AlertDialog.Builder exitDialog;
@@ -65,7 +65,7 @@ public class ActivitySettings extends AppCompatActivity {
         try {
             container.removeAllViews();
             for (int i = 0; i < currentSettings.size(); i++) {
-                Controls.OutControlDetail mapping = currentSettings.valueAt(i);
+                Controls.TaskDetail mapping = currentSettings.valueAt(i);
                 final byte combinedAction = (byte) currentSettings.keyAt(i);
                 String description = Controls.getReadableDefinedAction(combinedAction, mapping);
                 if (description == null) {
@@ -120,10 +120,8 @@ public class ActivitySettings extends AppCompatActivity {
         final Button orientationSetting = findViewById(R.id.orientationSetting);
         final Button scrollModeSetting = findViewById(R.id.scrollModeSetting);
         final Button touchWarningSetting = findViewById(R.id.touchWarningSetting);
+        final Button cursorModeSetting = findViewById(R.id.cursorModeSetting);
         final Button addNewMapping = findViewById(R.id.addNewMapping);
-        final TextView orientationDescription = findViewById(R.id.orientationDescription);
-        final TextView scrollModeDescription = findViewById(R.id.scrollModeDescription);
-        final TextView touchWarningDescription = findViewById(R.id.touchWarningDescription);
         final LinearLayout definedAction = findViewById(R.id.definedAction);
 
         exitDialog = new AlertDialog.Builder(ActivitySettings.this)
@@ -164,13 +162,13 @@ public class ActivitySettings extends AppCompatActivity {
         setSettingButtonText(orientationSetting, 'O');
         setSettingButtonText(scrollModeSetting, 'S');
         setSettingButtonText(touchWarningSetting, 'T');
+        setSettingButtonText(cursorModeSetting, 'C');
 
         orientationSetting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 currentGeneralSetting.put('O', !currentGeneralSetting.get('O'));
                 setSettingButtonText(orientationSetting, 'O');
-                modification = true;
             }
         });
 
@@ -179,7 +177,6 @@ public class ActivitySettings extends AppCompatActivity {
             public void onClick(View v) {
                 currentGeneralSetting.put('S', !currentGeneralSetting.get('S'));
                 setSettingButtonText(scrollModeSetting, 'S');
-                modification = true;
             }
         });
 
@@ -188,9 +185,19 @@ public class ActivitySettings extends AppCompatActivity {
             public void onClick(View v) {
                 currentGeneralSetting.put('T', !currentGeneralSetting.get('T'));
                 setSettingButtonText(touchWarningSetting, 'T');
-                modification = true;
             }
         });
+
+        // To be implemented
+        /*
+        cursorModeSetting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                currentGeneralSetting.put('C', !currentGeneralSetting.get('C'));
+                setSettingButtonText(cursorModeSetting, 'C');
+            }
+        });
+         */
     }
 
     @Override
@@ -201,7 +208,7 @@ public class ActivitySettings extends AppCompatActivity {
                 byte combinedAction = data.getByteExtra("combinedAction", (byte) -1);
                 byte bundleAction = data.getByteExtra("bundleAction", (byte) -1);
                 String taskType = data.getStringExtra("taskType");
-                Controls.OutControlDetail detail = Controls.OutControlDetail.correspondsTo(taskType);
+                Controls.TaskDetail detail = Controls.TaskDetail.correspondsTo(taskType);
                 currentSettings.put(combinedAction, detail.duplicate());
                 if (bundleAction != -1) {
                     currentSettings.put(bundleAction, detail.duplicate());

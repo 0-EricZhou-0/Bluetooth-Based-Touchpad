@@ -21,39 +21,39 @@ import java.util.HashMap;
 import java.util.Set;
 
 class Controls {
-    private static HashMap<String, OutControlDetail> taskDetail = new HashMap<>();
-    private static HashMap<String, String> readableAction = new HashMap<>();
-    private static SparseArray<OutControlDetail> mapping = new SparseArray<>();
+    private static HashMap<String, TaskDetail> taskDetail = new HashMap<>();
+    private static HashMap<String, String> taskToReadableTask = new HashMap<>();
+    private static SparseArray<TaskDetail> actionToTask = new SparseArray<>();
     @SuppressLint("StaticFieldLeak")
     private static Context context;
 
-    static OutControlDetail getDetail(String taskType) {
+    static TaskDetail getDetail(String taskType) {
         return taskDetail.get(taskType);
     }
 
-    static String getReadableAction(String action) {
-        return readableAction.get(action);
+    static String getReadableTask(String taskType) {
+        return taskToReadableTask.get(taskType);
     }
 
     static Set<String> getAllOuterControls() {
-        return readableAction.keySet();
+        return taskToReadableTask.keySet();
     }
 
-    static class OutControlDetail {
-        static OutControlDetail correspondsTo(String outerControl) {
+    static class TaskDetail {
+        static TaskDetail correspondsTo(String outerControl) {
             return taskDetail.get(outerControl);
         }
 
         private String outerControl;
         private boolean canBeRepeated;
 
-        OutControlDetail(String outer, boolean repeat) {
+        TaskDetail(String outer, boolean repeat) {
             outerControl = outer;
             canBeRepeated = repeat;
         }
 
-        OutControlDetail duplicate() {
-            return new OutControlDetail(outerControl, canBeRepeated);
+        TaskDetail duplicate() {
+            return new TaskDetail(outerControl, canBeRepeated);
         }
 
         String getOuterControl() {
@@ -69,6 +69,9 @@ class Controls {
             canBeRepeated = repeat;
         }
     }
+
+    static CoordinatePair phoneScreenSize;
+    static CoordinatePair targetScreenSize;
 
     // Inner Controls
     static final byte TAP = 0b000;                  //0
@@ -94,27 +97,31 @@ class Controls {
     static final byte MOVE_CANCEL = 0b1100000;      //96 Not recommended
 
     //Outer Controls
-    private static final OutControlDetail CLICK = new OutControlDetail("C", false);
-    private static final OutControlDetail RIGHT_CLICK = new OutControlDetail("R", false);
-    private static final OutControlDetail MOVE_CURSOR = new OutControlDetail("M", true);
-    private static final OutControlDetail SELECT = new OutControlDetail("S", false);
-    private static final OutControlDetail SCROLL = new OutControlDetail("L", true);
-    private static final OutControlDetail RETURN_TO_DESKTOP = new OutControlDetail("D", false);
-    private static final OutControlDetail ENABLE_TASK_MODE = new OutControlDetail("T", false);
-    private static final OutControlDetail SWITCH_APPLICATION = new OutControlDetail("A", true);
-    private static final OutControlDetail SWITCH_TAB = new OutControlDetail("F", true);
-    private static final OutControlDetail UNDO = new OutControlDetail("B", false);
-    private static final OutControlDetail COPY = new OutControlDetail("O", false);
-    private static final OutControlDetail PASTE = new OutControlDetail("P", false);
-    private static final OutControlDetail CUT = new OutControlDetail("Q", false);
-    private static final OutControlDetail DOUBLE_CLICK = new OutControlDetail("G", false);
+    private static final TaskDetail CLICK = new TaskDetail("C", false);
+    private static final TaskDetail RIGHT_CLICK = new TaskDetail("R", false);
+    private static final TaskDetail MOVE_CURSOR = new TaskDetail("M", true);
+    private static final TaskDetail SELECT = new TaskDetail("S", false);
+    private static final TaskDetail SCROLL = new TaskDetail("L", true);
+    private static final TaskDetail RETURN_TO_DESKTOP = new TaskDetail("D", false);
+    private static final TaskDetail ENABLE_TASK_MODE = new TaskDetail("T", false);
+    private static final TaskDetail SWITCH_APPLICATION = new TaskDetail("A", true);
+    private static final TaskDetail SWITCH_TAB = new TaskDetail("F", true);
+    private static final TaskDetail UNDO = new TaskDetail("B", false);
+    private static final TaskDetail COPY = new TaskDetail("O", false);
+    private static final TaskDetail PASTE = new TaskDetail("P", false);
+    private static final TaskDetail CUT = new TaskDetail("Q", false);
+    private static final TaskDetail DOUBLE_CLICK = new TaskDetail("G", false);
+    // This list can be extended
+    // DO NOT FORGET TO ADD DESCRIPTION BELOW!!!
 
-    private static final OutControlDetail ACTION_EXITING_TOUCH_PAD = new OutControlDetail("I", false);
-    private static final OutControlDetail ACTION_ENTERING_SETTING = new OutControlDetail("E", false);
+    // These two will not be reached by the identifyAndSend method
+    private static final TaskDetail ACTION_EXITING_TOUCH_PAD = new TaskDetail("I", false);
+    private static final TaskDetail ACTION_ENTERING_SETTING = new TaskDetail("E", false);
 
-    private static final OutControlDetail CANCEL_LAST_ACTION = new OutControlDetail("N", true);
-    private static final OutControlDetail HEARTBEAT = new OutControlDetail("H", true);
-    static final OutControlDetail ACTION_NOT_FOUND = new OutControlDetail("W", false);
+    // Functional controls
+    private static final TaskDetail CANCEL_LAST_ACTION = new TaskDetail("N", true);
+    private static final TaskDetail HEARTBEAT = new TaskDetail("H", true);
+    static final TaskDetail ACTION_NOT_FOUND = new TaskDetail("W", false);
 
 
     static final CoordinatePair NOT_STARTED = new CoordinatePair(-1, -1);
@@ -124,17 +131,21 @@ class Controls {
     private static SparseArray<String> settingsButtonDescription = new SparseArray<>();
 
 
-    private static void addControl(OutControlDetail detail, String description) {
+    private static void addControl(TaskDetail detail, String description) {
         taskDetail.put(detail.getOuterControl(), detail);
-        readableAction.put(detail.getOuterControl(), description);
+        taskToReadableTask.put(detail.getOuterControl(), description);
     }
     static void init(Context setContext) {
         context = setContext;
 
+
+        // General settings (to be refactored)
         settingsButtonDescription.put('O', "TOUCH PAD ORIENTATION");
         settingsButtonDescription.put('S', "SCROLL MODE");
         settingsButtonDescription.put('T', "TOUCH WARNING");
+        settingsButtonDescription.put('C', "CURSOR MODE");
 
+        // Adding description of each action can be done
         addControl(CLICK, "Click (Basic Control)");
         addControl(RIGHT_CLICK, "Right Click (Basic Control)");
         addControl(DOUBLE_CLICK, "Double Click (Basic Control)");
@@ -149,58 +160,68 @@ class Controls {
         addControl(COPY, "Copy");
         addControl(PASTE, "Paste");
         addControl(CUT, "Cut");
+        // This list can be extended
+        // DO NOT FORGET TO ADD DESCRIPTION HERE!!! Otherwise the newly added control will not work.
+        // If the description contains "Basic", it will not be allowed to be modified in the settings
 
+        // These two will not be reached by the identifyAndSend method
         addControl(ACTION_EXITING_TOUCH_PAD, "Exiting Touch Pad (Basic Control)");
         addControl(ACTION_ENTERING_SETTING, "Entering Setting (Basic Control)");
 
+        // Functional controls
         taskDetail.put(CANCEL_LAST_ACTION.getOuterControl(), CANCEL_LAST_ACTION);
         taskDetail.put(HEARTBEAT.getOuterControl(), HEARTBEAT);
         taskDetail.put(ACTION_NOT_FOUND.getOuterControl(), ACTION_NOT_FOUND);
 
         try {
-            mapping = loadJsonFile();
-            // Toast.makeText(context, mapping.size() + "", Toast.LENGTH_LONG).show();
-        } catch (Exception e) {
-            // Toast.makeText(context, e.getMessage(), Toast.LENGTH_LONG).show();
-            mapping.append(SINGLE_FINGER + TAP, CLICK);
-            mapping.append(SINGLE_FINGER + DOUBLE_TAP, DOUBLE_CLICK);
-            mapping.append(TWO_FINGERS + TAP, RIGHT_CLICK);
-            mapping.append(SINGLE_FINGER + MOVE, MOVE_CURSOR);
-            mapping.append(SINGLE_FINGER + LONG_PRESS, SELECT);
-            mapping.append(TWO_FINGERS + MOVE, SCROLL);
-            mapping.append(THREE_FINGERS + MOVE_DOWN, RETURN_TO_DESKTOP);
-            mapping.append(THREE_FINGERS + MOVE_UP, ENABLE_TASK_MODE);
-            mapping.append(THREE_FINGERS + MOVE_LEFT, SWITCH_APPLICATION);
-            mapping.append(THREE_FINGERS + MOVE_RIGHT, SWITCH_APPLICATION);
-            mapping.append(FOUR_FINGERS + MOVE_UP, ACTION_EXITING_TOUCH_PAD);
-            mapping.append(FOUR_FINGERS + MOVE_DOWN, ACTION_ENTERING_SETTING);
+            // Try to load the json file
+            loadJsonFile();
+        } catch (FileNotFoundException e) {
+            // If the file does not exist
+            // The default actionToTask
+            actionToTask.append(SINGLE_FINGER + TAP, CLICK);
+            actionToTask.append(SINGLE_FINGER + DOUBLE_TAP, DOUBLE_CLICK);
+            actionToTask.append(TWO_FINGERS + TAP, RIGHT_CLICK);
+            actionToTask.append(SINGLE_FINGER + MOVE, MOVE_CURSOR);
+            actionToTask.append(SINGLE_FINGER + LONG_PRESS, SELECT);
+            actionToTask.append(TWO_FINGERS + MOVE, SCROLL);
+            actionToTask.append(THREE_FINGERS + MOVE_DOWN, RETURN_TO_DESKTOP);
+            actionToTask.append(THREE_FINGERS + MOVE_UP, ENABLE_TASK_MODE);
+            actionToTask.append(THREE_FINGERS + MOVE_LEFT, SWITCH_APPLICATION);
+            actionToTask.append(THREE_FINGERS + MOVE_RIGHT, SWITCH_APPLICATION);
+            actionToTask.append(FOUR_FINGERS + MOVE_UP, ACTION_EXITING_TOUCH_PAD);
+            actionToTask.append(FOUR_FINGERS + MOVE_DOWN, ACTION_ENTERING_SETTING);
 
-            mapping.append(MOVE_CANCEL, CANCEL_LAST_ACTION);
-            mapping.append(HEARTBEAT_ACTION, HEARTBEAT);
+            actionToTask.append(MOVE_CANCEL, CANCEL_LAST_ACTION);
+            actionToTask.append(HEARTBEAT_ACTION, HEARTBEAT);
 
+            // Adding general settings (to be refactored)
             settings.put('O', true);     // Orientation
             settings.put('S', true);     // Scroll Mode
             settings.put('T', true);     // Touch Warning
+            settings.put('C', true);     // Cursor Mode
+
+            // Save the default actionToTask file
             saveJsonFile();
         }
     }
 
-    static SparseArray<OutControlDetail> getCurrentMapping() {
-        SparseArray<OutControlDetail> toReturn = new SparseArray<>();
-        for (int i = 0; i < mapping.size(); i++) {
-            OutControlDetail detail = mapping.valueAt(i);
-            toReturn.put(mapping.keyAt(i), detail.duplicate());
+    static SparseArray<TaskDetail> getCurrentMapping() {
+        SparseArray<TaskDetail> toReturn = new SparseArray<>();
+        for (int i = 0; i < actionToTask.size(); i++) {
+            TaskDetail detail = actionToTask.valueAt(i);
+            toReturn.put(actionToTask.keyAt(i), detail.duplicate());
         }
         return toReturn;
     }
 
-    static void remapping(SparseArray<Controls.OutControlDetail> newMapping) {
-        mapping = newMapping;
+    static void remapping(SparseArray<TaskDetail> newMapping) {
+        actionToTask = newMapping;
         PermanentConnection.TouchEventMappingControl.updateMapping();
         saveJsonFile();
     }
 
-    private static SparseArray<OutControlDetail> loadJsonFile() throws FileNotFoundException {
+    private static void loadJsonFile() throws FileNotFoundException {
         StringBuilder stringBuilder = new StringBuilder();
         InputStreamReader inputStreamReader = new InputStreamReader(context.openFileInput("mappingDetails.json"), StandardCharsets.UTF_8);
         try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
@@ -211,28 +232,28 @@ class Controls {
             }
         } catch (IOException e) {
             // Error occurred when opening raw file for reading.
-            // Toast.makeText(context, "READ ERROR", Toast.LENGTH_SHORT).show();
-            return null;
+            throw new FileNotFoundException();
         }
         if (stringBuilder.toString().equals("")) {
-            // Toast.makeText(context, "EMPTY FILE", Toast.LENGTH_SHORT).show();
-            return null;
+            throw new FileNotFoundException();
         }
 
         Gson gson = new Gson();
         JsonObject jsonObject = gson.fromJson(stringBuilder.toString(), JsonObject.class);
         if (jsonObject == null) {
-            return null;
+            throw new FileNotFoundException();
         }
         JsonArray mappingControls = (JsonArray) jsonObject.get("mappingControls");
-        SparseArray<OutControlDetail> toReturn = new SparseArray<>();
+
+        actionToTask.clear();
         for (JsonElement o : mappingControls) {
             JsonObject individualMapping = (JsonObject) o;
             byte combinedAction = individualMapping.get("combinedAction").getAsByte();
             String outerControl = individualMapping.get("outerControl").getAsString();
-            toReturn.put(combinedAction, getDetail(outerControl));
+            actionToTask.put(combinedAction, getDetail(outerControl));
         }
 
+        settings.clear();
         JsonArray generalSettings = (JsonArray) jsonObject.get("generalSettings");
         for (JsonElement o : generalSettings) {
             JsonObject individualSetting = (JsonObject) o;
@@ -240,18 +261,16 @@ class Controls {
             boolean status = individualSetting.get("status").getAsBoolean();
             settings.put(setting, status);
         }
-
-        return toReturn;
     }
 
     private static void saveJsonFile() {
         JsonObject toSave = new JsonObject();
 
         JsonArray mappingControls = new JsonArray();
-        for (int i = 0; i < mapping.size(); i++) {
+        for (int i = 0; i < actionToTask.size(); i++) {
             JsonObject individualMapping = new JsonObject();
-            Controls.OutControlDetail detail = Controls.getDetail(mapping.valueAt(i).getOuterControl());
-            byte combinedAction = (byte) mapping.keyAt(i);
+            TaskDetail detail = Controls.getDetail(actionToTask.valueAt(i).getOuterControl());
+            byte combinedAction = (byte) actionToTask.keyAt(i);
             String outerControl = detail.getOuterControl();
             individualMapping.addProperty("combinedAction", combinedAction);
             individualMapping.addProperty("outerControl", outerControl);
@@ -300,7 +319,7 @@ class Controls {
         settings = newSettings;
     }
 
-    static String getReadableDefinedAction(byte combinedAction, OutControlDetail detail) {
+    static String getReadableDefinedAction(byte combinedAction, TaskDetail detail) {
         int numFingers = combinedAction / 8;
         int action = combinedAction % 8;
         if (numFingers > 10) {
@@ -336,7 +355,7 @@ class Controls {
         if (numFingers == 0) {
             return toReturn;
         }
-        return toReturn + " --- " + readableAction.get(detail.getOuterControl());
+        return toReturn + " --- " + taskToReadableTask.get(detail.getOuterControl());
     }
 
 
@@ -363,6 +382,11 @@ class Controls {
                     return "ENABLED";
                 }
                 return "DISABLED";
+            case 'C':
+                if (status) {
+                    return "RELATIVE";
+                }
+                return "ABSOLUTE";
             default:
                 return "FALSE ARGUMENT";
         }

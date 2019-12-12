@@ -21,8 +21,30 @@ import static com.example.websocketTest.Controls.ZERO;
 
 public class ActivityTouchPad extends AppCompatActivity implements
         GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
+    /**
+     * The highest number of fingers that would be detected. Actions with higher number of fingers
+     * will be discard.
+     */
     private final int MAX_NUM_OF_FINGERS_SUPPORTED = 5;
+
+    /**
+     * When the user first touch the screen with fingers, the number of fingers touched initially
+     * (usually one) would not be the number intended to do the action. The allowance measures the
+     * number of milliseconds delayed before the handler actually detects the actual number of fingers
+     * used to do the gesture. The value should not be less than 6, otherwise user will have a hard
+     * time using the touch pad. And the value should not be too big, otherwise it may not successfully
+     * detect the user actions.
+     */
+    private final int DELAY_BEFORE_START_DETECTION = 6;
+
+    /**
+     * The number of milliseconds waited until it is sure that the user does not want to tap twice.
+     */
     private final int WAIT_UNTIL_CONFIRM = 160;
+
+    /**
+     * The number of milliseconds waited until it is sure that the user is trying to long press.
+     */
     private final int LONG_PRESS_LENGTH = 800;
 
     private GestureDetectorCompat mDetector;
@@ -35,6 +57,8 @@ public class ActivityTouchPad extends AppCompatActivity implements
 
     private boolean forwardScrollMode;
     private boolean touchWarningMode;
+    private boolean cursorMode;
+
     private AlertDialog.Builder exitDialog;
 
     private class FingerEvent {
@@ -145,6 +169,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
         }
         forwardScrollMode = Controls.getSetting(null, 'S').equals("FORWARD");
         touchWarningMode = Controls.getSetting(null, 'T').equals("ENABLED");
+        cursorMode = Controls.getSetting(null, 'C').equals("RELATIVE");
 
         try {
             eventGroup[0] = new FingerEvent(1.2F);
@@ -180,9 +205,11 @@ public class ActivityTouchPad extends AppCompatActivity implements
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event != null) {
+            // The absolute position of the current cursor
             float currentX = event.getRawX();
             float currentY = event.getRawY();
             if (currentNumPointers != event.getPointerCount()) {
+                // Prevent sudden jump of controls
                 for (FingerEvent fingerEvent : eventGroup) {
                     fingerEvent.setCurrentPos(currentX, currentY);
                 }
@@ -190,6 +217,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
             currentNumPointers = event.getPointerCount();
             maxNumPointers = Math.max(currentNumPointers, maxNumPointers);
             if (event.getAction() == MotionEvent.ACTION_UP) {
+                // Reset all action recorders
                 maxNumPointers = 1;
                 direction = -1;
                 for (FingerEvent fingerEvent : eventGroup) {
@@ -200,21 +228,26 @@ public class ActivityTouchPad extends AppCompatActivity implements
             if (mDetector.onTouchEvent(event)) {
                 switch (maxNumPointers) {
                     case 1:
+                        // Move event of single finger
+                        // Cannot be customized
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
                             eventGroup[0].startEvent(currentX, currentY);
-                            // Toast.makeText(ActivityTouchPad.this, "Down" + maxNumPointers, Toast.LENGTH_SHORT).show();
                         } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
                             CoordinatePair pair = eventGroup[0].moveTo(currentX, currentY);
                             int deltaX = (int) pair.getX();
                             int deltaY = (int) pair.getY();
                             if (!pair.equals(ZERO)) {
-                                PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), deltaX, deltaY);
-                                // PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), (int) currentX, (int) currentY);
+                                if (cursorMode) {
+                                    PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), deltaX, deltaY);
+                                } else {
+                                    PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), (int) currentX, (int) currentY);
+                                }
                             }
                         }
                         break;
                     case 2:
-                        // Two Fingers MOVE event
+                        // Move up/down actions of two fingers
+                        // Cannot be customized
                         CoordinatePair motion2 = eventGroup[1].moveTo(currentX, currentY);
                         if (!((int) motion2.getY() == 0)) {
                             if (forwardScrollMode) {
@@ -225,6 +258,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         }
                         break;
                     case 3:
+                        // Move left/right/up/down actions of three fingers
                         CoordinatePair motion3 = eventGroup[2].moveTo(currentX, currentY);
                         if (!motion3.equals(ZERO)) {
                             int setDirection = motion3.getDirection(ZERO);
@@ -239,6 +273,8 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         }
                         break;
                     case 4:
+                        // Move left/right/up/down actions of four fingers
+                        // Four finger move up & down are reserved
                         CoordinatePair motion4 = eventGroup[3].moveTo(currentX, currentY);
                         if (!motion4.equals(ZERO)) {
                             // Toast.makeText(ActivityTouchPad.this, direction, Toast.LENGTH_SHORT).show();
@@ -277,6 +313,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         }
                         break;
                     case 5:
+                        // Move left/right/up/down actions of five fingers
                         CoordinatePair motion5 = eventGroup[4].moveTo(currentX, currentY);
                         if (!motion5.equals(ZERO)) {
                             int setDirection = motion5.getDirection(ZERO);
@@ -291,6 +328,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         }
                         break;
                     default:
+                        // Touch actions more than 5 fingers are not recommended.
                         if (direction == -1) {
                             Toast.makeText(ActivityTouchPad.this, maxNumPointers + "", Toast.LENGTH_LONG).show();
                             if (touchWarningMode) {
@@ -329,6 +367,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
             public void run() {
                 switch (maxNumPointers) {
                     case 2:
+                        // Two finger single tap confirmed
                         eventGroup[1].startEvent(event.getRawX(), event.getRawY());
                         final Handler twoFingerSingleTapConfirmedHandler = new Handler();
                         twoFingerSingleTapConfirmedHandler.postDelayed(new Runnable() {
@@ -339,6 +378,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                                 }
                             }
                         }, WAIT_UNTIL_CONFIRM);
+                        // Two finger long press
                         final Handler twoFingerLongPressHandler = new Handler();
                         twoFingerLongPressHandler.postDelayed(new Runnable() {
                             @Override
@@ -350,6 +390,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         }, LONG_PRESS_LENGTH);
                         break;
                     case 3:
+                        // Three finger single tap confirmed
                         eventGroup[2].startEvent(event.getRawX(), event.getRawY());
                         final Handler threeFingerSingleTapConfirmedHandler = new Handler();
                         threeFingerSingleTapConfirmedHandler.postDelayed(new Runnable() {
@@ -360,6 +401,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                                 }
                             }
                         }, WAIT_UNTIL_CONFIRM);
+                        // Three finger long press
                         final Handler threeFingerLongPressHandler = new Handler();
                         threeFingerLongPressHandler.postDelayed(new Runnable() {
                             @Override
@@ -371,6 +413,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         }, LONG_PRESS_LENGTH);
                         break;
                     case 4:
+                        // Four finger single tap confirmed
                         eventGroup[3].startEvent(event.getRawX(), event.getRawY());
                         final Handler fourFingerSingleTapConfirmedHandler = new Handler();
                         fourFingerSingleTapConfirmedHandler.postDelayed(new Runnable() {
@@ -381,6 +424,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                                 }
                             }
                         }, WAIT_UNTIL_CONFIRM);
+                        // Four finger long press
                         final Handler fourFingerLongPressHandler = new Handler();
                         fourFingerLongPressHandler.postDelayed(new Runnable() {
                             @Override
@@ -392,6 +436,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         }, LONG_PRESS_LENGTH);
                         break;
                     case 5:
+                        // Five finger single tap confirmed
                         eventGroup[4].startEvent(event.getRawX(), event.getRawY());
                         final Handler fiveFingerSingleTapConfirmedHandler = new Handler();
                         fiveFingerSingleTapConfirmedHandler.postDelayed(new Runnable() {
@@ -402,6 +447,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                                 }
                             }
                         }, WAIT_UNTIL_CONFIRM);
+                        // Five finger long press
                         final Handler fiveFingerLongPressHandler = new Handler();
                         fiveFingerLongPressHandler.postDelayed(new Runnable() {
                             @Override
@@ -414,7 +460,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         break;
                 }
             }
-        }, 6);
+        }, DELAY_BEFORE_START_DETECTION);
         return true;
     }
 
@@ -461,7 +507,14 @@ public class ActivityTouchPad extends AppCompatActivity implements
 
     @Override
     public boolean onSingleTapConfirmed(MotionEvent event) {
-        PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.TAP));
+        if (cursorMode) {
+            PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.TAP));
+        } else {
+            int targetX = (int) (event.getRawX() / Controls.phoneScreenSize.getX() * Controls.targetScreenSize.getX());
+            int targetY = (int) (event.getRawY() / Controls.phoneScreenSize.getY() * Controls.targetScreenSize.getX());
+            PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), targetX, targetY);
+            PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.TAP));
+        }
         return true;
     }
 

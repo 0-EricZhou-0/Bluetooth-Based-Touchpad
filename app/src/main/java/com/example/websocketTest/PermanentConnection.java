@@ -41,10 +41,14 @@ public class PermanentConnection {
                 OutputStream outStream = btSocket.getOutputStream();
                 outWriter = new PrintWriter(new OutputStreamWriter(outStream));
 
-                String status = inReader.readLine();
-                if (!status.equals("CONNECTED")) {
+                String lineIn = inReader.readLine();
+                String[] params = lineIn.split(" ");
+                if (!params[0].equals("CONNECTED")) {
                     throw new IllegalArgumentException("MESSAGE ERROR");
                 }
+                int targetScreenWidth = Integer.parseInt(params[1]);
+                int targetScreenHeight = Integer.parseInt(params[2]);
+                Controls.targetScreenSize = new CoordinatePair(targetScreenWidth, targetScreenHeight);
                 // heartbeat = new Heartbeat(3000, 3);
                 // heartbeat.start();
                 Intent intent = new Intent(context, ActivityConnected.class);
@@ -77,7 +81,7 @@ public class PermanentConnection {
     private static TextView absorb;
 
     static class TouchEventMappingControl {
-        static SparseArray<Controls.OutControlDetail> mapping = new SparseArray<>();
+        static SparseArray<Controls.TaskDetail> mapping = new SparseArray<>();
 
         static void updateMapping() {
             mapping = Controls.getCurrentMapping();
@@ -87,7 +91,7 @@ public class PermanentConnection {
         }
 
         static void identifyAndSend(byte innerAction, int[] parameters) {
-            Controls.OutControlDetail detail = mapping.get(innerAction);
+            Controls.TaskDetail detail = mapping.get(innerAction);
             if (detail != null) {
                 String outerAction = detail.getOuterControl();
                 // Toast.makeText(context, innerAction + outerAction, Toast.LENGTH_LONG).show();
@@ -95,7 +99,7 @@ public class PermanentConnection {
                     if (!detail.getCanBeRepeated()) {
                         return;
                     }
-                    if (!Controls.OutControlDetail.correspondsTo(outerAction).getCanBeRepeated() && detail.getCanBeRepeated()) {
+                    if (!Controls.TaskDetail.correspondsTo(outerAction).getCanBeRepeated() && detail.getCanBeRepeated()) {
                         detail.setCanBeRepeated(false);
                     }
                     StringBuilder toSend = new StringBuilder(outerAction);

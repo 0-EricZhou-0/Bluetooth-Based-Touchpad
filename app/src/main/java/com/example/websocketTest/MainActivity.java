@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -29,6 +30,10 @@ public class MainActivity extends AppCompatActivity {
         final Button settings = findViewById(R.id.settingInMainScreen);
         final Button exit = findViewById(R.id.exit);
         final TextView absorbMotionEvent = findViewById(R.id.absorbMotionEvent);
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        Controls.phoneScreenSize = new CoordinatePair(displayMetrics.widthPixels, displayMetrics.heightPixels);
 
         try {
             Controls.init(MainActivity.this);
