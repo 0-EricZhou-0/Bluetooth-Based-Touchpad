@@ -22,7 +22,7 @@ public class ActivityAddNewMapping extends AppCompatActivity {
     private byte combinedAction;
     private String taskType;
     Intent returnIntent = new Intent();
-    private SparseArray<Controls.OutSettingDetail> currentSettings;
+    private SparseArray<Controls.OutControlDetail> currentSettings;
     private AlertDialog.Builder exitDialog;
 
     @SuppressLint("SetTextI18n")
@@ -61,9 +61,9 @@ public class ActivityAddNewMapping extends AppCompatActivity {
         try {
             for (int i = 2; i < 5; i++) {
                 final int fingerCount = i + 1;
-                final View numFingerSelection = getLayoutInflater().inflate(R.layout.chunk_multipurposes,
+                final View numFingerSelection = getLayoutInflater().inflate(R.layout.chunk_mapping_setting,
                         mappingSettings, false);
-                final TextView numOfFingers = numFingerSelection.findViewById(R.id.mappingDescripiton);
+                final TextView numOfFingers = numFingerSelection.findViewById(R.id.descripiton);
                 final Button selectNumFingers = numFingerSelection.findViewById(R.id.performAction);
                 numOfFingers.setText(" " + fingerCount + " Finger");
                 selectNumFingers.setText("SELECT");
@@ -83,9 +83,9 @@ public class ActivityAddNewMapping extends AppCompatActivity {
                             }
 
                             final int actionNum = i;
-                            final View actionTypeSelection = getLayoutInflater().inflate(R.layout.chunk_multipurposes,
+                            final View actionTypeSelection = getLayoutInflater().inflate(R.layout.chunk_mapping_setting,
                                     mappingSettings, false);
-                            final TextView actionType = actionTypeSelection.findViewById(R.id.mappingDescripiton);
+                            final TextView actionType = actionTypeSelection.findViewById(R.id.descripiton);
                             final Button selectActionType = actionTypeSelection.findViewById(R.id.performAction);
                             actionType.setText(" " + Controls.getReadableDefinedAction((byte) i, null));
                             if (currentSettings.get(combinedAction + i) != null) {
@@ -100,16 +100,16 @@ public class ActivityAddNewMapping extends AppCompatActivity {
                                     currentMappingInfo.setText("" + currentMappingInfo.getText() + actionType.getText());
                                     combinedAction += actionNum;
                                     mappingSettings.removeAllViews();
-                                    Set<String> allActions = Controls.getAllActions();
+                                    Set<String> allActions = Controls.getAllOuterControls();
                                     for (final String action : allActions) {
                                         final String readableAction = Controls.getReadableAction(action);
                                         if (readableAction.contains("Basic")
                                                 || readableAction.contains("Switch") && (actionNum != Controls.MOVE_LEFT && actionNum != Controls.MOVE_RIGHT)) {
                                             continue;
                                         }
-                                        final View mappingActionTypeSelection = getLayoutInflater().inflate(R.layout.chunk_multipurposes,
+                                        final View mappingActionTypeSelection = getLayoutInflater().inflate(R.layout.chunk_mapping_setting,
                                                 mappingSettings, false);
-                                        final TextView mappingActionType = mappingActionTypeSelection.findViewById(R.id.mappingDescripiton);
+                                        final TextView mappingActionType = mappingActionTypeSelection.findViewById(R.id.descripiton);
                                         final Button selectMappingActionType = mappingActionTypeSelection.findViewById(R.id.performAction);
                                         mappingActionType.setText(" " + readableAction);
                                         selectMappingActionType.setText("SELECT");

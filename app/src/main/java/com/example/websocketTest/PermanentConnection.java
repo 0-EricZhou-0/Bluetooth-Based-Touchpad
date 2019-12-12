@@ -75,12 +75,11 @@ public class PermanentConnection {
     private static Button startConnection;
     @SuppressLint("StaticFieldLeak")
     private static TextView absorb;
-    // private Heartbeat heartbeat;
 
     static class TouchEventMappingControl {
-        static SparseArray<Controls.OutSettingDetail> mapping = new SparseArray<>();
+        static SparseArray<Controls.OutControlDetail> mapping = new SparseArray<>();
 
-        static void init() {
+        static void updateMapping() {
             mapping = Controls.getCurrentMapping();
             for (int i = 0; i < mapping.size(); i++) {
                 mapping.valueAt(i).setCanBeRepeated(true);
@@ -88,7 +87,7 @@ public class PermanentConnection {
         }
 
         static void identifyAndSend(byte innerAction, int[] parameters) {
-            Controls.OutSettingDetail detail = mapping.get(innerAction);
+            Controls.OutControlDetail detail = mapping.get(innerAction);
             if (detail != null) {
                 String outerAction = detail.getOuterControl();
                 // Toast.makeText(context, innerAction + outerAction, Toast.LENGTH_LONG).show();
@@ -96,7 +95,7 @@ public class PermanentConnection {
                     if (!detail.getCanBeRepeated()) {
                         return;
                     }
-                    if (!Controls.OutSettingDetail.getSetting(outerAction).getCanBeRepeated() && detail.getCanBeRepeated()) {
+                    if (!Controls.OutControlDetail.correspondsTo(outerAction).getCanBeRepeated() && detail.getCanBeRepeated()) {
                         detail.setCanBeRepeated(false);
                     }
                     StringBuilder toSend = new StringBuilder(outerAction);
@@ -116,16 +115,11 @@ public class PermanentConnection {
         }
     }
 
-    /**
-     * If bluetooth is not turned on, tell the user to turn it on.
-     *
-     * @param setMac mac address of remote device
-     */
     static void init(String setMac, Context setContext, Button tryConnect, TextView setAbsorb) {
         startConnection = tryConnect;
         absorb = setAbsorb;
         context = setContext;
-        TouchEventMappingControl.init();
+        TouchEventMappingControl.updateMapping();
         if (!(setMac == null || setMac.equals(""))) {
             serverMac = setMac;
         }

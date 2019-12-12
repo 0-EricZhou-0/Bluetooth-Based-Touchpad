@@ -21,13 +21,13 @@ import java.util.HashMap;
 import java.util.Set;
 
 class Controls {
-    private static HashMap<String, OutSettingDetail> taskDetail = new HashMap<>();
+    private static HashMap<String, OutControlDetail> taskDetail = new HashMap<>();
     private static HashMap<String, String> readableAction = new HashMap<>();
-    private static SparseArray<OutSettingDetail> mapping = new SparseArray<>();
+    private static SparseArray<OutControlDetail> mapping = new SparseArray<>();
     @SuppressLint("StaticFieldLeak")
     private static Context context;
 
-    static OutSettingDetail getDetail(String taskType) {
+    static OutControlDetail getDetail(String taskType) {
         return taskDetail.get(taskType);
     }
 
@@ -35,25 +35,25 @@ class Controls {
         return readableAction.get(action);
     }
 
-    static Set<String> getAllActions() {
+    static Set<String> getAllOuterControls() {
         return readableAction.keySet();
     }
 
-    static class OutSettingDetail {
-        static OutSettingDetail getSetting(String outerControl) {
+    static class OutControlDetail {
+        static OutControlDetail correspondsTo(String outerControl) {
             return taskDetail.get(outerControl);
         }
 
         private String outerControl;
         private boolean canBeRepeated;
 
-        OutSettingDetail(String outer, boolean repeat) {
+        OutControlDetail(String outer, boolean repeat) {
             outerControl = outer;
             canBeRepeated = repeat;
         }
 
-        OutSettingDetail duplicate() {
-            return new OutSettingDetail(outerControl, canBeRepeated);
+        OutControlDetail duplicate() {
+            return new OutControlDetail(outerControl, canBeRepeated);
         }
 
         String getOuterControl() {
@@ -85,35 +85,36 @@ class Controls {
     static final byte THREE_FINGERS = 0b11000;      //24
     static final byte FOUR_FINGERS = 0b100000;      //32
     static final byte FIVE_FINGERS = 0b101000;      //40
-    static final byte SIX_FINGERS = 0b110000;       //48 Cannot be accessed by setting
-    static final byte SEVEN_FINGERS = 0b111000;     //56 Cannot be accessed by setting
-    static final byte EIGHT_FINGERS = 0b1000000;    //64 Cannot be accessed by setting
-    static final byte NINE_FINGERS = 0b1001000;     //72 Cannot be accessed by setting
-    static final byte TEN_FINGERS = 0b1010000;      //80 Cannot be accessed by setting
-    static final byte HEARTBEAT_ACTION = 0b1011000; //88 Cannot be accessed by setting
-    static final byte MOVE_CANCEL = 0b1100000;     //96 Cannot be accessed by setting
+    static final byte SIX_FINGERS = 0b110000;       //48 Not recommended
+    static final byte SEVEN_FINGERS = 0b111000;     //56 Not recommended
+    static final byte EIGHT_FINGERS = 0b1000000;    //64 Not recommended
+    static final byte NINE_FINGERS = 0b1001000;     //72 Not recommended
+    static final byte TEN_FINGERS = 0b1010000;      //80 Not recommended
+    static final byte HEARTBEAT_ACTION = 0b1011000; //88 Not recommended
+    static final byte MOVE_CANCEL = 0b1100000;      //96 Not recommended
 
     //Outer Controls
-    private static final OutSettingDetail CLICK = new OutSettingDetail("C", false);
-    private static final OutSettingDetail RIGHT_CLICK = new OutSettingDetail("R", false);
-    private static final OutSettingDetail MOVE_CURSOR = new OutSettingDetail("M", true);
-    private static final OutSettingDetail SELECT = new OutSettingDetail("S", false);
-    private static final OutSettingDetail SCROLL = new OutSettingDetail("L", true);
-    private static final OutSettingDetail RETURN_TO_DESKTOP = new OutSettingDetail("D", false);
-    private static final OutSettingDetail ENABLE_TASK_MODE = new OutSettingDetail("T", false);
-    private static final OutSettingDetail SWITCH_APPLICATION = new OutSettingDetail("A", true);
-    private static final OutSettingDetail SWITCH_TAB = new OutSettingDetail("F", true);
-    private static final OutSettingDetail UNDO = new OutSettingDetail("B", false);
-    private static final OutSettingDetail COPY = new OutSettingDetail("O", false);
-    private static final OutSettingDetail PASTE = new OutSettingDetail("P", false);
-    private static final OutSettingDetail CUT = new OutSettingDetail("Q", false);
-    private static final OutSettingDetail DOUBLE_CLICK = new OutSettingDetail("G", false);
+    private static final OutControlDetail CLICK = new OutControlDetail("C", false);
+    private static final OutControlDetail RIGHT_CLICK = new OutControlDetail("R", false);
+    private static final OutControlDetail MOVE_CURSOR = new OutControlDetail("M", true);
+    private static final OutControlDetail SELECT = new OutControlDetail("S", false);
+    private static final OutControlDetail SCROLL = new OutControlDetail("L", true);
+    private static final OutControlDetail RETURN_TO_DESKTOP = new OutControlDetail("D", false);
+    private static final OutControlDetail ENABLE_TASK_MODE = new OutControlDetail("T", false);
+    private static final OutControlDetail SWITCH_APPLICATION = new OutControlDetail("A", true);
+    private static final OutControlDetail SWITCH_TAB = new OutControlDetail("F", true);
+    private static final OutControlDetail UNDO = new OutControlDetail("B", false);
+    private static final OutControlDetail COPY = new OutControlDetail("O", false);
+    private static final OutControlDetail PASTE = new OutControlDetail("P", false);
+    private static final OutControlDetail CUT = new OutControlDetail("Q", false);
+    private static final OutControlDetail DOUBLE_CLICK = new OutControlDetail("G", false);
 
-    static final OutSettingDetail ACTION_NOT_FOUND = new OutSettingDetail("W", false);
-    private static final OutSettingDetail ACTION_EXITING_TOUCH_PAD = new OutSettingDetail("I", false);
-    private static final OutSettingDetail ACTION_ENTERING_SETTING = new OutSettingDetail("E", false);
-    private static final OutSettingDetail CANCEL_LAST_ACTION = new OutSettingDetail("N", true);
-    private static final OutSettingDetail HEARTBEAT = new OutSettingDetail("H", true);
+    private static final OutControlDetail ACTION_EXITING_TOUCH_PAD = new OutControlDetail("I", false);
+    private static final OutControlDetail ACTION_ENTERING_SETTING = new OutControlDetail("E", false);
+
+    private static final OutControlDetail CANCEL_LAST_ACTION = new OutControlDetail("N", true);
+    private static final OutControlDetail HEARTBEAT = new OutControlDetail("H", true);
+    static final OutControlDetail ACTION_NOT_FOUND = new OutControlDetail("W", false);
 
 
     static final CoordinatePair NOT_STARTED = new CoordinatePair(-1, -1);
@@ -123,8 +124,9 @@ class Controls {
     private static SparseArray<String> settingsButtonDescription = new SparseArray<>();
 
 
-    private static void addControl() {
-
+    private static void addControl(OutControlDetail detail, String description) {
+        taskDetail.put(detail.getOuterControl(), detail);
+        readableAction.put(detail.getOuterControl(), description);
     }
     static void init(Context setContext) {
         context = setContext;
@@ -133,42 +135,27 @@ class Controls {
         settingsButtonDescription.put('S', "SCROLL MODE");
         settingsButtonDescription.put('T', "TOUCH WARNING");
 
-        taskDetail.put(CLICK.getOuterControl(), CLICK);
-        readableAction.put(CLICK.getOuterControl(), "Click (Basic Control)");
-        taskDetail.put(RIGHT_CLICK.getOuterControl(), RIGHT_CLICK);
-        readableAction.put(RIGHT_CLICK.getOuterControl(), "Right Click (Basic Control)");
-        taskDetail.put(MOVE_CURSOR.getOuterControl(), MOVE_CURSOR);
-        readableAction.put(MOVE_CURSOR.getOuterControl(), "Move Cursor (Basic Control)");
-        taskDetail.put(SELECT.getOuterControl(), SELECT);
-        readableAction.put(SELECT.getOuterControl(), "Select (Basic Control)");
-        taskDetail.put(SCROLL.getOuterControl(), SCROLL);
-        readableAction.put(SCROLL.getOuterControl(), "Scroll (Basic Control)");
-        taskDetail.put(RETURN_TO_DESKTOP.getOuterControl(), RETURN_TO_DESKTOP);
-        readableAction.put(RETURN_TO_DESKTOP.getOuterControl(), "Return to Desktop");
-        taskDetail.put(ENABLE_TASK_MODE.getOuterControl(), ENABLE_TASK_MODE);
-        readableAction.put(ENABLE_TASK_MODE.getOuterControl(), "Enable Task Mode");
-        taskDetail.put(SWITCH_APPLICATION.getOuterControl(), SWITCH_APPLICATION);
-        readableAction.put(SWITCH_APPLICATION.getOuterControl(), "Switch Application");
-        taskDetail.put(SWITCH_TAB.getOuterControl(), SWITCH_TAB);
-        readableAction.put(SWITCH_TAB.getOuterControl(), "Switch Tab");
-        taskDetail.put(UNDO.getOuterControl(), UNDO);
-        readableAction.put(UNDO.getOuterControl(), "Undo");
-        taskDetail.put(COPY.getOuterControl(), COPY);
-        readableAction.put(COPY.getOuterControl(), "Copy");
-        taskDetail.put(PASTE.getOuterControl(), PASTE);
-        readableAction.put(PASTE.getOuterControl(), "Paste");
-        taskDetail.put(CUT.getOuterControl(), CUT);
-        readableAction.put(CUT.getOuterControl(), "Cut");
-        taskDetail.put(DOUBLE_CLICK.getOuterControl(), DOUBLE_CLICK);
-        readableAction.put(DOUBLE_CLICK.getOuterControl(), "Double Click (Basic Control)");
+        addControl(CLICK, "Click (Basic Control)");
+        addControl(RIGHT_CLICK, "Right Click (Basic Control)");
+        addControl(DOUBLE_CLICK, "Double Click (Basic Control)");
+        addControl(MOVE_CURSOR, "Move Cursor (Basic Control)");
+        addControl(SELECT, "Select (Basic Control)");
+        addControl(SCROLL, "Scroll (Basic Control)");
+        addControl(RETURN_TO_DESKTOP, "Return to Desktop");
+        addControl(ENABLE_TASK_MODE, "Enable Task Mode");
+        addControl(SWITCH_APPLICATION, "Switch Application");
+        addControl(SWITCH_TAB, "Switch Tab");
+        addControl(UNDO, "Undo");
+        addControl(COPY, "Copy");
+        addControl(PASTE, "Paste");
+        addControl(CUT, "Cut");
 
-        taskDetail.put(ACTION_NOT_FOUND.getOuterControl(), ACTION_NOT_FOUND);
-        taskDetail.put(ACTION_EXITING_TOUCH_PAD.getOuterControl(), ACTION_EXITING_TOUCH_PAD);
-        readableAction.put(ACTION_EXITING_TOUCH_PAD.getOuterControl(), "Exiting Touch Pad (Basic Control)");
-        taskDetail.put(ACTION_ENTERING_SETTING.getOuterControl(), ACTION_ENTERING_SETTING);
-        readableAction.put(ACTION_ENTERING_SETTING.getOuterControl(), "Entering Setting (Basic Control)");
+        addControl(ACTION_EXITING_TOUCH_PAD, "Exiting Touch Pad (Basic Control)");
+        addControl(ACTION_ENTERING_SETTING, "Entering Setting (Basic Control)");
+
         taskDetail.put(CANCEL_LAST_ACTION.getOuterControl(), CANCEL_LAST_ACTION);
         taskDetail.put(HEARTBEAT.getOuterControl(), HEARTBEAT);
+        taskDetail.put(ACTION_NOT_FOUND.getOuterControl(), ACTION_NOT_FOUND);
 
         try {
             mapping = loadJsonFile();
@@ -198,22 +185,22 @@ class Controls {
         }
     }
 
-    static SparseArray<OutSettingDetail> getCurrentMapping() {
-        SparseArray<OutSettingDetail> toReturn = new SparseArray<>();
+    static SparseArray<OutControlDetail> getCurrentMapping() {
+        SparseArray<OutControlDetail> toReturn = new SparseArray<>();
         for (int i = 0; i < mapping.size(); i++) {
-            OutSettingDetail detail = mapping.valueAt(i);
+            OutControlDetail detail = mapping.valueAt(i);
             toReturn.put(mapping.keyAt(i), detail.duplicate());
         }
         return toReturn;
     }
 
-    static void remapping(SparseArray<Controls.OutSettingDetail> newMapping) {
+    static void remapping(SparseArray<Controls.OutControlDetail> newMapping) {
         mapping = newMapping;
-        PermanentConnection.TouchEventMappingControl.init();
+        PermanentConnection.TouchEventMappingControl.updateMapping();
         saveJsonFile();
     }
 
-    private static SparseArray<OutSettingDetail> loadJsonFile() throws FileNotFoundException {
+    private static SparseArray<OutControlDetail> loadJsonFile() throws FileNotFoundException {
         StringBuilder stringBuilder = new StringBuilder();
         InputStreamReader inputStreamReader = new InputStreamReader(context.openFileInput("mappingDetails.json"), StandardCharsets.UTF_8);
         try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
@@ -238,7 +225,7 @@ class Controls {
             return null;
         }
         JsonArray mappingControls = (JsonArray) jsonObject.get("mappingControls");
-        SparseArray<OutSettingDetail> toReturn = new SparseArray<>();
+        SparseArray<OutControlDetail> toReturn = new SparseArray<>();
         for (JsonElement o : mappingControls) {
             JsonObject individualMapping = (JsonObject) o;
             byte combinedAction = individualMapping.get("combinedAction").getAsByte();
@@ -263,7 +250,7 @@ class Controls {
         JsonArray mappingControls = new JsonArray();
         for (int i = 0; i < mapping.size(); i++) {
             JsonObject individualMapping = new JsonObject();
-            Controls.OutSettingDetail detail = Controls.getDetail(mapping.valueAt(i).getOuterControl());
+            Controls.OutControlDetail detail = Controls.getDetail(mapping.valueAt(i).getOuterControl());
             byte combinedAction = (byte) mapping.keyAt(i);
             String outerControl = detail.getOuterControl();
             individualMapping.addProperty("combinedAction", combinedAction);
@@ -313,7 +300,7 @@ class Controls {
         settings = newSettings;
     }
 
-    static String getReadableDefinedAction(byte combinedAction, OutSettingDetail detail) {
+    static String getReadableDefinedAction(byte combinedAction, OutControlDetail detail) {
         int numFingers = combinedAction / 8;
         int action = combinedAction % 8;
         if (numFingers > 10) {

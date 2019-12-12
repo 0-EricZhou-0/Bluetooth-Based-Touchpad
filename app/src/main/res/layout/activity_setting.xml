@@ -22,7 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Orientation will only work in touchpad mode, the launch screen orientation will not be changed by this setting."
-        android:visibility="gone" />
+        android:visibility="visible" />
 
     <Button
         android:id="@+id/scrollModeSetting"
@@ -35,7 +35,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Normally, the setting for a computer run on Mac OS is FORWARD, and the scroll mode for a computer run on Windows is REVERSE"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
     <Button
         android:id="@+id/touchWarningSetting"
@@ -48,7 +48,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="This controls if a warning message box is showed in any touchpad mode when the number of fingers detected on the screen is more than 5. (For accuracy reason, those events will be ignored.)"
-        android:visibility="gone" />
+        android:visibility="visible" />
 
     <TextView
         android:id="@+id/textView2"

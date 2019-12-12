@@ -6,7 +6,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.GestureDetector;
@@ -28,7 +27,7 @@ public class ActivitySettings extends AppCompatActivity {
 
     private GestureDetectorCompat mDetector;
     ArrayList<View> actionList = new ArrayList<>();
-    SparseArray<Controls.OutSettingDetail> currentSettings = new SparseArray<>();
+    SparseArray<Controls.OutControlDetail> currentSettings = new SparseArray<>();
     SparseBooleanArray currentGeneralSetting = Controls.getCurrentSettingStatus();
     private LinearLayout container;
     private AlertDialog.Builder exitDialog;
@@ -66,16 +65,16 @@ public class ActivitySettings extends AppCompatActivity {
         try {
             container.removeAllViews();
             for (int i = 0; i < currentSettings.size(); i++) {
-                Controls.OutSettingDetail mapping = currentSettings.valueAt(i);
+                Controls.OutControlDetail mapping = currentSettings.valueAt(i);
                 final byte combinedAction = (byte) currentSettings.keyAt(i);
                 String description = Controls.getReadableDefinedAction(combinedAction, mapping);
                 if (description == null) {
                     continue;
                 }
-                final View keyMapping = getLayoutInflater().inflate(R.layout.chunk_multipurposes,
+                final View keyMapping = getLayoutInflater().inflate(R.layout.chunk_mapping_setting,
                         container, false);
                 actionList.add(keyMapping);
-                TextView mappingDescription = keyMapping.findViewById(R.id.mappingDescripiton);
+                TextView mappingDescription = keyMapping.findViewById(R.id.descripiton);
                 Button removeMapping = keyMapping.findViewById(R.id.performAction);
                 if (description.contains("Basic")) {
                     removeMapping.setVisibility(View.INVISIBLE);
@@ -171,14 +170,6 @@ public class ActivitySettings extends AppCompatActivity {
             public void onClick(View v) {
                 currentGeneralSetting.put('O', !currentGeneralSetting.get('O'));
                 setSettingButtonText(orientationSetting, 'O');
-                orientationDescription.setVisibility(View.VISIBLE);
-                final Handler setInvisibleHandler = new Handler();
-                setInvisibleHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        orientationDescription.setVisibility(View.GONE);
-                    }
-                }, 8000);
                 modification = true;
             }
         });
@@ -188,14 +179,6 @@ public class ActivitySettings extends AppCompatActivity {
             public void onClick(View v) {
                 currentGeneralSetting.put('S', !currentGeneralSetting.get('S'));
                 setSettingButtonText(scrollModeSetting, 'S');
-                scrollModeDescription.setVisibility(View.VISIBLE);
-                final Handler setInvisibleHandler = new Handler();
-                setInvisibleHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        scrollModeDescription.setVisibility(View.GONE);
-                    }
-                }, 8000);
                 modification = true;
             }
         });
@@ -205,14 +188,6 @@ public class ActivitySettings extends AppCompatActivity {
             public void onClick(View v) {
                 currentGeneralSetting.put('T', !currentGeneralSetting.get('T'));
                 setSettingButtonText(touchWarningSetting, 'T');
-                touchWarningDescription.setVisibility(View.VISIBLE);
-                final Handler setInvisibleHandler = new Handler();
-                setInvisibleHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        touchWarningDescription.setVisibility(View.GONE);
-                    }
-                }, 8000);
                 modification = true;
             }
         });
@@ -226,7 +201,7 @@ public class ActivitySettings extends AppCompatActivity {
                 byte combinedAction = data.getByteExtra("combinedAction", (byte) -1);
                 byte bundleAction = data.getByteExtra("bundleAction", (byte) -1);
                 String taskType = data.getStringExtra("taskType");
-                Controls.OutSettingDetail detail = Controls.getDetail(taskType);
+                Controls.OutControlDetail detail = Controls.OutControlDetail.correspondsTo(taskType);
                 currentSettings.put(combinedAction, detail.duplicate());
                 if (bundleAction != -1) {
                     currentSettings.put(bundleAction, detail.duplicate());
