@@ -1,3 +1,38 @@
 <resources>
     <string name="app_name">Touch Pad</string>
+
+    <!-- Default AlertDialog Title -->
+    <string name="warning">Warning</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="abort">Abort</string>
+
+    <!-- Controls -->
+        <string name="basicControl">(Basic Control)</string>
+        <string name="switchControl">Switch</string>
+        <string name="finger">Finger</string>
+
+        <!-- Action -->
+        <string name="tap">Tap</string>
+        <string name="move">Move</string>
+        <string name="longPress">Long Press</string>
+        <string name="moveLeft">Move Left</string>
+        <string name="moveRight">Move Right</string>
+        <string name="moveUp">Move Up</string>
+        <string name="moveDown">Move Down</string>
+
+        <!-- Task -->
+
+    <!-- ActivityAddNewMapping -->
+    <string name="currentSelected">Currently Selected</string>
+    <string name="selectTask">Select mapping action type</string>
+    <string name="setFingerNumDescription">Select number of finger(s) used in the action</string>
+    <string name="setActionDescription">Select finger action type\n (Same number of fingers cannot have event Move and event Move Left/Right/Up/Down at the same time)</string>
+    <string name="bindAdding">This will also assign</string>
+    <string name="to">to</string>
+    <string name="addMapping">Add following mapping?</string>
+
+    <string name="abortCurrent">Abort current mapping?</string>
+    <string name="select">Select</string>
+    <string name="replace">Replace</string>
 </resources>

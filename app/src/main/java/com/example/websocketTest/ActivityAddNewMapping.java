@@ -1,6 +1,5 @@
 package com.example.websocketTest;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -15,21 +14,59 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.Locale;
 import java.util.Set;
 
 public class ActivityAddNewMapping extends AppCompatActivity {
+    /**
+     * The composition of action and finger number.
+     * To see the action, see the Controls.java.
+     */
+    private byte actionFingerCount;
 
-    private byte combinedAction;
+    /**
+     * To see the task, see the Controls.java
+     */
     private String taskType;
+
+    /**
+     * The intent used to return to ActivitySettings when the adding mapping process finished or aborted.
+     */
     Intent returnIntent = new Intent();
-    private SparseArray<Controls.TaskDetail> currentSettings;
+
+    /**
+     * Current mapping of combined action to task.
+     */
+    private SparseArray<Controls.TaskDetail> currentMapping;
+
+    /**
+     * The AlertDialog posted when trying to exit this page.
+     */
     private AlertDialog.Builder exitDialog;
 
-    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_new_mapping);
+
+        currentMapping = Controls.getCurrentMapping();
+
+        // Initiate exiting AlertDialog
+        exitDialog = new AlertDialog.Builder(ActivityAddNewMapping.this)
+                .setTitle(R.string.warning)
+                .setMessage(R.string.abortCurrent)
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                })
+                .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        setResult(Activity.RESULT_CANCELED, returnIntent);
+                        finish();
+                    }
+                });
+
         Button abortAndBack = findViewById(R.id.abortAndBack);
         abortAndBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -37,115 +74,104 @@ public class ActivityAddNewMapping extends AppCompatActivity {
                 exitDialog.show();
             }
         });
-        currentSettings = Controls.getCurrentMapping();
-
-        exitDialog = new AlertDialog.Builder(ActivityAddNewMapping.this)
-                .setTitle("Warning")
-                .setMessage("Abort current mapping?")
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                    }
-                })
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface arg0, int arg1) {
-                        setResult(Activity.RESULT_CANCELED, returnIntent);
-                        finish();
-                    }
-                });
 
         final LinearLayout mappingSettings = findViewById(R.id.mappingSettings);
         final TextView currentChoiceDescription = findViewById(R.id.currentChoiceDescription);
         final TextView currentMappingInfo = findViewById(R.id.currentMappingInfo);
-        currentChoiceDescription.setText("\n Select number of finger(s) used in the action\n");
+        currentChoiceDescription.setText(String.format("\n %s\n", getString(R.string.setFingerNumDescription)));
         try {
-            for (int i = 2; i < 5; i++) {
-                final int fingerCount = i + 1;
+            for (int fingerCoding = 2; fingerCoding <= 5; fingerCoding++) {
+                final int fingerCount = fingerCoding;
                 final View numFingerSelection = getLayoutInflater().inflate(R.layout.chunk_mapping_setting,
                         mappingSettings, false);
                 final TextView numOfFingers = numFingerSelection.findViewById(R.id.descripiton);
                 final Button selectNumFingers = numFingerSelection.findViewById(R.id.performAction);
-                numOfFingers.setText(" " + fingerCount + " Finger");
-                selectNumFingers.setText("SELECT");
+                numOfFingers.setText(String.format(Locale.getDefault(), " %d %s", fingerCount, getString(R.string.finger)));
+                selectNumFingers.setText(R.string.select);
                 selectNumFingers.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        currentChoiceDescription.setText("\n Select finger action type\n"
-                                + "(Same number of fingers cannot have event Move and event Move Left/Right/Up/Down at the same time)");
-                        currentMappingInfo.setText(" Currently Selected\n  " + numOfFingers.getText());
-                        combinedAction = (byte) (fingerCount * 8);
+                        currentChoiceDescription.setText(String.format("\n %s\n", getString(R.string.setActionDescription)));
+                        currentMappingInfo.setText(String.format(" %s\n  %s", getString(R.string.currentSelected), numOfFingers.getText()));
+                        actionFingerCount = (byte) (fingerCount * 8);
                         mappingSettings.removeAllViews();
-                        for (int i = Controls.TAP; i <= Controls.MOVE_DOWN; i++) {
-                            if (i == Controls.MOVE || ((i == Controls.MOVE_LEFT || i == Controls.MOVE_RIGHT
-                                    || i == Controls.MOVE_UP || i == Controls.MOVE_DOWN)
-                                    && currentSettings.indexOfKey(combinedAction + Controls.MOVE) > -1)) {
+                        for (int actionCoding = Controls.TAP; actionCoding <= Controls.MOVE_DOWN; actionCoding++) {
+                            final int action = actionCoding;
+
+                            if (action == Controls.MOVE || ((action == Controls.MOVE_LEFT || action == Controls.MOVE_RIGHT
+                                    || action == Controls.MOVE_UP || action == Controls.MOVE_DOWN)
+                                    && currentMapping.indexOfKey(actionFingerCount + Controls.MOVE) > -1)) {
                                 continue;
                             }
 
-                            final int actionNum = i;
                             final View actionTypeSelection = getLayoutInflater().inflate(R.layout.chunk_mapping_setting,
                                     mappingSettings, false);
                             final TextView actionType = actionTypeSelection.findViewById(R.id.descripiton);
                             final Button selectActionType = actionTypeSelection.findViewById(R.id.performAction);
-                            actionType.setText(" " + Controls.getReadableDefinedAction((byte) i, null));
-                            if (currentSettings.get(combinedAction + i) != null) {
-                                selectActionType.setText("REPLACE");
+                            actionType.setText(String.format(" %s", Controls.getReadableDefinedAction((byte) action, null)));
+                            if (currentMapping.get(actionFingerCount + action) != null) {
+                                selectActionType.setText(R.string.replace);
                             } else {
-                                selectActionType.setText("SELECT");
+                                selectActionType.setText(R.string.select);
                             }
                             selectActionType.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    currentChoiceDescription.setText("\n Select mapping action type\n");
-                                    currentMappingInfo.setText("" + currentMappingInfo.getText() + actionType.getText());
-                                    combinedAction += actionNum;
+                                    currentChoiceDescription.setText(String.format("\n %s\n", getString(R.string.selectTask)));
+                                    currentMappingInfo.setText(String.format("%s %s", currentMappingInfo.getText(), actionType.getText()));
+                                    final byte combinedAction = (byte) (actionFingerCount + action);
                                     mappingSettings.removeAllViews();
                                     Set<String> allActions = Controls.getAllOuterControls();
-                                    for (final String action : allActions) {
-                                        final String readableAction = Controls.getReadableTask(action);
-                                        if (readableAction.contains("Basic")
-                                                || readableAction.contains("Switch") && (actionNum != Controls.MOVE_LEFT && actionNum != Controls.MOVE_RIGHT)) {
+                                    for (final String individualAction : allActions) {
+                                        final String readableAction = Controls.getReadableTask(individualAction);
+                                        if (readableAction.contains(getString(R.string.basicControl))
+                                                || readableAction.contains(getString(R.string.switchControl)) && (action != Controls.MOVE_LEFT && action != Controls.MOVE_RIGHT)) {
                                             continue;
                                         }
-                                        final View mappingActionTypeSelection = getLayoutInflater().inflate(R.layout.chunk_mapping_setting,
+                                        final View taskTypeSelection = getLayoutInflater().inflate(R.layout.chunk_mapping_setting,
                                                 mappingSettings, false);
-                                        final TextView mappingActionType = mappingActionTypeSelection.findViewById(R.id.descripiton);
-                                        final Button selectMappingActionType = mappingActionTypeSelection.findViewById(R.id.performAction);
-                                        mappingActionType.setText(" " + readableAction);
-                                        selectMappingActionType.setText("SELECT");
-                                        selectMappingActionType.setOnClickListener(new View.OnClickListener() {
+                                        final TextView taskType = taskTypeSelection.findViewById(R.id.descripiton);
+                                        final Button selectTaskType = taskTypeSelection.findViewById(R.id.performAction);
+                                        taskType.setText(String.format(" %s", readableAction));
+                                        selectTaskType.setText(R.string.select);
+                                        selectTaskType.setOnClickListener(new View.OnClickListener() {
                                             @Override
                                             public void onClick(View v) {
-                                                taskType = action;
+                                                ActivityAddNewMapping.this.taskType = individualAction;
                                                 final String addition;
-                                                if (actionNum == Controls.MOVE_LEFT && readableAction.contains("Switch")) {
-                                                    addition = "This will also add " + fingerCount + " Finger Move Right to " + readableAction;
-                                                } else if (actionNum == Controls.MOVE_RIGHT && readableAction.contains("Switch")) {
-                                                    addition = "This will also add " + fingerCount + " Finger Move Left to " + readableAction;
+                                                boolean containsSwitch = readableAction.contains(getString(R.string.switchControl));
+                                                if (action == Controls.MOVE_LEFT && containsSwitch) {
+                                                    addition = String.format(Locale.getDefault(),
+                                                            "%s %d %s %s %s %s", getString(R.string.bindAdding), fingerCount, getString(R.string.finger),
+                                                            getString(R.string.moveRight), getString(R.string.to), readableAction);
+                                                } else if (action == Controls.MOVE_RIGHT && containsSwitch) {
+                                                    addition = String.format(Locale.getDefault(),
+                                                            "%s %d %s %s %s %s", getString(R.string.bindAdding), fingerCount, getString(R.string.finger),
+                                                            getString(R.string.moveLeft), getString(R.string.to), readableAction);
                                                 } else {
                                                     addition = "";
                                                 }
                                                 new AlertDialog.Builder(ActivityAddNewMapping.this)
-                                                        .setTitle("Confirm")
-                                                        .setMessage("Add following mapping?\n" + currentMappingInfo.getText() + " --- " + readableAction + "\n" + addition)
-                                                        .setNegativeButton("Abort", new DialogInterface.OnClickListener() {
+                                                        .setTitle(R.string.confirm)
+                                                        .setMessage(String.format("%s\n%s --- %s\n%s",getString(R.string.addMapping), currentMappingInfo.getText(), readableAction, addition))
+                                                        .setNegativeButton(R.string.abort, new DialogInterface.OnClickListener() {
                                                             @Override
                                                             public void onClick(DialogInterface dialog, int which) {
                                                                 setResult(Activity.RESULT_CANCELED, returnIntent);
                                                                 finish();
                                                             }
                                                         })
-                                                        .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                                                        .setNeutralButton(R.string.cancel, new DialogInterface.OnClickListener() {
                                                             @Override
                                                             public void onClick(DialogInterface dialog, int which) {
                                                             }
                                                         })
-                                                        .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                                                        .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                                                             public void onClick(DialogInterface arg0, int arg1) {
                                                                 returnIntent.putExtra("combinedAction", combinedAction);
-                                                                returnIntent.putExtra("taskType", taskType);
+                                                                returnIntent.putExtra("taskType", ActivityAddNewMapping.this.taskType);
                                                                 if (!addition.equals("")) {
-                                                                    if (actionNum == Controls.MOVE_LEFT) {
+                                                                    if (action == Controls.MOVE_LEFT) {
                                                                         returnIntent.putExtra("bundleAction", (byte) (combinedAction + 1));
                                                                     } else {
                                                                         returnIntent.putExtra("bundleAction", (byte) (combinedAction - 1));
@@ -157,7 +183,7 @@ public class ActivityAddNewMapping extends AppCompatActivity {
                                                         }).show();
                                             }
                                         });
-                                        mappingSettings.addView(mappingActionTypeSelection);
+                                        mappingSettings.addView(taskTypeSelection);
                                     }
                                 }
                             });
