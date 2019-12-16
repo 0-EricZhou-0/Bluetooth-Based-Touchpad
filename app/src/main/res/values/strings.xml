@@ -23,6 +23,13 @@
 
         <!-- Task -->
 
+
+    <!-- activity_setting.xml -->
+    <string name="setting">Setting</string>
+    <string name="generalSetting">General Setting</string>
+    <string name="mappingControl">Mapping</string>
+
+
     <!-- ActivityAddNewMapping -->
     <string name="currentSelected">Currently Selected</string>
     <string name="selectTask">Select mapping action type</string>

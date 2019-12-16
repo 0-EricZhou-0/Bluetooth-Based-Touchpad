@@ -31,7 +31,7 @@ class Controls {
     private static HashMap<String, TaskDetail> taskDetail = new HashMap<>();
 
     /**
-     * To be refactored, will be mapping from String which describes the setting to Boolean which describes its current setting
+     * To be refactored, will be mapping from string which describes the setting to Boolean which describes its current setting
      */
     private static SparseBooleanArray generalSettings = new SparseBooleanArray();
 
@@ -50,18 +50,18 @@ class Controls {
     /**
      * Get the readable description corresponds to the task.
      *
-     * @param taskType The String representing the task.
-     * @return String which describes the function of the task.
+     * @param taskType the string representing the task
+     * @return string which describes the function of the task
      */
     static String getReadableTask(String taskType) {
         return Objects.requireNonNull(taskDetail.get(taskType)).getDescription();
     }
 
     /**
-     * Return the representation String of all tasks  supported now, and which descriptions are not null.
+     * Return the representation string of all tasks  supported now, and which descriptions are not null.
      * Description is null indicates that the action is a functional action, which user does not need to see.
      *
-     * @return A set of Strings representing the task.
+     * @return a set of Strings representing the task
      */
     static Set<String> getAllTasks() {
         Set<String> toReturn = new TreeSet<>();
@@ -81,46 +81,117 @@ class Controls {
             return taskDetail.get(outerControl);
         }
 
+        /**
+         * string representation of task.
+         */
         private String task;
+
+        /**
+         * Readable description of the task.
+         */
         private String description;
+
+        /**
+         * Can the task be repeated.
+         * For example, switching applications can be repeated, since it can be repeated under one
+         * complete cycle of touch (from touch to release). However, return to desktop cannot be
+         * repeated, since under each cycle the task can be only performed once.
+         */
         private boolean canBeRepeated;
 
+        /**
+         * Constructing a new detail using the representation string, description and a boolean describing
+         * can it be repeated.
+         *
+         * @param setTask        task representation string
+         * @param setDescription description of the task
+         * @param repeat         can the task be repeated
+         */
         TaskDetail(String setTask, String setDescription, boolean repeat) {
             task = setTask;
             description = setDescription;
             canBeRepeated = repeat;
         }
 
+        /**
+         * Get a duplication of the detail.
+         *
+         * @return a duplication of the detail
+         */
         TaskDetail duplicate() {
             return new TaskDetail(task, description, canBeRepeated);
         }
 
+        /**
+         * Get the representation string of the task.
+         *
+         * @return representation string of the task
+         */
         String getTask() {
             return task;
         }
 
+        /**
+         * Get the description of the task.
+         *
+         * @return description of the task
+         */
         String getDescription() {
             return description;
         }
 
+        /**
+         * Get a boolean representing if the action can be repeated.
+         *
+         * @return can the action be repeated
+         */
         boolean getCanBeRepeated() {
             return canBeRepeated;
         }
 
+        /**
+         * Adding the detail to the mapping for it to be functional, used when initialization
+         *
+         * @return the detail itself
+         */
         TaskDetail add() {
             taskDetail.put(task, this);
             return this;
         }
 
-        // Warning, this method should not be used to modify the final variables.
+        /**
+         * Used when running touch pad, once the boolean representation is modified to false, it indicates
+         * the task cannot be done again until the user starts another cycle of touch event.
+         * <p>
+         * Warning, this method should not be used to modify the ORIGINAL detail, all the modifications
+         * should be done on a duplication of the detail.
+         *
+         * @param repeat can the action be repeated
+         */
         void setCanBeRepeated(boolean repeat) {
             canBeRepeated = repeat;
         }
     }
 
+    /**
+     * The class storing the description of every general setting.
+     */
+    static class SettingDetail {
+        private String description;
+        private View.OnClickListener listener;
+
+    }
+
+    /**
+     * The size of the phone screen, used when cursor move state is absolute.
+     */
     static CoordinatePair phoneScreenSize;
 
-    // Inner Controls
+
+    /* All the inner control.
+    Inner controls responsible for transmitting data inside the application, to send the data, a
+    translation os inner control to outer control is required. */
+    // Action
     static final byte TAP = 0b000;                  //0
     static final byte MOVE = 0b001;                 //1
     static final byte LONG_PRESS = 0b010;           //2
@@ -129,7 +200,7 @@ class Controls {
     static final byte MOVE_UP = 0b101;              //5
     static final byte MOVE_DOWN = 0b110;            //6
     static final byte DOUBLE_TAP = 0b111;           //7
-
+    // Action Finger Count
     static final byte SINGLE_FINGER = 0b1000;       //8
     static final byte TWO_FINGERS = 0b10000;        //16
     static final byte THREE_FINGERS = 0b11000;      //24
@@ -142,26 +213,39 @@ class Controls {
     static final byte TEN_FINGERS = 0b1010000;      //80 Not recommended
     static final byte HEARTBEAT_ACTION = 0b1011000; //88 Not recommended
     static final byte MOVE_CANCEL = 0b1100000;      //96 Not recommended
+    /* The Combined Action is the combination of one Action and one Action FingerCount.
+    It represents the action that user did on the screen. */
 
-    // Functional controls
+    // Functional outer controls
     private static final TaskDetail CANCEL_LAST_ACTION = new TaskDetail("N", null, true);
     private static final TaskDetail HEARTBEAT = new TaskDetail("H", null, true);
     static final TaskDetail ACTION_NOT_FOUND = new TaskDetail("W", null, false);
 
-
+    // Coordinate pairs used in comparisons
     static final CoordinatePair NOT_STARTED = new CoordinatePair(-1, -1);
     static final CoordinatePair ZERO = new CoordinatePair(0, 0);
 
+    /**
+     * Used when adding functional outer controls to the mapping for them to be functional.
+     *
+     * @param details all the functional outer controls
+     */
     private static void addMapping(TaskDetail... details) {
         for (TaskDetail detail : details) {
             detail.add();
         }
     }
 
+    /**
+     * Initialize all the outer controls. If there is a file stored in the device which describes the
+     * mapping, read the file for mapping; otherwise, use default mapping.
+     */
     static void init(Context setContext) {
         context = setContext;
 
-        //Outer Controls
+        /* All the outer control.
+        Outer controls are responsible for transmission and adding new mapping. Each outer control
+        corresponds to a combination of inner controls. */
         TaskDetail CLICK = new TaskDetail("C", "Click " + context.getString(R.string.basicControl), false).add();
         TaskDetail RIGHT_CLICK = new TaskDetail("R", "Right Click " + context.getString(R.string.basicControl), false).add();
         TaskDetail DOUBLE_CLICK = new TaskDetail("G", "Double Click " + context.getString(R.string.basicControl), false).add();
@@ -187,24 +271,22 @@ class Controls {
         TaskDetail ACTION_EXITING_TOUCH_PAD = new TaskDetail("I", "Exiting Touch Pad " + context.getString(R.string.basicControl), false).add();
         TaskDetail ACTION_ENTERING_SETTING = new TaskDetail("E", "Entering Setting " + context.getString(R.string.basicControl), false).add();
 
+        // Functional inner controls
+        addMapping(CANCEL_LAST_ACTION, HEARTBEAT, ACTION_NOT_FOUND);
+
         // General generalSettings (to be refactored)
         settingsButtonDescription.put('O', "TOUCH PAD ORIENTATION");
         settingsButtonDescription.put('S', "SCROLL MODE");
         settingsButtonDescription.put('T', "TOUCH WARNING");
         settingsButtonDescription.put('C', "CURSOR MODE");
 
-        // These two will not be reached by the identifyAndSend method
-        addMapping(ACTION_EXITING_TOUCH_PAD, ACTION_ENTERING_SETTING);
-
-        // Functional controls
-        addMapping(CANCEL_LAST_ACTION, HEARTBEAT, ACTION_NOT_FOUND);
 
         try {
             // Try to load the json file
             loadJsonFile();
         } catch (FileNotFoundException e) {
             // If the file does not exist
-            // The default actionToTask
+            // The default mapping
             actionToTask.append(SINGLE_FINGER + TAP, CLICK);
             actionToTask.append(SINGLE_FINGER + DOUBLE_TAP, DOUBLE_CLICK);
             actionToTask.append(TWO_FINGERS + TAP, RIGHT_CLICK);
@@ -232,6 +314,11 @@ class Controls {
         }
     }
 
+    /**
+     * Get the current mapping from action to task. All functional outer controls are excluded.
+     *
+     * @return current mapping
+     */
     static SparseArray<TaskDetail> getCurrentMapping() {
         SparseArray<TaskDetail> toReturn = new SparseArray<>();
         for (int i = 0; i < actionToTask.size(); i++) {
@@ -241,12 +328,22 @@ class Controls {
         return toReturn;
     }
 
+    /**
+     * Change current mapping.
+     *
+     * @param newMapping new mapping SparseArray.
+     */
     static void remapping(SparseArray<TaskDetail> newMapping) {
         actionToTask = newMapping;
         PermanentConnection.TouchEventMappingControl.updateMapping();
         saveJsonFile();
     }
 
+    /**
+     * Change current cursor move mode to specified mode.
+     *
+     * @param isRelative boolean value states whether cursor move state is relative or not
+     */
     static void changeCursorMoveMode(boolean isRelative) {
         if (isRelative) {
             actionToTask.put(SINGLE_FINGER + MOVE, taskDetail.get("M"));
@@ -257,13 +354,26 @@ class Controls {
         saveJsonFile();
     }
 
+    /**
+     * Change current general setting.
+     * (To be implemented)
+     *
+     * @param newGeneralSetting new general setting ArrayList
+     */
     static void resetting(SparseBooleanArray newGeneralSetting) {
         generalSettings = newGeneralSetting;
     }
 
+    /**
+     * Load the settings from local json file "settingDetails.json".
+     * <p>
+     * After loading, actionToTask and generalSettings will be modified according to the file.
+     *
+     * @throws FileNotFoundException
+     */
     private static void loadJsonFile() throws FileNotFoundException {
         StringBuilder stringBuilder = new StringBuilder();
-        InputStreamReader inputStreamReader = new InputStreamReader(context.openFileInput("mappingDetails.json"), StandardCharsets.UTF_8);
+        InputStreamReader inputStreamReader = new InputStreamReader(context.openFileInput("settingDetails.json"), StandardCharsets.UTF_8);
         try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
             String line = reader.readLine();
             while (line != null) {
@@ -303,6 +413,11 @@ class Controls {
         }
     }
 
+    /**
+     * Save the settings to local json file "settingDetails.json".
+     * <p>
+     * Mapping info comes from actionToTask and general setting info comes from generalSettings.
+     */
     private static void saveJsonFile() {
         JsonObject toSave = new JsonObject();
 
@@ -330,7 +445,7 @@ class Controls {
         toSave.add("generalSettings", generalSettings);
 
         try {
-            FileOutputStream outputStreamWriter = context.openFileOutput("mappingDetails.json", Context.MODE_PRIVATE);
+            FileOutputStream outputStreamWriter = context.openFileOutput("settingDetails.json", Context.MODE_PRIVATE);
             outputStreamWriter.write(toSave.toString().getBytes());
             outputStreamWriter.close();
         } catch (IOException e) {
@@ -338,6 +453,9 @@ class Controls {
         }
     }
 
+    /**
+     * Set the current window state to be maximized.
+     */
     static void maximumWindow(View decorView) {
         decorView.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_IMMERSIVE
@@ -348,6 +466,7 @@ class Controls {
                         | View.SYSTEM_UI_FLAG_FULLSCREEN);
     }
 
+    // To be refactored, will be combined into settingDetail
     static String getButtonDescription(char setting) {
         return settingsButtonDescription.get(setting);
     }
@@ -360,11 +479,21 @@ class Controls {
         generalSettings = newSettings;
     }
 
+    /**
+     * Get description by combined action and a taskDetail instance.
+     * <p>
+     * If input action instead of combined action, the method will only return the readable description
+     * of the action, and the detail is ignored. Otherwise, it will return the full description.
+     *
+     * @param combinedAction byte representation of specified combined action or action
+     * @param detail         corresponding detail
+     * @return readable string describing the mapping
+     */
     static String getReadableDefinedAction(byte combinedAction, TaskDetail detail) {
         int numFingers = combinedAction / 8;
         int action = combinedAction % 8;
         if (numFingers > 10) {
-            return null;
+            throw new IllegalArgumentException("Number of fingers cannot exceed 10, the number of finger requested is " + numFingers);
         }
         String toReturn;
         if (numFingers == 0) {
