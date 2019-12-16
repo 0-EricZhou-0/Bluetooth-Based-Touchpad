@@ -121,7 +121,7 @@ public class ActivityAddNewMapping extends AppCompatActivity {
                                     currentMappingInfo.setText(String.format("%s %s", currentMappingInfo.getText(), actionType.getText()));
                                     final byte combinedAction = (byte) (actionFingerCount + action);
                                     mappingSettings.removeAllViews();
-                                    Set<String> allActions = Controls.getAllOuterControls();
+                                    Set<String> allActions = Controls.getAllTasks();
                                     for (final String individualAction : allActions) {
                                         final String readableAction = Controls.getReadableTask(individualAction);
                                         if (readableAction.contains(getString(R.string.basicControl))

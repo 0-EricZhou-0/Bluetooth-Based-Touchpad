@@ -234,13 +234,15 @@ public class ActivityTouchPad extends AppCompatActivity implements
                             eventGroup[0].startEvent(currentX, currentY);
                         } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
                             CoordinatePair pair = eventGroup[0].moveTo(currentX, currentY);
-                            int deltaX = (int) pair.getX();
-                            int deltaY = (int) pair.getY();
                             if (!pair.equals(ZERO)) {
                                 if (cursorMode) {
+                                    int deltaX = (int) pair.getX();
+                                    int deltaY = (int) pair.getY();
                                     PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), deltaX, deltaY);
                                 } else {
-                                    PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), (int) currentX, (int) currentY);
+                                    int targetX = (int) ((currentX * 0.9 / Controls.phoneScreenSize.getX() + 0.05) * 10000);
+                                    int targetY = (int) ((currentY * 0.9 / Controls.phoneScreenSize.getY() + 0.05) * 10000);
+                                    PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), targetX, targetY);
                                 }
                             }
                         }
@@ -510,8 +512,8 @@ public class ActivityTouchPad extends AppCompatActivity implements
         if (cursorMode) {
             PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.TAP));
         } else {
-            int targetX = (int) (event.getRawX() / Controls.phoneScreenSize.getX() * Controls.targetScreenSize.getX());
-            int targetY = (int) (event.getRawY() / Controls.phoneScreenSize.getY() * Controls.targetScreenSize.getX());
+            int targetX = (int) (event.getRawX() / Controls.phoneScreenSize.getX() * 10000);
+            int targetY = (int) (event.getRawY() / Controls.phoneScreenSize.getY() * 10000);
             PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), targetX, targetY);
             PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.TAP));
         }

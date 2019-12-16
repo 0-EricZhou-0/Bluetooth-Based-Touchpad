@@ -18,27 +18,70 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Set;
 
 class Controls {
+
+    /**
+     * Mapping task to its own TaskDetail.
+     */
     private static HashMap<String, TaskDetail> taskDetail = new HashMap<>();
+
+    /**
+     * To be refactored, will be combined to TaskDetail.
+     */
     private static HashMap<String, String> taskToReadableTask = new HashMap<>();
+
+    /**
+     * To be refactored, will be mapping from String which describes the setting to Boolean which describes its current setting
+     */
+    private static SparseBooleanArray generalSettings = new SparseBooleanArray();
+
+    /**
+     * To be refactored, will be combined to generalSetting detail
+     */
+    private static SparseArray<String> settingsButtonDescription = new SparseArray<>();
+
+    /**
+     * Mapping action (inner control) to task (outer control).
+     */
     private static SparseArray<TaskDetail> actionToTask = new SparseArray<>();
     @SuppressLint("StaticFieldLeak")
     private static Context context;
 
+    /**
+     * Get the TaskDetail instance corresponds to the task.
+     *
+     * @param taskType The String representing the task.
+     * @return TaskDetail instance corresponds to the task.
+     */
     static TaskDetail getDetail(String taskType) {
         return taskDetail.get(taskType);
     }
 
+    /**
+     * Get the readable description corresponds to the task.
+     *
+     * @param taskType The String representing the task.
+     * @return String which describes the function of the task.
+     */
     static String getReadableTask(String taskType) {
         return taskToReadableTask.get(taskType);
     }
 
-    static Set<String> getAllOuterControls() {
-        return taskToReadableTask.keySet();
+    /**
+     * Return the representation String of all tasks supported now
+     *
+     * @return A set of Strings representing the task.
+     */
+    static Set<String> getAllTasks() {
+        return taskDetail.keySet();
     }
 
+    /**
+     * The class storing the description of every task.
+     */
     static class TaskDetail {
         static TaskDetail correspondsTo(String outerControl) {
             return taskDetail.get(outerControl);
@@ -71,7 +114,6 @@ class Controls {
     }
 
     static CoordinatePair phoneScreenSize;
-    static CoordinatePair targetScreenSize;
 
     // Inner Controls
     static final byte TAP = 0b000;                  //0
@@ -99,7 +141,8 @@ class Controls {
     //Outer Controls
     private static final TaskDetail CLICK = new TaskDetail("C", false);
     private static final TaskDetail RIGHT_CLICK = new TaskDetail("R", false);
-    private static final TaskDetail MOVE_CURSOR = new TaskDetail("M", true);
+    private static final TaskDetail MOVE_CURSOR_RELATIVE = new TaskDetail("M", true);
+    private static final TaskDetail MOVE_CURSOR_ABSOLUTE = new TaskDetail("J", true);
     private static final TaskDetail SELECT = new TaskDetail("S", false);
     private static final TaskDetail SCROLL = new TaskDetail("L", true);
     private static final TaskDetail RETURN_TO_DESKTOP = new TaskDetail("D", false);
@@ -127,19 +170,17 @@ class Controls {
     static final CoordinatePair NOT_STARTED = new CoordinatePair(-1, -1);
     static final CoordinatePair ZERO = new CoordinatePair(0, 0);
 
-    private static SparseBooleanArray settings = new SparseBooleanArray();
-    private static SparseArray<String> settingsButtonDescription = new SparseArray<>();
-
 
     private static void addControl(TaskDetail detail, String description) {
         taskDetail.put(detail.getOuterControl(), detail);
         taskToReadableTask.put(detail.getOuterControl(), description);
     }
+
     static void init(Context setContext) {
         context = setContext;
 
 
-        // General settings (to be refactored)
+        // General generalSettings (to be refactored)
         settingsButtonDescription.put('O', "TOUCH PAD ORIENTATION");
         settingsButtonDescription.put('S', "SCROLL MODE");
         settingsButtonDescription.put('T', "TOUCH WARNING");
@@ -149,7 +190,8 @@ class Controls {
         addControl(CLICK, "Click (Basic Control)");
         addControl(RIGHT_CLICK, "Right Click (Basic Control)");
         addControl(DOUBLE_CLICK, "Double Click (Basic Control)");
-        addControl(MOVE_CURSOR, "Move Cursor (Basic Control)");
+        addControl(MOVE_CURSOR_RELATIVE, "Move Cursor (Relative) (Basic Control)");
+        addControl(MOVE_CURSOR_ABSOLUTE, "Move Cursor (Absolute) (Basic Control)");
         addControl(SELECT, "Select (Basic Control)");
         addControl(SCROLL, "Scroll (Basic Control)");
         addControl(RETURN_TO_DESKTOP, "Return to Desktop");
@@ -162,7 +204,7 @@ class Controls {
         addControl(CUT, "Cut");
         // This list can be extended
         // DO NOT FORGET TO ADD DESCRIPTION HERE!!! Otherwise the newly added control will not work.
-        // If the description contains "Basic", it will not be allowed to be modified in the settings
+        // If the description contains "Basic", it will not be allowed to be modified in the generalSettings
 
         // These two will not be reached by the identifyAndSend method
         addControl(ACTION_EXITING_TOUCH_PAD, "Exiting Touch Pad (Basic Control)");
@@ -182,7 +224,7 @@ class Controls {
             actionToTask.append(SINGLE_FINGER + TAP, CLICK);
             actionToTask.append(SINGLE_FINGER + DOUBLE_TAP, DOUBLE_CLICK);
             actionToTask.append(TWO_FINGERS + TAP, RIGHT_CLICK);
-            actionToTask.append(SINGLE_FINGER + MOVE, MOVE_CURSOR);
+            actionToTask.append(SINGLE_FINGER + MOVE, MOVE_CURSOR_RELATIVE);
             actionToTask.append(SINGLE_FINGER + LONG_PRESS, SELECT);
             actionToTask.append(TWO_FINGERS + MOVE, SCROLL);
             actionToTask.append(THREE_FINGERS + MOVE_DOWN, RETURN_TO_DESKTOP);
@@ -195,11 +237,11 @@ class Controls {
             actionToTask.append(MOVE_CANCEL, CANCEL_LAST_ACTION);
             actionToTask.append(HEARTBEAT_ACTION, HEARTBEAT);
 
-            // Adding general settings (to be refactored)
-            settings.put('O', true);     // Orientation
-            settings.put('S', true);     // Scroll Mode
-            settings.put('T', true);     // Touch Warning
-            settings.put('C', true);     // Cursor Mode
+            // Adding general generalSettings (to be refactored)
+            generalSettings.put('O', true);     // Orientation
+            generalSettings.put('S', true);     // Scroll Mode
+            generalSettings.put('T', true);     // Touch Warning
+            generalSettings.put('C', true);     // Cursor Mode
 
             // Save the default actionToTask file
             saveJsonFile();
@@ -219,6 +261,20 @@ class Controls {
         actionToTask = newMapping;
         PermanentConnection.TouchEventMappingControl.updateMapping();
         saveJsonFile();
+    }
+
+    static void changeCursorMoveMode(boolean isRelative) {
+        if (isRelative) {
+            actionToTask.put(SINGLE_FINGER + MOVE, MOVE_CURSOR_RELATIVE);
+        } else {
+            actionToTask.put(SINGLE_FINGER + MOVE, MOVE_CURSOR_ABSOLUTE);
+        }
+        PermanentConnection.TouchEventMappingControl.updateMapping();
+        saveJsonFile();
+    }
+
+    static void resetting(SparseBooleanArray newGeneralSetting) {
+        generalSettings = newGeneralSetting;
     }
 
     private static void loadJsonFile() throws FileNotFoundException {
@@ -253,13 +309,13 @@ class Controls {
             actionToTask.put(combinedAction, getDetail(outerControl));
         }
 
-        settings.clear();
+        generalSettings.clear();
         JsonArray generalSettings = (JsonArray) jsonObject.get("generalSettings");
         for (JsonElement o : generalSettings) {
             JsonObject individualSetting = (JsonObject) o;
             int setting = individualSetting.get("individualSetting").getAsInt();
             boolean status = individualSetting.get("status").getAsBoolean();
-            settings.put(setting, status);
+            Controls.generalSettings.put(setting, status);
         }
     }
 
@@ -278,10 +334,10 @@ class Controls {
         }
         toSave.add("mappingControls", mappingControls);
         JsonArray generalSettings = new JsonArray();
-        for (int i = 0; i < settings.size(); i++) {
+        for (int i = 0; i < Controls.generalSettings.size(); i++) {
             JsonObject individualSetting = new JsonObject();
-            int setting = settings.keyAt(i);
-            boolean status = settings.valueAt(i);
+            int setting = Controls.generalSettings.keyAt(i);
+            boolean status = Controls.generalSettings.valueAt(i);
             individualSetting.addProperty("individualSetting", setting);
             individualSetting.addProperty("status", status);
             generalSettings.add(individualSetting);
@@ -312,11 +368,11 @@ class Controls {
     }
 
     static SparseBooleanArray getCurrentSettingStatus() {
-        return settings;
+        return generalSettings;
     }
 
     static void setCurrentSettingStatus(SparseBooleanArray newSettings) {
-        settings = newSettings;
+        generalSettings = newSettings;
     }
 
     static String getReadableDefinedAction(byte combinedAction, TaskDetail detail) {
@@ -325,31 +381,33 @@ class Controls {
         if (numFingers > 10) {
             return null;
         }
-        String toReturn = "  " + numFingers + " Finger ";
+        String toReturn;
         if (numFingers == 0) {
             toReturn = "";
+        } else {
+            toReturn = String.format(Locale.getDefault(), "  %d %s ", numFingers, context.getString(R.string.finger));
         }
         switch (action) {
             case TAP:
-                toReturn += "Tap";
+                toReturn += context.getString(R.string.tap);
                 break;
             case MOVE:
-                toReturn += "Move";
+                toReturn += context.getString(R.string.move);
                 break;
             case LONG_PRESS:
-                toReturn += "Long Press";
+                toReturn += context.getString(R.string.longPress);
                 break;
             case MOVE_LEFT:
-                toReturn += "Move Left";
+                toReturn += context.getString(R.string.moveLeft);
                 break;
             case MOVE_RIGHT:
-                toReturn += "Move Right";
+                toReturn += context.getString(R.string.moveRight);
                 break;
             case MOVE_UP:
-                toReturn += "Move Up";
+                toReturn += context.getString(R.string.moveUp);
                 break;
             case MOVE_DOWN:
-                toReturn += "Move Down";
+                toReturn += context.getString(R.string.moveDown);
                 break;
         }
         if (numFingers == 0) {
@@ -362,7 +420,7 @@ class Controls {
     static String getSetting(SparseBooleanArray settingsArray, char setting) {
         boolean status;
         if (settingsArray == null) {
-            status = settings.get(setting);
+            status = generalSettings.get(setting);
         } else {
             status = settingsArray.get(setting);
         }

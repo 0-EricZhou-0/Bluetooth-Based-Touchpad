@@ -42,13 +42,9 @@ public class PermanentConnection {
                 outWriter = new PrintWriter(new OutputStreamWriter(outStream));
 
                 String lineIn = inReader.readLine();
-                String[] params = lineIn.split(" ");
-                if (!params[0].equals("CONNECTED")) {
+                if (!lineIn.equals("CONNECTED")) {
                     throw new IllegalArgumentException("MESSAGE ERROR");
                 }
-                int targetScreenWidth = Integer.parseInt(params[1]);
-                int targetScreenHeight = Integer.parseInt(params[2]);
-                Controls.targetScreenSize = new CoordinatePair(targetScreenWidth, targetScreenHeight);
                 // heartbeat = new Heartbeat(3000, 3);
                 // heartbeat.start();
                 Intent intent = new Intent(context, ActivityConnected.class);

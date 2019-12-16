@@ -188,16 +188,20 @@ public class ActivitySettings extends AppCompatActivity {
             }
         });
 
-        // To be implemented
-        /*
         cursorModeSetting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                currentGeneralSetting.put('C', !currentGeneralSetting.get('C'));
+                boolean cursorMode = currentGeneralSetting.get('C');
+                currentGeneralSetting.put('C', !cursorMode);
+                if (cursorMode) {
+                    Controls.changeCursorMoveMode(false);
+                } else {
+                    Controls.changeCursorMoveMode(true);
+                }
                 setSettingButtonText(cursorModeSetting, 'C');
+                reload();
             }
         });
-         */
     }
 
     @Override
