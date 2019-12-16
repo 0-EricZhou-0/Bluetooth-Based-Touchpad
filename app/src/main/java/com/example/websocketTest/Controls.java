@@ -19,7 +19,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 
 class Controls {
 
@@ -27,11 +29,6 @@ class Controls {
      * Mapping task to its own TaskDetail.
      */
     private static HashMap<String, TaskDetail> taskDetail = new HashMap<>();
-
-    /**
-     * To be refactored, will be combined to TaskDetail.
-     */
-    private static HashMap<String, String> taskToReadableTask = new HashMap<>();
 
     /**
      * To be refactored, will be mapping from String which describes the setting to Boolean which describes its current setting
@@ -51,32 +48,29 @@ class Controls {
     private static Context context;
 
     /**
-     * Get the TaskDetail instance corresponds to the task.
-     *
-     * @param taskType The String representing the task.
-     * @return TaskDetail instance corresponds to the task.
-     */
-    static TaskDetail getDetail(String taskType) {
-        return taskDetail.get(taskType);
-    }
-
-    /**
      * Get the readable description corresponds to the task.
      *
      * @param taskType The String representing the task.
      * @return String which describes the function of the task.
      */
     static String getReadableTask(String taskType) {
-        return taskToReadableTask.get(taskType);
+        return Objects.requireNonNull(taskDetail.get(taskType)).getDescription();
     }
 
     /**
-     * Return the representation String of all tasks supported now
+     * Return the representation String of all tasks  supported now, and which descriptions are not null.
+     * Description is null indicates that the action is a functional action, which user does not need to see.
      *
      * @return A set of Strings representing the task.
      */
     static Set<String> getAllTasks() {
-        return taskDetail.keySet();
+        Set<String> toReturn = new TreeSet<>();
+        for (String s : taskDetail.keySet()) {
+            if (Objects.requireNonNull(taskDetail.get(s)).getDescription() != null) {
+                toReturn.add(s);
+            }
+        }
+        return toReturn;
     }
 
     /**
@@ -87,24 +81,35 @@ class Controls {
             return taskDetail.get(outerControl);
         }
 
-        private String outerControl;
+        private String task;
+        private String description;
         private boolean canBeRepeated;
 
-        TaskDetail(String outer, boolean repeat) {
-            outerControl = outer;
+        TaskDetail(String setTask, String setDescription, boolean repeat) {
+            task = setTask;
+            description = setDescription;
             canBeRepeated = repeat;
         }
 
         TaskDetail duplicate() {
-            return new TaskDetail(outerControl, canBeRepeated);
+            return new TaskDetail(task, description, canBeRepeated);
         }
 
-        String getOuterControl() {
-            return outerControl;
+        String getTask() {
+            return task;
+        }
+
+        String getDescription() {
+            return description;
         }
 
         boolean getCanBeRepeated() {
             return canBeRepeated;
+        }
+
+        TaskDetail add() {
+            taskDetail.put(task, this);
+            return this;
         }
 
         // Warning, this method should not be used to modify the final variables.
@@ -138,47 +143,49 @@ class Controls {
     static final byte HEARTBEAT_ACTION = 0b1011000; //88 Not recommended
     static final byte MOVE_CANCEL = 0b1100000;      //96 Not recommended
 
-    //Outer Controls
-    private static final TaskDetail CLICK = new TaskDetail("C", false);
-    private static final TaskDetail RIGHT_CLICK = new TaskDetail("R", false);
-    private static final TaskDetail MOVE_CURSOR_RELATIVE = new TaskDetail("M", true);
-    private static final TaskDetail MOVE_CURSOR_ABSOLUTE = new TaskDetail("J", true);
-    private static final TaskDetail SELECT = new TaskDetail("S", false);
-    private static final TaskDetail SCROLL = new TaskDetail("L", true);
-    private static final TaskDetail RETURN_TO_DESKTOP = new TaskDetail("D", false);
-    private static final TaskDetail ENABLE_TASK_MODE = new TaskDetail("T", false);
-    private static final TaskDetail SWITCH_APPLICATION = new TaskDetail("A", true);
-    private static final TaskDetail SWITCH_TAB = new TaskDetail("F", true);
-    private static final TaskDetail UNDO = new TaskDetail("B", false);
-    private static final TaskDetail COPY = new TaskDetail("O", false);
-    private static final TaskDetail PASTE = new TaskDetail("P", false);
-    private static final TaskDetail CUT = new TaskDetail("Q", false);
-    private static final TaskDetail DOUBLE_CLICK = new TaskDetail("G", false);
-    // This list can be extended
-    // DO NOT FORGET TO ADD DESCRIPTION BELOW!!!
-
-    // These two will not be reached by the identifyAndSend method
-    private static final TaskDetail ACTION_EXITING_TOUCH_PAD = new TaskDetail("I", false);
-    private static final TaskDetail ACTION_ENTERING_SETTING = new TaskDetail("E", false);
-
     // Functional controls
-    private static final TaskDetail CANCEL_LAST_ACTION = new TaskDetail("N", true);
-    private static final TaskDetail HEARTBEAT = new TaskDetail("H", true);
-    static final TaskDetail ACTION_NOT_FOUND = new TaskDetail("W", false);
+    private static final TaskDetail CANCEL_LAST_ACTION = new TaskDetail("N", null, true);
+    private static final TaskDetail HEARTBEAT = new TaskDetail("H", null, true);
+    static final TaskDetail ACTION_NOT_FOUND = new TaskDetail("W", null, false);
 
 
     static final CoordinatePair NOT_STARTED = new CoordinatePair(-1, -1);
     static final CoordinatePair ZERO = new CoordinatePair(0, 0);
 
-
-    private static void addControl(TaskDetail detail, String description) {
-        taskDetail.put(detail.getOuterControl(), detail);
-        taskToReadableTask.put(detail.getOuterControl(), description);
+    private static void addMapping(TaskDetail... details) {
+        for (TaskDetail detail : details) {
+            detail.add();
+        }
     }
 
     static void init(Context setContext) {
         context = setContext;
 
+        //Outer Controls
+        TaskDetail CLICK = new TaskDetail("C", "Click " + context.getString(R.string.basicControl), false).add();
+        TaskDetail RIGHT_CLICK = new TaskDetail("R", "Right Click " + context.getString(R.string.basicControl), false).add();
+        TaskDetail DOUBLE_CLICK = new TaskDetail("G", "Double Click " + context.getString(R.string.basicControl), false).add();
+        TaskDetail MOVE_CURSOR_RELATIVE = new TaskDetail("M", "Move Cursor (Relative) " + context.getString(R.string.basicControl), true).add();
+        TaskDetail MOVE_CURSOR_ABSOLUTE = new TaskDetail("J", "Move Cursor (Absolute) " + context.getString(R.string.basicControl), true).add();
+        TaskDetail SELECT = new TaskDetail("S", "Select " + context.getString(R.string.basicControl), false).add();
+        TaskDetail SCROLL = new TaskDetail("L", "Scroll " + context.getString(R.string.basicControl), true).add();
+        TaskDetail RETURN_TO_DESKTOP = new TaskDetail("D", "Return to Desktop", false).add();
+        TaskDetail ENABLE_TASK_MODE = new TaskDetail("T", "Enable Task Mode", false).add();
+        TaskDetail SWITCH_APPLICATION = new TaskDetail("A", "Switch Application", true).add();
+        TaskDetail SWITCH_TAB = new TaskDetail("F", "Switch Tab", true).add();
+        TaskDetail UNDO = new TaskDetail("B", "Undo", false).add();
+        TaskDetail COPY = new TaskDetail("O", "Copy", false).add();
+        TaskDetail PASTE = new TaskDetail("P", "Paste", false).add();
+        TaskDetail CUT = new TaskDetail("Q", "Cut", false).add();
+        /* This list can be extended
+        If the description contains R.string.BasicControl, it will not be allowed to be modified in the generalSettings
+        The format of any extension format is as follows:
+            TaskDetail NAME = new TaskDetail(stringRepresentation, stringDescription, canBeRepeated).add();     */
+
+
+        // These two will not be reached by the identifyAndSend method
+        TaskDetail ACTION_EXITING_TOUCH_PAD = new TaskDetail("I", "Exiting Touch Pad " + context.getString(R.string.basicControl), false).add();
+        TaskDetail ACTION_ENTERING_SETTING = new TaskDetail("E", "Entering Setting " + context.getString(R.string.basicControl), false).add();
 
         // General generalSettings (to be refactored)
         settingsButtonDescription.put('O', "TOUCH PAD ORIENTATION");
@@ -186,34 +193,11 @@ class Controls {
         settingsButtonDescription.put('T', "TOUCH WARNING");
         settingsButtonDescription.put('C', "CURSOR MODE");
 
-        // Adding description of each action can be done
-        addControl(CLICK, "Click (Basic Control)");
-        addControl(RIGHT_CLICK, "Right Click (Basic Control)");
-        addControl(DOUBLE_CLICK, "Double Click (Basic Control)");
-        addControl(MOVE_CURSOR_RELATIVE, "Move Cursor (Relative) (Basic Control)");
-        addControl(MOVE_CURSOR_ABSOLUTE, "Move Cursor (Absolute) (Basic Control)");
-        addControl(SELECT, "Select (Basic Control)");
-        addControl(SCROLL, "Scroll (Basic Control)");
-        addControl(RETURN_TO_DESKTOP, "Return to Desktop");
-        addControl(ENABLE_TASK_MODE, "Enable Task Mode");
-        addControl(SWITCH_APPLICATION, "Switch Application");
-        addControl(SWITCH_TAB, "Switch Tab");
-        addControl(UNDO, "Undo");
-        addControl(COPY, "Copy");
-        addControl(PASTE, "Paste");
-        addControl(CUT, "Cut");
-        // This list can be extended
-        // DO NOT FORGET TO ADD DESCRIPTION HERE!!! Otherwise the newly added control will not work.
-        // If the description contains "Basic", it will not be allowed to be modified in the generalSettings
-
         // These two will not be reached by the identifyAndSend method
-        addControl(ACTION_EXITING_TOUCH_PAD, "Exiting Touch Pad (Basic Control)");
-        addControl(ACTION_ENTERING_SETTING, "Entering Setting (Basic Control)");
+        addMapping(ACTION_EXITING_TOUCH_PAD, ACTION_ENTERING_SETTING);
 
         // Functional controls
-        taskDetail.put(CANCEL_LAST_ACTION.getOuterControl(), CANCEL_LAST_ACTION);
-        taskDetail.put(HEARTBEAT.getOuterControl(), HEARTBEAT);
-        taskDetail.put(ACTION_NOT_FOUND.getOuterControl(), ACTION_NOT_FOUND);
+        addMapping(CANCEL_LAST_ACTION, HEARTBEAT, ACTION_NOT_FOUND);
 
         try {
             // Try to load the json file
@@ -265,9 +249,9 @@ class Controls {
 
     static void changeCursorMoveMode(boolean isRelative) {
         if (isRelative) {
-            actionToTask.put(SINGLE_FINGER + MOVE, MOVE_CURSOR_RELATIVE);
+            actionToTask.put(SINGLE_FINGER + MOVE, taskDetail.get("M"));
         } else {
-            actionToTask.put(SINGLE_FINGER + MOVE, MOVE_CURSOR_ABSOLUTE);
+            actionToTask.put(SINGLE_FINGER + MOVE, taskDetail.get("J"));
         }
         PermanentConnection.TouchEventMappingControl.updateMapping();
         saveJsonFile();
@@ -305,8 +289,8 @@ class Controls {
         for (JsonElement o : mappingControls) {
             JsonObject individualMapping = (JsonObject) o;
             byte combinedAction = individualMapping.get("combinedAction").getAsByte();
-            String outerControl = individualMapping.get("outerControl").getAsString();
-            actionToTask.put(combinedAction, getDetail(outerControl));
+            String outerControl = individualMapping.get("task").getAsString();
+            actionToTask.put(combinedAction, taskDetail.get(outerControl));
         }
 
         generalSettings.clear();
@@ -325,11 +309,12 @@ class Controls {
         JsonArray mappingControls = new JsonArray();
         for (int i = 0; i < actionToTask.size(); i++) {
             JsonObject individualMapping = new JsonObject();
-            TaskDetail detail = Controls.getDetail(actionToTask.valueAt(i).getOuterControl());
+            TaskDetail detail = taskDetail.get(actionToTask.valueAt(i).getTask());
             byte combinedAction = (byte) actionToTask.keyAt(i);
-            String outerControl = detail.getOuterControl();
+            assert detail != null;
+            String outerControl = detail.getTask();
             individualMapping.addProperty("combinedAction", combinedAction);
-            individualMapping.addProperty("outerControl", outerControl);
+            individualMapping.addProperty("task", outerControl);
             mappingControls.add(individualMapping);
         }
         toSave.add("mappingControls", mappingControls);
@@ -413,7 +398,7 @@ class Controls {
         if (numFingers == 0) {
             return toReturn;
         }
-        return toReturn + " --- " + taskToReadableTask.get(detail.getOuterControl());
+        return toReturn + " --- " + detail.getDescription();
     }
 
 

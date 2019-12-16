@@ -89,9 +89,9 @@ public class PermanentConnection {
         static void identifyAndSend(byte innerAction, int[] parameters) {
             Controls.TaskDetail detail = mapping.get(innerAction);
             if (detail != null) {
-                String outerAction = detail.getOuterControl();
+                String outerAction = detail.getTask();
                 // Toast.makeText(context, innerAction + outerAction, Toast.LENGTH_LONG).show();
-                if (!outerAction.equals(Controls.ACTION_NOT_FOUND.getOuterControl())) {
+                if (!outerAction.equals(Controls.ACTION_NOT_FOUND.getTask())) {
                     if (!detail.getCanBeRepeated()) {
                         return;
                     }
