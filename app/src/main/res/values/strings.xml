@@ -6,6 +6,7 @@
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
     <string name="abort">Abort</string>
+    <string name="change">Change</string>
 
     <!-- Controls -->
         <string name="basicControl">(Basic Control)</string>
@@ -28,6 +29,24 @@
     <string name="setting">Setting</string>
     <string name="generalSetting">General Setting</string>
     <string name="mappingControl">Mapping</string>
+    <string name="orientation">Touch pad orientation</string>
+    <string name="vertical">Vertical</string>
+    <string name="horizontal">Horizontal</string>
+    <string name="cursorMode">Cursor Mode</string>
+    <string name="relative">Relative</string>
+    <string name="absolute">Absolute</string>
+    <string name="scrollMode">Scroll Mode</string>
+    <string name="forward">Forward</string>
+    <string name="reverse">Reverse</string>
+    <string name="touchWarning">Touch Warning</string>
+    <string name="enabled">Enabled</string>
+    <string name="disabled">Disabled</string>
+    <string name="orientationDescription">Orientation will only work in touch pad mode, the launch screen orientation will not be changed by this setting.</string>
+    <string name="cursorModeDescription">The mode used when controlling the cursor of a remote computer. Absolute indicates all the actions are directly mapped onto the computer, while relative indicates the touch pad is behaving like a real touch pad.</string>
+    <string name="scrollModeDescription">Normally, the setting for a computer run on Mac OS is FORWARD, and the scroll mode for a computer run on Windows is REVERSE</string>
+    <string name="touchWarningDescription">This controls if a warning message box is showed in any touchpad mode when the number of fingers detected on the screen is more than 5. (For accuracy reason, those events will be ignored.)</string>
+
+
 
 
     <!-- ActivityAddNewMapping -->

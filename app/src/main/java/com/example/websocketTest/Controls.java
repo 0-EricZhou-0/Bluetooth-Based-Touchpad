@@ -5,6 +5,7 @@ import android.content.Context;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.View;
+import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -17,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Objects;
@@ -29,6 +31,11 @@ class Controls {
      * Mapping task to its own TaskDetail.
      */
     private static HashMap<String, TaskDetail> taskDetail = new HashMap<>();
+
+    /**
+     * ArrayList storing all the settings.
+     */
+    private static ArrayList<SettingDetail> settingDetail = new ArrayList<>();
 
     /**
      * To be refactored, will be mapping from string which describes the setting to Boolean which describes its current setting
@@ -177,8 +184,36 @@ class Controls {
      * The class storing the description of every general setting.
      */
     static class SettingDetail {
-        private String description;
-        private View.OnClickListener listener;
+        private String settingDescription;
+        private String detailedDescription;
+        private int currentIdx;
+        private int[] allStates;
+
+        SettingDetail(String setSettingDescription, String setDetailedDescription, int setCurrentIdx,
+                      int... setAllStates) {
+            if (setCurrentIdx > setAllStates.length) {
+                throw new IllegalArgumentException(String.format(
+                        "Current index cannot exceed number of states. Try to access %d. But only have %d states.",
+                        setCurrentIdx, setAllStates.length));
+            }
+            settingDescription = setSettingDescription;
+            detailedDescription = setDetailedDescription;
+            currentIdx = setCurrentIdx;
+            allStates = setAllStates;
+        }
+
+        void setDescription(TextView description) {
+            description.setText(detailedDescription);
+        }
+
+        void changeSetting(TextView state, int idx) {
+            currentIdx = idx;
+            state.setText(String.format("%s : %s", settingDescription, context.getString(allStates[currentIdx])));
+        }
+
+        void add() {
+            settingDetail.add(this);
+        }
 
     }
 
@@ -246,21 +281,21 @@ class Controls {
         /* All the outer control.
         Outer controls are responsible for transmission and adding new mapping. Each outer control
         corresponds to a combination of inner controls. */
-        TaskDetail CLICK = new TaskDetail("C", "Click " + context.getString(R.string.basicControl), false).add();
-        TaskDetail RIGHT_CLICK = new TaskDetail("R", "Right Click " + context.getString(R.string.basicControl), false).add();
-        TaskDetail DOUBLE_CLICK = new TaskDetail("G", "Double Click " + context.getString(R.string.basicControl), false).add();
-        TaskDetail MOVE_CURSOR_RELATIVE = new TaskDetail("M", "Move Cursor (Relative) " + context.getString(R.string.basicControl), true).add();
-        TaskDetail MOVE_CURSOR_ABSOLUTE = new TaskDetail("J", "Move Cursor (Absolute) " + context.getString(R.string.basicControl), true).add();
-        TaskDetail SELECT = new TaskDetail("S", "Select " + context.getString(R.string.basicControl), false).add();
-        TaskDetail SCROLL = new TaskDetail("L", "Scroll " + context.getString(R.string.basicControl), true).add();
-        TaskDetail RETURN_TO_DESKTOP = new TaskDetail("D", "Return to Desktop", false).add();
-        TaskDetail ENABLE_TASK_MODE = new TaskDetail("T", "Enable Task Mode", false).add();
-        TaskDetail SWITCH_APPLICATION = new TaskDetail("A", "Switch Application", true).add();
-        TaskDetail SWITCH_TAB = new TaskDetail("F", "Switch Tab", true).add();
-        TaskDetail UNDO = new TaskDetail("B", "Undo", false).add();
-        TaskDetail COPY = new TaskDetail("O", "Copy", false).add();
-        TaskDetail PASTE = new TaskDetail("P", "Paste", false).add();
-        TaskDetail CUT = new TaskDetail("Q", "Cut", false).add();
+        TaskDetail click = new TaskDetail("C", "Click " + context.getString(R.string.basicControl), false).add();
+        TaskDetail rightClick = new TaskDetail("R", "Right Click " + context.getString(R.string.basicControl), false).add();
+        TaskDetail doubleClick = new TaskDetail("G", "Double Click " + context.getString(R.string.basicControl), false).add();
+        TaskDetail moveCursorRelative = new TaskDetail("M", "Move Cursor (Relative) " + context.getString(R.string.basicControl), true).add();
+        TaskDetail moveCursorAbsolute = new TaskDetail("J", "Move Cursor (Absolute) " + context.getString(R.string.basicControl), true).add();
+        TaskDetail select = new TaskDetail("S", "Select " + context.getString(R.string.basicControl), false).add();
+        TaskDetail scroll = new TaskDetail("L", "Scroll " + context.getString(R.string.basicControl), true).add();
+        TaskDetail returnToDesktop = new TaskDetail("D", "Return to Desktop", false).add();
+        TaskDetail enableTaskMode = new TaskDetail("T", "Enable Task Mode", false).add();
+        TaskDetail switchApplication = new TaskDetail("A", "Switch Application", true).add();
+        TaskDetail switchTab = new TaskDetail("F", "Switch Tab", true).add();
+        TaskDetail undo = new TaskDetail("B", "Undo", false).add();
+        TaskDetail copy = new TaskDetail("O", "Copy", false).add();
+        TaskDetail paste = new TaskDetail("P", "Paste", false).add();
+        TaskDetail cut = new TaskDetail("Q", "Cut", false).add();
         /* This list can be extended
         If the description contains R.string.BasicControl, it will not be allowed to be modified in the generalSettings
         The format of any extension format is as follows:
@@ -268,11 +303,20 @@ class Controls {
 
 
         // These two will not be reached by the identifyAndSend method
-        TaskDetail ACTION_EXITING_TOUCH_PAD = new TaskDetail("I", "Exiting Touch Pad " + context.getString(R.string.basicControl), false).add();
-        TaskDetail ACTION_ENTERING_SETTING = new TaskDetail("E", "Entering Setting " + context.getString(R.string.basicControl), false).add();
+        TaskDetail actionExitingTouchPad = new TaskDetail("I", "Exiting Touch Pad " + context.getString(R.string.basicControl), false).add();
+        TaskDetail actionEnteringSetting = new TaskDetail("E", "Entering Setting " + context.getString(R.string.basicControl), false).add();
 
         // Functional inner controls
         addMapping(CANCEL_LAST_ACTION, HEARTBEAT, ACTION_NOT_FOUND);
+
+        new SettingDetail(context.getString(R.string.orientation), context.getString(R.string.orientationDescription),
+                0, R.string.vertical, R.string.horizontal).add();
+        new SettingDetail(context.getString(R.string.scrollMode), context.getString(R.string.scrollModeDescription),
+                0, R.string.forward, R.string.reverse).add();
+        new SettingDetail(context.getString(R.string.touchWarning), context.getString(R.string.touchWarningDescription),
+                0, R.string.enabled, R.string.disabled).add();
+        new SettingDetail(context.getString(R.string.cursorMode), context.getString(R.string.cursorModeDescription),
+                0, R.string.relative, R.string.absolute).add();
 
         // General generalSettings (to be refactored)
         settingsButtonDescription.put('O', "TOUCH PAD ORIENTATION");
@@ -287,18 +331,18 @@ class Controls {
         } catch (FileNotFoundException e) {
             // If the file does not exist
             // The default mapping
-            actionToTask.append(SINGLE_FINGER + TAP, CLICK);
-            actionToTask.append(SINGLE_FINGER + DOUBLE_TAP, DOUBLE_CLICK);
-            actionToTask.append(TWO_FINGERS + TAP, RIGHT_CLICK);
-            actionToTask.append(SINGLE_FINGER + MOVE, MOVE_CURSOR_RELATIVE);
-            actionToTask.append(SINGLE_FINGER + LONG_PRESS, SELECT);
-            actionToTask.append(TWO_FINGERS + MOVE, SCROLL);
-            actionToTask.append(THREE_FINGERS + MOVE_DOWN, RETURN_TO_DESKTOP);
-            actionToTask.append(THREE_FINGERS + MOVE_UP, ENABLE_TASK_MODE);
-            actionToTask.append(THREE_FINGERS + MOVE_LEFT, SWITCH_APPLICATION);
-            actionToTask.append(THREE_FINGERS + MOVE_RIGHT, SWITCH_APPLICATION);
-            actionToTask.append(FOUR_FINGERS + MOVE_UP, ACTION_EXITING_TOUCH_PAD);
-            actionToTask.append(FOUR_FINGERS + MOVE_DOWN, ACTION_ENTERING_SETTING);
+            actionToTask.append(SINGLE_FINGER + TAP, click);
+            actionToTask.append(SINGLE_FINGER + DOUBLE_TAP, doubleClick);
+            actionToTask.append(TWO_FINGERS + TAP, rightClick);
+            actionToTask.append(SINGLE_FINGER + MOVE, moveCursorRelative);
+            actionToTask.append(SINGLE_FINGER + LONG_PRESS, select);
+            actionToTask.append(TWO_FINGERS + MOVE, scroll);
+            actionToTask.append(THREE_FINGERS + MOVE_DOWN, returnToDesktop);
+            actionToTask.append(THREE_FINGERS + MOVE_UP, enableTaskMode);
+            actionToTask.append(THREE_FINGERS + MOVE_LEFT, switchApplication);
+            actionToTask.append(THREE_FINGERS + MOVE_RIGHT, switchApplication);
+            actionToTask.append(FOUR_FINGERS + MOVE_UP, actionExitingTouchPad);
+            actionToTask.append(FOUR_FINGERS + MOVE_DOWN, actionEnteringSetting);
 
             actionToTask.append(MOVE_CANCEL, CANCEL_LAST_ACTION);
             actionToTask.append(HEARTBEAT_ACTION, HEARTBEAT);
@@ -541,26 +585,26 @@ class Controls {
         switch (setting) {
             case 'O':
                 if (status) {
-                    return "VERTICAL";
+                    return context.getString(R.string.vertical);
                 }
-                return "HORIZONTAL";
+                return context.getString(R.string.horizontal);
             case 'S':
                 if (status) {
-                    return "FORWARD";
+                    return context.getString(R.string.forward);
                 }
-                return "REVERSE";
+                return context.getString(R.string.reverse);
             case 'T':
                 if (status) {
-                    return "ENABLED";
+                    return context.getString(R.string.enabled);
                 }
-                return "DISABLED";
+                return context.getString(R.string.disabled);
             case 'C':
                 if (status) {
-                    return "RELATIVE";
+                    return context.getString(R.string.relative);
                 }
-                return "ABSOLUTE";
+                return context.getString(R.string.absolute);
             default:
-                return "FALSE ARGUMENT";
+                throw new IllegalArgumentException("This setting does not exist");
         }
     }
 }

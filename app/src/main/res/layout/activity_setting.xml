@@ -31,64 +31,69 @@
 
     </com.google.android.material.tabs.TabLayout>
 
-    <LinearLayout
-        android:id="@+id/generalSettingLayout"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
-        <Button
-            android:id="@+id/orientationSetting"
+        <LinearLayout
+            android:id="@+id/generalSettingLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Orientation: Vertical" />
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/orientationDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Orientation will only work in touchpad mode, the launch screen orientation will not be changed by this setting."
-            android:visibility="visible" />
+            <Button
+                android:id="@+id/orientationSetting"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Orientation: Vertical" />
 
-        <Button
-            android:id="@+id/cursorModeSetting"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Cursor Mode: Relative" />
+            <TextView
+                android:id="@+id/orientationDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Orientation will only work in touchpad mode, the launch screen orientation will not be changed by this setting."
+                android:visibility="visible" />
 
-        <TextView
-            android:id="@+id/cursorModeDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="The mode used when controlling the cursor of a remote computer. Absolute indicates all the actions are directly mapped onto the computer, while relative indicates the touchpad is behaving like a real touchpad." />
+            <Button
+                android:id="@+id/cursorModeSetting"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Cursor Mode: Relative" />
 
-        <Button
-            android:id="@+id/scrollModeSetting"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Scroll Mode: Forward" />
+            <TextView
+                android:id="@+id/cursorModeDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="The mode used when controlling the cursor of a remote computer. Absolute indicates all the actions are directly mapped onto the computer, while relative indicates the touchpad is behaving like a real touchpad." />
 
-        <TextView
-            android:id="@+id/scrollModeDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Normally, the setting for a computer run on Mac OS is FORWARD, and the scroll mode for a computer run on Windows is REVERSE"
-            android:visibility="visible" />
+            <Button
+                android:id="@+id/scrollModeSetting"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Scroll Mode: Forward" />
 
-        <Button
-            android:id="@+id/touchWarningSetting"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Touch Warnings: ON" />
+            <TextView
+                android:id="@+id/scrollModeDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Normally, the setting for a computer run on Mac OS is FORWARD, and the scroll mode for a computer run on Windows is REVERSE"
+                android:visibility="visible" />
 
-        <TextView
-            android:id="@+id/touchWarningDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="This controls if a warning message box is showed in any touchpad mode when the number of fingers detected on the screen is more than 5. (For accuracy reason, those events will be ignored.)"
-            android:visibility="visible" />
+            <Button
+                android:id="@+id/touchWarningSetting"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Touch Warnings: ON" />
 
-    </LinearLayout>
+            <TextView
+                android:id="@+id/touchWarningDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="This controls if a warning message box is showed in any touchpad mode when the number of fingers detected on the screen is more than 5. (For accuracy reason, those events will be ignored.)"
+                android:visibility="visible" />
+
+        </LinearLayout>
+    </ScrollView>
 
     <LinearLayout
         android:id="@+id/mappingLayout"
