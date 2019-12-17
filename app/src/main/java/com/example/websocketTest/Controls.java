@@ -5,7 +5,6 @@ import android.content.Context;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.View;
-import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -27,15 +26,12 @@ import java.util.TreeSet;
 
 class Controls {
 
+
+    static final int ADD_MAPPING = 0;
     /**
      * Mapping task to its own TaskDetail.
      */
     private static HashMap<String, TaskDetail> taskDetail = new HashMap<>();
-
-    /**
-     * ArrayList storing all the settings.
-     */
-    private static ArrayList<SettingDetail> settingDetail = new ArrayList<>();
 
     /**
      * To be refactored, will be mapping from string which describes the setting to Boolean which describes its current setting
@@ -46,6 +42,12 @@ class Controls {
      * To be refactored, will be combined to generalSetting detail
      */
     private static SparseArray<String> settingsButtonDescription = new SparseArray<>();
+
+
+    /**
+     * ArrayList storing all the settings.
+     */
+    private static ArrayList<SettingDetail> settingDetail = new ArrayList<>();
 
     /**
      * Mapping action (inner control) to task (outer control).
@@ -202,13 +204,28 @@ class Controls {
             allStates = setAllStates;
         }
 
-        void setDescription(TextView description) {
-            description.setText(detailedDescription);
+        String getDetailedDescription() {
+            return detailedDescription;
         }
 
-        void changeSetting(TextView state, int idx) {
+        String getSettingDescriptionAndState() {
+            return String.format("%s : %s",settingDescription,context.getString(allStates[currentIdx]));
+        }
+
+        int getCurrentIdx() {
+            return currentIdx;
+        }
+
+        String[] getAllStatus() {
+            String[] toReturn = new String[allStates.length];
+            for (int i = 0; i < toReturn.length; i++) {
+                toReturn[i] = context.getString(allStates[i]);
+            }
+            return toReturn;
+        }
+
+        void changeSetting(int idx) {
             currentIdx = idx;
-            state.setText(String.format("%s : %s", settingDescription, context.getString(allStates[currentIdx])));
         }
 
         void add() {
@@ -370,6 +387,10 @@ class Controls {
             toReturn.put(actionToTask.keyAt(i), detail.duplicate());
         }
         return toReturn;
+    }
+
+    static ArrayList<SettingDetail> getCurrentSetting() {
+        return settingDetail;
     }
 
     /**
@@ -537,7 +558,7 @@ class Controls {
         int numFingers = combinedAction / 8;
         int action = combinedAction % 8;
         if (numFingers > 10) {
-            throw new IllegalArgumentException("Number of fingers cannot exceed 10, the number of finger requested is " + numFingers);
+            return null;
         }
         String toReturn;
         if (numFingers == 0) {
@@ -573,7 +594,6 @@ class Controls {
         }
         return toReturn + " --- " + detail.getDescription();
     }
-
 
     static String getSetting(SparseBooleanArray settingsArray, char setting) {
         boolean status;
