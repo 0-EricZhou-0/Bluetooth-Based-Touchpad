@@ -3,12 +3,6 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/abortAndBack"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Abort" />
-
     <TextView
         android:id="@+id/currentMappingInfo"
         android:layout_width="match_parent"
@@ -23,6 +17,14 @@
         android:id="@+id/mappingSettings"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"></LinearLayout>
+        android:orientation="vertical">
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/abortAndBack"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/abort" />
 
 </LinearLayout>

@@ -49,7 +49,7 @@ public class ActivityAddNewMapping extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_new_mapping);
 
-        currentMapping = Controls.getCurrentMapping();
+        currentMapping = Controls.getCurrentMappings();
 
         // Initiate exiting AlertDialog
         exitDialog = new AlertDialog.Builder(ActivityAddNewMapping.this)
@@ -82,7 +82,7 @@ public class ActivityAddNewMapping extends AppCompatActivity {
         try {
             for (int fingerCoding = 2; fingerCoding <= 5; fingerCoding++) {
                 final int fingerCount = fingerCoding;
-                final View numFingerSelection = getLayoutInflater().inflate(R.layout.chunk_mapping_setting,
+                final View numFingerSelection = getLayoutInflater().inflate(R.layout.chunk_mapping,
                         mappingSettings, false);
                 final TextView numOfFingers = numFingerSelection.findViewById(R.id.descripiton);
                 final Button selectNumFingers = numFingerSelection.findViewById(R.id.performAction);
@@ -104,7 +104,7 @@ public class ActivityAddNewMapping extends AppCompatActivity {
                                 continue;
                             }
 
-                            final View actionTypeSelection = getLayoutInflater().inflate(R.layout.chunk_mapping_setting,
+                            final View actionTypeSelection = getLayoutInflater().inflate(R.layout.chunk_mapping,
                                     mappingSettings, false);
                             final TextView actionType = actionTypeSelection.findViewById(R.id.descripiton);
                             final Button selectActionType = actionTypeSelection.findViewById(R.id.performAction);
@@ -128,7 +128,7 @@ public class ActivityAddNewMapping extends AppCompatActivity {
                                                 || readableAction.contains(getString(R.string.switchControl)) && (action != Controls.MOVE_LEFT && action != Controls.MOVE_RIGHT)) {
                                             continue;
                                         }
-                                        final View taskTypeSelection = getLayoutInflater().inflate(R.layout.chunk_mapping_setting,
+                                        final View taskTypeSelection = getLayoutInflater().inflate(R.layout.chunk_mapping,
                                                 mappingSettings, false);
                                         final TextView taskType = taskTypeSelection.findViewById(R.id.descripiton);
                                         final Button selectTaskType = taskTypeSelection.findViewById(R.id.performAction);
