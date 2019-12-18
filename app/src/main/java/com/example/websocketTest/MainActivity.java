@@ -1,6 +1,5 @@
 package com.example.websocketTest;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,11 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    /**
-     * Resources used when trying to connect.
-     */
-    // private static final int REQUEST_ENABLE_BT = 1;
-    @SuppressLint("ClickableViewAccessibility")
+    private AlertDialog.Builder exitDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
         }
 
+
         absorbMotionEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -48,29 +44,9 @@ public class MainActivity extends AppCompatActivity {
         });
         absorbMotionEvent.setElevation(-1);
 
-        View.OnClickListener connectToPC = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                PermanentConnection.connect();
-            }
-        };
-        startConnection.setOnClickListener(connectToPC);
-
-        View.OnClickListener openSettings = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, ActivitySettings.class);
-                startActivity(intent);
-            }
-        };
-        settings.setOnClickListener(openSettings);
-
-        View.OnClickListener exitApplication = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new AlertDialog.Builder(MainActivity.this)
+        exitDialog = new AlertDialog.Builder(MainActivity.this)
                         .setTitle(R.string.warning)
-                        .setMessage("Do you want to exit the application?")
+                        .setMessage(R.string.exitConfirm)
                         .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -84,11 +60,53 @@ public class MainActivity extends AppCompatActivity {
                                 } catch (Exception ignore) {
                                 }
                             }
-                        }).show();
+                        });
+
+        View.OnClickListener connectToPC = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (PermanentConnection.hasServerMac()) {
+                    PermanentConnection.connect();
+                } else {
+                    new AlertDialog.Builder(MainActivity.this)
+                            .setTitle(R.string.warning)
+                            .setMessage(R.string.macRequired)
+                            .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Controls.currentSettingTab = 0;
+                                    Intent intent = new Intent(MainActivity.this, ActivitySettings.class);
+                                    startActivity(intent);
+                                }
+                            }).show();
+                }
+            }
+        };
+        startConnection.setOnClickListener(connectToPC);
+
+        View.OnClickListener openSettings = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ActivitySettings.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            }
+        };
+        settings.setOnClickListener(openSettings);
+
+        View.OnClickListener exitApplication = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                exitDialog.show();
             }
         };
         exit.setOnClickListener(exitApplication);
 
-        PermanentConnection.init(null, MainActivity.this, startConnection, absorbMotionEvent);
+        PermanentConnection.init(MainActivity.this, startConnection, absorbMotionEvent);
+    }
+
+    @Override
+    public void onBackPressed() {
+        exitDialog.show();
     }
 }
