@@ -9,17 +9,11 @@
     android:orientation="vertical">
 
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="\n\n  Current Actions" />
-
     <Button
         android:id="@+id/addNewMapping"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add new" />
+        android:text="@string/add" />
 
     <ScrollView
         android:id="@+id/scrollView1"

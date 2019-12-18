@@ -3,7 +3,6 @@ package com.example.websocketTest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.SparseArray;
-import android.util.SparseBooleanArray;
 import android.view.View;
 
 import com.google.gson.Gson;
@@ -28,21 +27,11 @@ class Controls {
 
 
     static final int ADD_MAPPING = 0;
+    static final int MAC_LENGTH = 12;
     /**
      * Mapping task to its own TaskDetail.
      */
     private static HashMap<String, TaskDetail> taskDetail = new HashMap<>();
-
-    /**
-     * To be refactored, will be mapping from string which describes the setting to Boolean which describes its current setting
-     */
-    private static SparseBooleanArray generalSettings = new SparseBooleanArray();
-
-    /**
-     * To be refactored, will be combined to generalSetting detail
-     */
-    private static SparseArray<String> settingsButtonDescription = new SparseArray<>();
-
 
     /**
      * ArrayList storing all the settings.
@@ -53,6 +42,12 @@ class Controls {
      * Mapping action (inner control) to task (outer control).
      */
     private static SparseArray<TaskDetail> actionToTask = new SparseArray<>();
+
+    /**
+     * ArrayList storing all the devices entered.
+     */
+    private static ArrayList<DeviceDetail> deviceDetails = new ArrayList<>();
+
     @SuppressLint("StaticFieldLeak")
     private static Context context;
 
@@ -81,6 +76,8 @@ class Controls {
         }
         return toReturn;
     }
+
+    static int currentSettingTab = 0;
 
     /**
      * The class storing the description of every task.
@@ -208,12 +205,20 @@ class Controls {
             return detailedDescription;
         }
 
+        String getCurrentState() {
+            return context.getString(allStates[currentIdx]);
+        }
+
         String getSettingDescriptionAndState() {
-            return String.format("%s : %s",settingDescription,context.getString(allStates[currentIdx]));
+            return String.format("%s : %s", settingDescription, context.getString(allStates[currentIdx]));
         }
 
         int getCurrentIdx() {
             return currentIdx;
+        }
+
+        void setCurrentIdx(int idx) {
+            currentIdx = idx;
         }
 
         String[] getAllStatus() {
@@ -230,6 +235,66 @@ class Controls {
 
         void add() {
             settingDetail.add(this);
+        }
+
+    }
+
+    static class DeviceDetail {
+        private static int indexSelected = -1;
+
+        static boolean isValidMac(String mac) {
+            if (mac.length() != 12) {
+                return false;
+            }
+            for (int i = 0; i < Controls.MAC_LENGTH; i++) {
+                int c = mac.charAt(i);
+                if (c < '0' || (c > '9' && c < 'A') || (c > 'F' && c < 'a') || c > 'f') {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        static boolean isDuplicated(String mac) {
+            for (DeviceDetail detail : deviceDetails) {
+                if (detail.macAddress.equals(mac)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        static void setIndexSelected(int index) {
+            indexSelected = index;
+        }
+
+        static int getIndexSelected() {
+            return indexSelected;
+        }
+
+        private String macAddress;
+        private String deviceName;
+
+        DeviceDetail(String setMacAddress, String setDeviceName) {
+            macAddress = setMacAddress.toUpperCase(Locale.getDefault());
+            deviceName = setDeviceName;
+        }
+
+        String getRawMac() {
+            return macAddress;
+        }
+
+        String getMacAddress() {
+            return String.format("%s:%s:%s:%s:%s:%s", macAddress.substring(0, 2), macAddress.substring(2, 4),
+                    macAddress.substring(4, 6), macAddress.substring(6, 8), macAddress.substring(8, 10), macAddress.substring(10, 12));
+        }
+
+        void setDeviceName(String newDeviceName) {
+            deviceName = newDeviceName;
+        }
+
+        String getDeviceName() {
+            return deviceName;
         }
 
     }
@@ -288,12 +353,26 @@ class Controls {
         }
     }
 
+    static final int ORIENTATION_SETTING = 0;
+    static final int SCROLL_MODE_SETTING = 1;
+    static final int TOUCH_WARNING_SETTING = 2;
+    static final int CURSOR_MODE_SETTING = 3;
+
     /**
      * Initialize all the outer controls. If there is a file stored in the device which describes the
      * mapping, read the file for mapping; otherwise, use default mapping.
      */
     static void init(Context setContext) {
         context = setContext;
+
+        new SettingDetail(context.getString(R.string.orientation), context.getString(R.string.orientationDescription),
+                0, R.string.vertical, R.string.horizontal).add();
+        new SettingDetail(context.getString(R.string.scrollMode), context.getString(R.string.scrollModeDescription),
+                0, R.string.forward, R.string.reverse).add();
+        new SettingDetail(context.getString(R.string.touchWarning), context.getString(R.string.touchWarningDescription),
+                0, R.string.enabled, R.string.disabled).add();
+        new SettingDetail(context.getString(R.string.cursorMode), context.getString(R.string.cursorModeDescription),
+                0, R.string.relative, R.string.absolute).add();
 
         /* All the outer control.
         Outer controls are responsible for transmission and adding new mapping. Each outer control
@@ -322,25 +401,8 @@ class Controls {
         // These two will not be reached by the identifyAndSend method
         TaskDetail actionExitingTouchPad = new TaskDetail("I", "Exiting Touch Pad " + context.getString(R.string.basicControl), false).add();
         TaskDetail actionEnteringSetting = new TaskDetail("E", "Entering Setting " + context.getString(R.string.basicControl), false).add();
-
         // Functional inner controls
         addMapping(CANCEL_LAST_ACTION, HEARTBEAT, ACTION_NOT_FOUND);
-
-        new SettingDetail(context.getString(R.string.orientation), context.getString(R.string.orientationDescription),
-                0, R.string.vertical, R.string.horizontal).add();
-        new SettingDetail(context.getString(R.string.scrollMode), context.getString(R.string.scrollModeDescription),
-                0, R.string.forward, R.string.reverse).add();
-        new SettingDetail(context.getString(R.string.touchWarning), context.getString(R.string.touchWarningDescription),
-                0, R.string.enabled, R.string.disabled).add();
-        new SettingDetail(context.getString(R.string.cursorMode), context.getString(R.string.cursorModeDescription),
-                0, R.string.relative, R.string.absolute).add();
-
-        // General generalSettings (to be refactored)
-        settingsButtonDescription.put('O', "TOUCH PAD ORIENTATION");
-        settingsButtonDescription.put('S', "SCROLL MODE");
-        settingsButtonDescription.put('T', "TOUCH WARNING");
-        settingsButtonDescription.put('C', "CURSOR MODE");
-
 
         try {
             // Try to load the json file
@@ -364,12 +426,6 @@ class Controls {
             actionToTask.append(MOVE_CANCEL, CANCEL_LAST_ACTION);
             actionToTask.append(HEARTBEAT_ACTION, HEARTBEAT);
 
-            // Adding general generalSettings (to be refactored)
-            generalSettings.put('O', true);     // Orientation
-            generalSettings.put('S', true);     // Scroll Mode
-            generalSettings.put('T', true);     // Touch Warning
-            generalSettings.put('C', true);     // Cursor Mode
-
             // Save the default actionToTask file
             saveJsonFile();
         }
@@ -380,7 +436,7 @@ class Controls {
      *
      * @return current mapping
      */
-    static SparseArray<TaskDetail> getCurrentMapping() {
+    static SparseArray<TaskDetail> getCurrentMappingsDuplicated() {
         SparseArray<TaskDetail> toReturn = new SparseArray<>();
         for (int i = 0; i < actionToTask.size(); i++) {
             TaskDetail detail = actionToTask.valueAt(i);
@@ -389,17 +445,19 @@ class Controls {
         return toReturn;
     }
 
-    static ArrayList<SettingDetail> getCurrentSetting() {
+    static SparseArray<TaskDetail> getCurrentMappings() {
+        return actionToTask;
+    }
+
+    static ArrayList<SettingDetail> getCurrentSettings() {
         return settingDetail;
     }
 
-    /**
-     * Change current mapping.
-     *
-     * @param newMapping new mapping SparseArray.
-     */
-    static void remapping(SparseArray<TaskDetail> newMapping) {
-        actionToTask = newMapping;
+    static ArrayList<DeviceDetail> getCurrentDevices() {
+        return deviceDetails;
+    }
+
+    static void updateAllSetting() {
         PermanentConnection.TouchEventMappingControl.updateMapping();
         saveJsonFile();
     }
@@ -420,21 +478,11 @@ class Controls {
     }
 
     /**
-     * Change current general setting.
-     * (To be implemented)
-     *
-     * @param newGeneralSetting new general setting ArrayList
-     */
-    static void resetting(SparseBooleanArray newGeneralSetting) {
-        generalSettings = newGeneralSetting;
-    }
-
-    /**
      * Load the settings from local json file "settingDetails.json".
      * <p>
      * After loading, actionToTask and generalSettings will be modified according to the file.
      *
-     * @throws FileNotFoundException
+     * @throws FileNotFoundException If local file does not exist.
      */
     private static void loadJsonFile() throws FileNotFoundException {
         StringBuilder stringBuilder = new StringBuilder();
@@ -468,14 +516,24 @@ class Controls {
             actionToTask.put(combinedAction, taskDetail.get(outerControl));
         }
 
-        generalSettings.clear();
+        int setting = 0;
         JsonArray generalSettings = (JsonArray) jsonObject.get("generalSettings");
         for (JsonElement o : generalSettings) {
             JsonObject individualSetting = (JsonObject) o;
-            int setting = individualSetting.get("individualSetting").getAsInt();
-            boolean status = individualSetting.get("status").getAsBoolean();
-            Controls.generalSettings.put(setting, status);
+            int status = individualSetting.get("status").getAsInt();
+            settingDetail.get(setting++).setCurrentIdx(status);
         }
+
+        deviceDetails.clear();
+        JsonArray deviceList = (JsonArray) jsonObject.get("devices");
+        for (JsonElement o : deviceList) {
+            JsonObject individualDevice = (JsonObject) o;
+            String deviceName = individualDevice.get("name").getAsString();
+            String deviceMac = individualDevice.get("mac").getAsString();
+            deviceDetails.add(new DeviceDetail(deviceMac, deviceName));
+        }
+
+        DeviceDetail.setIndexSelected(jsonObject.get("currentlySelected").getAsInt());
     }
 
     /**
@@ -498,16 +556,25 @@ class Controls {
             mappingControls.add(individualMapping);
         }
         toSave.add("mappingControls", mappingControls);
+
         JsonArray generalSettings = new JsonArray();
-        for (int i = 0; i < Controls.generalSettings.size(); i++) {
+        for (SettingDetail setting : settingDetail) {
             JsonObject individualSetting = new JsonObject();
-            int setting = Controls.generalSettings.keyAt(i);
-            boolean status = Controls.generalSettings.valueAt(i);
-            individualSetting.addProperty("individualSetting", setting);
+            int status = setting.getCurrentIdx();
             individualSetting.addProperty("status", status);
             generalSettings.add(individualSetting);
         }
         toSave.add("generalSettings", generalSettings);
+
+        JsonArray deviceList = new JsonArray();
+        for (DeviceDetail device : deviceDetails) {
+            JsonObject individualDevice = new JsonObject();
+            individualDevice.addProperty("name", device.getDeviceName());
+            individualDevice.addProperty("mac", device.getRawMac());
+            deviceList.add(individualDevice);
+        }
+        toSave.add("devices", deviceList);
+        toSave.addProperty("currentlySelected", DeviceDetail.getIndexSelected());
 
         try {
             FileOutputStream outputStreamWriter = context.openFileOutput("settingDetails.json", Context.MODE_PRIVATE);
@@ -529,19 +596,6 @@ class Controls {
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_FULLSCREEN);
-    }
-
-    // To be refactored, will be combined into settingDetail
-    static String getButtonDescription(char setting) {
-        return settingsButtonDescription.get(setting);
-    }
-
-    static SparseBooleanArray getCurrentSettingStatus() {
-        return generalSettings;
-    }
-
-    static void setCurrentSettingStatus(SparseBooleanArray newSettings) {
-        generalSettings = newSettings;
     }
 
     /**
@@ -595,36 +649,7 @@ class Controls {
         return toReturn + " --- " + detail.getDescription();
     }
 
-    static String getSetting(SparseBooleanArray settingsArray, char setting) {
-        boolean status;
-        if (settingsArray == null) {
-            status = generalSettings.get(setting);
-        } else {
-            status = settingsArray.get(setting);
-        }
-        switch (setting) {
-            case 'O':
-                if (status) {
-                    return context.getString(R.string.vertical);
-                }
-                return context.getString(R.string.horizontal);
-            case 'S':
-                if (status) {
-                    return context.getString(R.string.forward);
-                }
-                return context.getString(R.string.reverse);
-            case 'T':
-                if (status) {
-                    return context.getString(R.string.enabled);
-                }
-                return context.getString(R.string.disabled);
-            case 'C':
-                if (status) {
-                    return context.getString(R.string.relative);
-                }
-                return context.getString(R.string.absolute);
-            default:
-                throw new IllegalArgumentException("This setting does not exist");
-        }
+    static String getSetting(int setting) {
+        return settingDetail.get(setting).getCurrentState();
     }
 }

@@ -34,11 +34,11 @@ public class MappingFragment extends Fragment {
         for (int i = 0; i < currentMappings.size(); i++) {
             Controls.TaskDetail mapping = currentMappings.valueAt(i);
             final byte combinedAction = (byte) currentMappings.keyAt(i);
-            String description = Controls.getReadableDefinedAction(combinedAction, mapping);
+            final String description = Controls.getReadableDefinedAction(combinedAction, mapping);
             if (description == null) {
                 continue;
             }
-            final View keyMapping = getLayoutInflater().inflate(R.layout.chunk_mapping_setting,
+            final View keyMapping = getLayoutInflater().inflate(R.layout.chunk_mapping,
                     mappingContainer, false);
             actionList.add(keyMapping);
             TextView mappingDescription = keyMapping.findViewById(R.id.descripiton);
@@ -60,9 +60,24 @@ public class MappingFragment extends Fragment {
                                 })
                                 .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface arg0, int arg1) {
-                                        actionList.remove(keyMapping);
-                                        mappingContainer.removeView(keyMapping);
-                                        currentMappings.remove(combinedAction);
+                                        if (description.contains(getString(R.string.switchControl))) {
+                                            int idx = actionList.indexOf(keyMapping);
+                                            if (description.contains(getString(R.string.moveLeft))) {
+                                                mappingContainer.removeView(actionList.remove(idx));
+                                                mappingContainer.removeView(actionList.remove(idx));
+                                                currentMappings.remove(combinedAction);
+                                                currentMappings.remove(combinedAction + 1);
+                                            } else {
+                                                mappingContainer.removeView(actionList.remove(idx - 1));
+                                                mappingContainer.removeView(actionList.remove(idx - 1));
+                                                currentMappings.remove(combinedAction - 1);
+                                                currentMappings.remove(combinedAction);
+                                            }
+                                        } else {
+                                            actionList.remove(keyMapping);
+                                            mappingContainer.removeView(keyMapping);
+                                            currentMappings.remove(combinedAction);
+                                        }
                                     }
                                 }).show();
                     }
@@ -82,7 +97,7 @@ public class MappingFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         mappingContainer = rootView.findViewById(R.id.definedActionList);
         Button addNewMapping = rootView.findViewById(R.id.addNewMapping);
-        currentMappings = ActivitySettings.getCurrentMappings();
+        currentMappings = Controls.getCurrentMappings();
         addNewMapping.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -114,7 +129,6 @@ public class MappingFragment extends Fragment {
                 if (bundleAction != -1) {
                     currentMappings.put(bundleAction, detail.duplicate());
                 }
-                Controls.remapping(currentMappings);
                 reloadMapping();
             } else {
                 Toast.makeText(getActivity(), "Action Canceled", Toast.LENGTH_SHORT).show();

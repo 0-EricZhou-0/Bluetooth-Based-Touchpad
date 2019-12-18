@@ -26,7 +26,7 @@ public class GeneralSettingFragment extends Fragment {
 
     private void loadSetting() {
         generalSettingContainer.removeAllViews();
-        final ArrayList<Controls.SettingDetail> currentSettings = ActivitySettings.getCurrentSettings();
+        final ArrayList<Controls.SettingDetail> currentSettings = Controls.getCurrentSettings();
         for (final Controls.SettingDetail setting : currentSettings) {
             final View generalSetting = getLayoutInflater().inflate(R.layout.chunk_general_setting,
                     generalSettingContainer, false);
