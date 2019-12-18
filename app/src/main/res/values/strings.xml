@@ -9,6 +9,11 @@
     <string name="change">Change</string>
     <string name="remove">Remove</string>
 
+    <!-- Main activity -->
+    <string name="exitConfirm">Do you want to exit?</string>
+    <string name="macRequired">"In order to connect to a pc, bluetooth mac address is required. Press
+        confirm to enter the setting to set mac address."</string>
+
     <!-- Controls -->
     <string name="basicControl">(Basic Control)</string>
     <string name="switchControl">Switch</string>
@@ -25,11 +30,14 @@
 
     <!-- Task -->
 
-
-    <!-- activity_setting.xml -->
+    <!-- All settings -->
     <string name="setting">Setting</string>
+    <string name="connectionSetting">Connection</string>
     <string name="generalSetting">General Setting</string>
     <string name="mappingControl">Mapping</string>
+
+
+    <!-- General setting -->
     <string name="orientation">Touch pad orientation</string>
     <string name="vertical">Vertical</string>
     <string name="horizontal">Horizontal</string>
@@ -42,13 +50,26 @@
     <string name="touchWarning">Touch Warning</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
-    <string name="orientationDescription">Orientation will only work in touch pad mode, the launch screen orientation will not be changed by this setting.</string>
-    <string name="cursorModeDescription">The mode used when controlling the cursor of a remote computer. Absolute indicates all the actions are directly mapped onto the computer, while relative indicates the touch pad is behaving like a real touch pad.</string>
-    <string name="scrollModeDescription">Normally, the setting for a computer run on Mac OS is FORWARD, and the scroll mode for a computer run on Windows is REVERSE</string>
-    <string name="touchWarningDescription">This controls if a warning message box is showed in any touchpad mode when the number of fingers detected on the screen is more than 5. (For accuracy reason, those events will be ignored.)</string>
+    <string name="orientationDescription">Orientation will only work in touch pad mode, the launch
+        screen orientation will not be changed by this setting.</string>
+    <string name="cursorModeDescription">The mode used when controlling the cursor of a remote
+        computer. Absolute indicates all the actions are directly mapped onto the computer, while
+        relative indicates the touch pad is behaving like a real touch pad.</string>
+    <string name="scrollModeDescription">Normally, the setting for a computer run on Mac OS is FORWARD,
+        and the scroll mode for a computer run on Windows is REVERSE</string>
+    <string name="touchWarningDescription">This controls if a warning message box is showed in any
+        touch pad mode when the number of fingers detected on the screen is more than 5. (For
+        accuracy reason, those events will be ignored.)</string>
 
+    <!-- Connection setting -->
+    <string name="connectionSettingDescription">You can always add a new device here as long as its
+        bluetooth mac address is known. If you do not know your device\'s bluetooth mac, start the
+        application on the other side to see its address. The name of the device can be changed by
+        clicking the device name  Select the device you want to connect.</string>
+    <string name="addDevice">Add a new device.</string>
 
-    <!-- ActivityAddNewMapping -->
+    <!-- Add new mapping -->
+    <string name="add">Add new mapping</string>
     <string name="currentSelected">Currently Selected</string>
     <string name="selectTask">Select mapping action type</string>
     <string name="setFingerNumDescription">Select number of finger(s) used in the action</string>
@@ -61,5 +82,17 @@
     <string name="abortCurrent">Abort current mapping?</string>
     <string name="select">Select</string>
     <string name="replace">Replace</string>
+
+    <!-- Connection/Device Configuration -->
+    <string name="rename">Rename</string>
+    <string name="currentName">Current name is</string>
+    <string name="confirmDeleteDevice">Do you want to delete this device?</string>
+    <string name="deviceNameHint">Device Name</string>
+    <string name="setDefault">Default</string>
+    <string name="defaultDeviceName">My new device</string>
+    <string name="deviceMacHint">Device Mac</string>
+    <string name="invalidMac">Invalid Mac Address</string>
+    <string name="duplicatedMac">Duplicated Mac Address</string>
+    <string name="tabDisableDescription">"When connected, device list does not allowed to be modified"</string>
 
 </resources>
