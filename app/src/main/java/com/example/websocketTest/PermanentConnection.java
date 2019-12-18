@@ -45,8 +45,7 @@ public class PermanentConnection {
                 if (!lineIn.equals("CONNECTED")) {
                     throw new IllegalArgumentException("MESSAGE ERROR");
                 }
-                // heartbeat = new Heartbeat(3000, 3);
-                // heartbeat.start();
+
                 Intent intent = new Intent(context, ActivityConnected.class);
                 context.startActivity(intent);
                 ((Activity) context).finish();
@@ -64,7 +63,7 @@ public class PermanentConnection {
 
     private static final UUID MY_UUID =
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); // Well known SPP UUID
-    private static String serverMac = "5C:E0:C5:5B:28:AD";
+    private static String serverMac;
     private static BluetoothAdapter btAdapter = null;
     private static BluetoothSocket btSocket = null;
     private static BufferedReader inReader;
@@ -76,11 +75,19 @@ public class PermanentConnection {
     @SuppressLint("StaticFieldLeak")
     private static TextView absorb;
 
+    static void setServerMac(String mac) {
+        serverMac = mac;
+    }
+
+    static boolean hasServerMac() {
+        return serverMac != null;
+    }
+
     static class TouchEventMappingControl {
         static SparseArray<Controls.TaskDetail> mapping = new SparseArray<>();
 
         static void updateMapping() {
-            mapping = Controls.getCurrentMapping();
+            mapping = Controls.getCurrentMappingsDuplicated();
             for (int i = 0; i < mapping.size(); i++) {
                 mapping.valueAt(i).setCanBeRepeated(true);
             }
@@ -115,18 +122,16 @@ public class PermanentConnection {
         }
     }
 
-    static void init(String setMac, Context setContext, Button tryConnect, TextView setAbsorb) {
+    static void init(Context setContext, Button tryConnect, TextView setAbsorb) {
         startConnection = tryConnect;
         absorb = setAbsorb;
         context = setContext;
         TouchEventMappingControl.updateMapping();
-        if (!(setMac == null || setMac.equals(""))) {
-            serverMac = setMac;
-        }
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         if (btAdapter != null) {
             if (!btAdapter.isEnabled()) {
                 btAdapter.enable();
+                throw new RuntimeException("Bluetooth adapter not enabled");
             }
         }
     }

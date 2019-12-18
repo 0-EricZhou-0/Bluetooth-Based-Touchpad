@@ -7,22 +7,29 @@ import androidx.fragment.app.FragmentPagerAdapter;
 
 class PageAdapter extends FragmentPagerAdapter {
 
-    PageAdapter(@NonNull FragmentManager fm, int behavior) {
+    private final int PAGE_COUNT = 3;
+    private boolean changeDevicePermitted;
+    PageAdapter(@NonNull FragmentManager fm, int behavior, boolean isPermitted) {
         super(fm, behavior);
+        changeDevicePermitted = isPermitted;
     }
 
     @NonNull
     @Override
     public Fragment getItem(int position) {
-        if (position == 0) {
-            return new GeneralSettingFragment();
+        if (position >= PAGE_COUNT) throw new IllegalArgumentException();
+        switch (position) {
+            case 0:
+                return new ConnectionSettingFragment(changeDevicePermitted);
+            case 1:
+                return new GeneralSettingFragment();
+            default:
+                return new MappingFragment();
         }
-        return new MappingFragment();
     }
-
 
     @Override
     public int getCount() {
-        return 2;
+        return PAGE_COUNT;
     }
 }
