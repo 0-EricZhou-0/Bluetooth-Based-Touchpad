@@ -8,17 +8,20 @@ import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 
 public class MainActivity extends AppCompatActivity {
 
+
+
     private AlertDialog.Builder exitDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Controls.init(MainActivity.this);
         setContentView(R.layout.activity_main);
 
         final Button startConnection = findViewById(R.id.tryConnect);
@@ -30,39 +33,27 @@ public class MainActivity extends AppCompatActivity {
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         Controls.phoneScreenSize = new CoordinatePair(displayMetrics.widthPixels, displayMetrics.heightPixels);
 
-        try {
-            Controls.init(MainActivity.this);
-        } catch (Exception e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-
-
-        absorbMotionEvent.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            }
-        });
         absorbMotionEvent.setElevation(-1);
 
         exitDialog = new AlertDialog.Builder(MainActivity.this)
-                        .setTitle(R.string.warning)
-                        .setMessage(R.string.exitConfirm)
-                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                            }
-                        })
-                        .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface arg0, int arg1) {
-                                finish();
-                                try {
-                                    System.exit(0);
-                                } catch (Exception ignore) {
-                                }
-                            }
-                        });
+                .setTitle(R.string.warning)
+                .setMessage(R.string.exitConfirm)
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                })
+                .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface arg0, int arg1) {
+                        finish();
+                        try {
+                            System.exit(0);
+                        } catch (Exception ignore) {
+                        }
+                    }
+                });
 
-        View.OnClickListener connectToPC = new View.OnClickListener() {
+        startConnection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (PermanentConnection.hasServerMac()) {
@@ -81,8 +72,7 @@ public class MainActivity extends AppCompatActivity {
                             }).show();
                 }
             }
-        };
-        startConnection.setOnClickListener(connectToPC);
+        });
 
         View.OnClickListener openSettings = new View.OnClickListener() {
             @Override

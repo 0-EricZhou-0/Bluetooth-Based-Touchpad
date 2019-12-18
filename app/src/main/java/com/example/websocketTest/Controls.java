@@ -95,7 +95,9 @@ class Controls {
         /**
          * Readable description of the task.
          */
-        private String description;
+        private Integer description;
+
+        private boolean basicControl;
 
         /**
          * Can the task be repeated.
@@ -111,12 +113,14 @@ class Controls {
          *
          * @param setTask        task representation string
          * @param setDescription description of the task
-         * @param repeat         can the task be repeated
+         * @param isBasicControl is task a basic control
+         * @param canRepeat      can the task be repeated
          */
-        TaskDetail(String setTask, String setDescription, boolean repeat) {
+        TaskDetail(String setTask, Integer setDescription, boolean isBasicControl, boolean canRepeat) {
             task = setTask;
             description = setDescription;
-            canBeRepeated = repeat;
+            basicControl = isBasicControl;
+            canBeRepeated = canRepeat;
         }
 
         /**
@@ -125,7 +129,7 @@ class Controls {
          * @return a duplication of the detail
          */
         TaskDetail duplicate() {
-            return new TaskDetail(task, description, canBeRepeated);
+            return new TaskDetail(task, description, basicControl, canBeRepeated);
         }
 
         /**
@@ -143,7 +147,13 @@ class Controls {
          * @return description of the task
          */
         String getDescription() {
-            return description;
+            if (description == null) {
+                return null;
+            }
+            if (basicControl) {
+                return String.format("%s %s", context.getString(description), context.getString(R.string.basicControl));
+            }
+            return context.getString(description);
         }
 
         /**
@@ -183,12 +193,12 @@ class Controls {
      * The class storing the description of every general setting.
      */
     static class SettingDetail {
-        private String settingDescription;
-        private String detailedDescription;
+        private int settingDescription;
+        private int detailedDescription;
         private int currentIdx;
         private int[] allStates;
 
-        SettingDetail(String setSettingDescription, String setDetailedDescription, int setCurrentIdx,
+        SettingDetail(int setSettingDescription, int setDetailedDescription, int setCurrentIdx,
                       int... setAllStates) {
             if (setCurrentIdx > setAllStates.length) {
                 throw new IllegalArgumentException(String.format(
@@ -202,7 +212,7 @@ class Controls {
         }
 
         String getDetailedDescription() {
-            return detailedDescription;
+            return context.getString(detailedDescription);
         }
 
         String getCurrentState() {
@@ -210,7 +220,7 @@ class Controls {
         }
 
         String getSettingDescriptionAndState() {
-            return String.format("%s : %s", settingDescription, context.getString(allStates[currentIdx]));
+            return String.format(Locale.getDefault(), "%s : %s", context.getString(settingDescription), context.getString(allStates[currentIdx]));
         }
 
         int getCurrentIdx() {
@@ -334,9 +344,9 @@ class Controls {
     It represents the action that user did on the screen. */
 
     // Functional outer controls
-    private static final TaskDetail CANCEL_LAST_ACTION = new TaskDetail("N", null, true);
-    private static final TaskDetail HEARTBEAT = new TaskDetail("H", null, true);
-    static final TaskDetail ACTION_NOT_FOUND = new TaskDetail("W", null, false);
+    private static final TaskDetail CANCEL_LAST_ACTION = new TaskDetail("N", null, true, true);
+    private static final TaskDetail HEARTBEAT = new TaskDetail("H", null, true, true);
+    static final TaskDetail ACTION_NOT_FOUND = new TaskDetail("W", null, true, false);
 
     // Coordinate pairs used in comparisons
     static final CoordinatePair NOT_STARTED = new CoordinatePair(-1, -1);
@@ -365,42 +375,42 @@ class Controls {
     static void init(Context setContext) {
         context = setContext;
 
-        new SettingDetail(context.getString(R.string.orientation), context.getString(R.string.orientationDescription),
+        settingDetail.clear();
+        new SettingDetail(R.string.orientation, R.string.orientationDescription,
                 0, R.string.vertical, R.string.horizontal).add();
-        new SettingDetail(context.getString(R.string.scrollMode), context.getString(R.string.scrollModeDescription),
+        new SettingDetail(R.string.scrollMode, R.string.scrollModeDescription,
                 0, R.string.forward, R.string.reverse).add();
-        new SettingDetail(context.getString(R.string.touchWarning), context.getString(R.string.touchWarningDescription),
+        new SettingDetail(R.string.touchWarning, R.string.touchWarningDescription,
                 0, R.string.enabled, R.string.disabled).add();
-        new SettingDetail(context.getString(R.string.cursorMode), context.getString(R.string.cursorModeDescription),
+        new SettingDetail(R.string.cursorMode, R.string.cursorModeDescription,
                 0, R.string.relative, R.string.absolute).add();
 
         /* All the outer control.
         Outer controls are responsible for transmission and adding new mapping. Each outer control
         corresponds to a combination of inner controls. */
-        TaskDetail click = new TaskDetail("C", "Click " + context.getString(R.string.basicControl), false).add();
-        TaskDetail rightClick = new TaskDetail("R", "Right Click " + context.getString(R.string.basicControl), false).add();
-        TaskDetail doubleClick = new TaskDetail("G", "Double Click " + context.getString(R.string.basicControl), false).add();
-        TaskDetail moveCursorRelative = new TaskDetail("M", "Move Cursor (Relative) " + context.getString(R.string.basicControl), true).add();
-        TaskDetail moveCursorAbsolute = new TaskDetail("J", "Move Cursor (Absolute) " + context.getString(R.string.basicControl), true).add();
-        TaskDetail select = new TaskDetail("S", "Select " + context.getString(R.string.basicControl), false).add();
-        TaskDetail scroll = new TaskDetail("L", "Scroll " + context.getString(R.string.basicControl), true).add();
-        TaskDetail returnToDesktop = new TaskDetail("D", "Return to Desktop", false).add();
-        TaskDetail enableTaskMode = new TaskDetail("T", "Enable Task Mode", false).add();
-        TaskDetail switchApplication = new TaskDetail("A", "Switch Application", true).add();
-        TaskDetail switchTab = new TaskDetail("F", "Switch Tab", true).add();
-        TaskDetail undo = new TaskDetail("B", "Undo", false).add();
-        TaskDetail copy = new TaskDetail("O", "Copy", false).add();
-        TaskDetail paste = new TaskDetail("P", "Paste", false).add();
-        TaskDetail cut = new TaskDetail("Q", "Cut", false).add();
+        TaskDetail click = new TaskDetail("C", R.string.click, true, false).add();
+        TaskDetail rightClick = new TaskDetail("R", R.string.rightClick, true, false).add();
+        TaskDetail doubleClick = new TaskDetail("G", R.string.doubleClick, true, false).add();
+        TaskDetail moveCursorRelative = new TaskDetail("M", R.string.moveCursorRelative, true, true).add();
+        TaskDetail moveCursorAbsolute = new TaskDetail("J", R.string.moveCursorAbsolute, true, true).add();
+        TaskDetail select = new TaskDetail("S", R.string.taskSelect, true, false).add();
+        TaskDetail scroll = new TaskDetail("L", R.string.scroll, true, true).add();
+        TaskDetail returnToDesktop = new TaskDetail("D", R.string.returnToDesktop, false, false).add();
+        TaskDetail enableTaskMode = new TaskDetail("T", R.string.enableTaskMode, false, false).add();
+        TaskDetail switchApplication = new TaskDetail("A", R.string.switchApplication, false, true).add();
+        TaskDetail switchTab = new TaskDetail("F", R.string.swithTab, false, true).add();
+        TaskDetail undo = new TaskDetail("B", R.string.undo, false, false).add();
+        TaskDetail copy = new TaskDetail("O", R.string.copy, false, false).add();
+        TaskDetail paste = new TaskDetail("P", R.string.paste, false, false).add();
+        TaskDetail cut = new TaskDetail("Q", R.string.cut, false, false).add();
         /* This list can be extended
         If the description contains R.string.BasicControl, it will not be allowed to be modified in the generalSettings
         The format of any extension format is as follows:
-            TaskDetail NAME = new TaskDetail(stringRepresentation, stringDescription, canBeRepeated).add();     */
+            TaskDetail NAME = new TaskDetail(stringRepresentation, intStringDescription, isBasicControl, canBeRepeated).add();     */
 
 
         // These two will not be reached by the identifyAndSend method
-        TaskDetail actionExitingTouchPad = new TaskDetail("I", "Exiting Touch Pad " + context.getString(R.string.basicControl), false).add();
-        TaskDetail actionEnteringSetting = new TaskDetail("E", "Entering Setting " + context.getString(R.string.basicControl), false).add();
+        TaskDetail actionExitingTouchPad = new TaskDetail("I", R.string.exitTouchPad, true, false).add();
         // Functional inner controls
         addMapping(CANCEL_LAST_ACTION, HEARTBEAT, ACTION_NOT_FOUND);
 
@@ -420,8 +430,7 @@ class Controls {
             actionToTask.append(THREE_FINGERS + MOVE_UP, enableTaskMode);
             actionToTask.append(THREE_FINGERS + MOVE_LEFT, switchApplication);
             actionToTask.append(THREE_FINGERS + MOVE_RIGHT, switchApplication);
-            actionToTask.append(FOUR_FINGERS + MOVE_UP, actionExitingTouchPad);
-            actionToTask.append(FOUR_FINGERS + MOVE_DOWN, actionEnteringSetting);
+            actionToTask.append(FOUR_FINGERS + MOVE_DOWN, actionExitingTouchPad);
 
             actionToTask.append(MOVE_CANCEL, CANCEL_LAST_ACTION);
             actionToTask.append(HEARTBEAT_ACTION, HEARTBEAT);

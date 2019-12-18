@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">Touch Pad</string>
 
+    <!-- Main activity -->
+    <string name="tryConnect">Connect</string>
+    <string name="exit">Exit application</string>
+
     <!-- Default AlertDialog Title & Button -->
     <string name="warning">Warning</string>
     <string name="cancel">Cancel</string>
@@ -29,6 +33,24 @@
     <string name="moveDown">Move Down</string>
 
     <!-- Task -->
+    <string name="click">Click</string>
+    <string name="rightClick">Right click</string>
+    <string name="doubleClick">Double click</string>
+    <string name="moveCursorRelative">Move cursor (Relative)</string>
+    <string name="moveCursorAbsolute">Move cursor (Absolute)</string>
+    <string name="taskSelect">Select</string>
+    <string name="scroll">Scroll</string>
+    <string name="returnToDesktop">Return to desktop</string>
+    <string name="enableTaskMode">Enable task mode</string>
+    <string name="switchApplication">Switch application</string>
+    <string name="swithTab">Switch tab</string>
+    <string name="undo">Undo</string>
+    <string name="copy">Copy</string>
+    <string name="paste">Paste</string>
+    <string name="cut">Cut</string>
+    <string name="exitTouchPad">Exit touch pad</string>
+
+
 
     <!-- All settings -->
     <string name="setting">Setting</string>
@@ -50,11 +72,14 @@
     <string name="touchWarning">Touch Warning</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
+    <string name="language">Language</string>
+    <string name="english" translatable="false">English</string>
+    <string name="chinese" translatable="false">中文</string>
     <string name="orientationDescription">Orientation will only work in touch pad mode, the launch
         screen orientation will not be changed by this setting.</string>
-    <string name="cursorModeDescription">The mode used when controlling the cursor of a remote
-        computer. Absolute indicates all the actions are directly mapped onto the computer, while
-        relative indicates the touch pad is behaving like a real touch pad.</string>
+    <string name="cursorModeDescription">Controls how the cursor move on a remote computer. Absolute
+        indicates all the actions are directly mapped onto the computer, behaving like a touch screen;
+        while relative indicates that only changing in position is recorded, behaving like a real touch pad.</string>
     <string name="scrollModeDescription">Normally, the setting for a computer run on Mac OS is FORWARD,
         and the scroll mode for a computer run on Windows is REVERSE</string>
     <string name="touchWarningDescription">This controls if a warning message box is showed in any
@@ -66,14 +91,14 @@
         bluetooth mac address is known. If you do not know your device\'s bluetooth mac, start the
         application on the other side to see its address. The name of the device can be changed by
         clicking the device name  Select the device you want to connect.</string>
-    <string name="addDevice">Add a new device.</string>
+    <string name="addDevice">Add a new device</string>
 
     <!-- Add new mapping -->
     <string name="add">Add new mapping</string>
     <string name="currentSelected">Currently Selected</string>
     <string name="selectTask">Select mapping action type</string>
     <string name="setFingerNumDescription">Select number of finger(s) used in the action</string>
-    <string name="setActionDescription">Select finger action type\n (Same number of fingers cannot have event Move and event Move Left/Right/Up/Down at the same time)</string>
+    <string name="setActionDescription">Select finger action type</string>
     <string name="bindAdding">This will also assign</string>
     <string name="to">to</string>
     <string name="addMapping">Add following mapping?</string>
