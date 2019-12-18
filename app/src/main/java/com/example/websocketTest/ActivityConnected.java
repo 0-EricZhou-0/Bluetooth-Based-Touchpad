@@ -5,11 +5,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -89,7 +89,7 @@ public class ActivityConnected extends AppCompatActivity {
 
         final Button launchPad = findViewById(R.id.enableTouchPad);
         final Button launchGame = findViewById(R.id.enableJoystick);
-        final Button settings = findViewById(R.id.settings);
+        final ImageButton settings = findViewById(R.id.settings);
 
         launchPad.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,25 +113,11 @@ public class ActivityConnected extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(ActivityConnected.this, ActivitySettings.class);
+                intent.putExtra("changeDevicePermitted", false);
                 startActivity(intent);
             }
         });
 
-        final View decorView = getWindow().getDecorView();
-        Controls.maximumWindow(decorView);
-
-        decorView.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
-            @Override
-            public void onSystemUiVisibilityChange(int visibility) {
-                final Handler RightClickHandler = new Handler();
-                RightClickHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        Controls.maximumWindow(decorView);
-                    }
-                }, 1700);
-            }
-        });
     }
 
     @Override
