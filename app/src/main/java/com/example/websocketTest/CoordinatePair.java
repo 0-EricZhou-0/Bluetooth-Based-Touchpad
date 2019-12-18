@@ -27,7 +27,7 @@ class CoordinatePair {
      * @param second the coordinate pair to be examined
      * @return whether the two coordinate pairs are the same
      */
-    public boolean equals(final CoordinatePair second) {
+    boolean equals(final CoordinatePair second) {
         return (x == second.getX() && y == second.getY());
     }
 

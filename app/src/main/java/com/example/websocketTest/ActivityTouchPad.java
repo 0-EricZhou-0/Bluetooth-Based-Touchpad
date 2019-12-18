@@ -162,14 +162,14 @@ public class ActivityTouchPad extends AppCompatActivity implements
                     }
                 });
 
-        if (Controls.getSetting(null, 'O').equals("VERTICAL")) {
+        if (Controls.getSetting(Controls.ORIENTATION_SETTING).equals(getString(R.string.vertical))) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         } else {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
         }
-        forwardScrollMode = Controls.getSetting(null, 'S').equals("FORWARD");
-        touchWarningMode = Controls.getSetting(null, 'T').equals("ENABLED");
-        cursorMode = Controls.getSetting(null, 'C').equals("RELATIVE");
+        forwardScrollMode = Controls.getSetting(Controls.SCROLL_MODE_SETTING).equals(getString(R.string.forward));
+        touchWarningMode = Controls.getSetting(Controls.TOUCH_WARNING_SETTING).equals(getString(R.string.enabled));
+        cursorMode = Controls.getSetting(Controls.CURSOR_MODE_SETTING).equals(getString(R.string.relative));
 
         try {
             eventGroup[0] = new FingerEvent(1.2F);
