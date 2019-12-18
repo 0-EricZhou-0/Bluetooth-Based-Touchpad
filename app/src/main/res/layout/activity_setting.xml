@@ -21,6 +21,12 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.tabs.TabItem
+            android:id="@+id/connectionSettingTab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/connectionSetting" />
+
+        <com.google.android.material.tabs.TabItem
             android:id="@+id/generalSettingsTab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

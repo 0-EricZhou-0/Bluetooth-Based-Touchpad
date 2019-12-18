@@ -2,8 +2,6 @@ package com.example.websocketTest;
 
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import android.util.SparseArray;
-import android.util.SparseBooleanArray;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -12,22 +10,9 @@ import androidx.viewpager.widget.ViewPager;
 import com.google.android.material.tabs.TabItem;
 import com.google.android.material.tabs.TabLayout;
 
-import java.util.ArrayList;
+import java.util.Objects;
 
 public class ActivitySettings extends AppCompatActivity {
-
-    private static SparseArray<Controls.TaskDetail> currentMappings;
-    private static ArrayList<Controls.SettingDetail> currentSettings;
-
-    static ArrayList<Controls.SettingDetail> getCurrentSettings() {
-        return currentSettings;
-    }
-
-    static SparseArray<Controls.TaskDetail> getCurrentMappings() {
-        return currentMappings;
-    }
-
-    SparseBooleanArray currentGeneralSetting = Controls.getCurrentSettingStatus();
 
     TabLayout tabContainer;
     ViewPager viewPager;
@@ -46,13 +31,16 @@ public class ActivitySettings extends AppCompatActivity {
         generalSettingsTab = findViewById(R.id.generalSettingsTab);
         mappingTab = findViewById(R.id.mappingTab);
 
-        pageAdapter = new PageAdapter(getSupportFragmentManager(), FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+        pageAdapter = new PageAdapter(getSupportFragmentManager(),
+                FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT,
+                getIntent().getBooleanExtra("changeDevicePermitted", true));
         viewPager.setAdapter(pageAdapter);
 
         tabContainer.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 viewPager.setCurrentItem(tab.getPosition());
+                Controls.currentSettingTab = tab.getPosition();
             }
 
             @Override
@@ -65,14 +53,13 @@ public class ActivitySettings extends AppCompatActivity {
         });
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabContainer));
 
-        currentMappings = Controls.getCurrentMapping();
-        currentSettings = Controls.getCurrentSetting();
+        Objects.requireNonNull(tabContainer.getTabAt(Controls.currentSettingTab)).select();
+
     }
 
     @Override
     public void onBackPressed() {
-        Controls.setCurrentSettingStatus(currentGeneralSetting);
-        Controls.remapping(currentMappings);
+        Controls.updateAllSetting();
         finish();
     }
 }
