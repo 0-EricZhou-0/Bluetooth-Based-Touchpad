@@ -1,9 +1,12 @@
 <resources>
     <string name="app_name">Touch Pad</string>
 
-    <!-- Main activity -->
+    <!-- Connection Control Strings -->
     <string name="tryConnect">Connect</string>
     <string name="exit">Exit application</string>
+    <string name="tryingToConnect">Trying to connect</string>
+    <string name="failToEstablishConnection">Establishing connection failed, please try again</string>
+    <string name="disconnect">Disconnect?</string>
 
     <!-- Default AlertDialog Title & Button -->
     <string name="warning">Warning</string>
@@ -31,24 +34,25 @@
     <string name="moveRight">Move Right</string>
     <string name="moveUp">Move Up</string>
     <string name="moveDown">Move Down</string>
+    <string name="doubleTap">Double Tap</string>
 
     <!-- Task -->
     <string name="click">Click</string>
-    <string name="rightClick">Right click</string>
-    <string name="doubleClick">Double click</string>
-    <string name="moveCursorRelative">Move cursor (Relative)</string>
-    <string name="moveCursorAbsolute">Move cursor (Absolute)</string>
+    <string name="rightClick">Right Click</string>
+    <string name="doubleClick">Double Click</string>
+    <string name="moveCursorRelative">Move Cursor (Relative)</string>
+    <string name="moveCursorAbsolute">Move Cursor (Absolute)</string>
     <string name="taskSelect">Select</string>
     <string name="scroll">Scroll</string>
-    <string name="returnToDesktop">Return to desktop</string>
-    <string name="enableTaskMode">Enable task mode</string>
-    <string name="switchApplication">Switch application</string>
-    <string name="swithTab">Switch tab</string>
+    <string name="returnToDesktop">Return to Desktop</string>
+    <string name="enableTaskMode">Enable Task Mode</string>
+    <string name="switchApplication">Switch Application</string>
+    <string name="switchTab">Switch Tab</string>
     <string name="undo">Undo</string>
     <string name="copy">Copy</string>
     <string name="paste">Paste</string>
     <string name="cut">Cut</string>
-    <string name="exitTouchPad">Exit touch pad</string>
+    <string name="exitTouchPad">Exit Touch Pad</string>
 
 
 
@@ -89,8 +93,8 @@
     <!-- Connection setting -->
     <string name="connectionSettingDescription">You can always add a new device here as long as its
         bluetooth mac address is known. If you do not know your device\'s bluetooth mac, start the
-        application on the other side to see its address. The name of the device can be changed by
-        clicking the device name  Select the device you want to connect.</string>
+        application on the other side to see its address.\nThe name of the device can be changed by
+        clicking the device name.\nSelect the device you want to connect.</string>
     <string name="addDevice">Add a new device</string>
 
     <!-- Add new mapping -->

@@ -29,7 +29,7 @@ public class PermanentConnection {
         @SuppressLint("SetTextI18n")
         public void run() {
             try {
-                startConnection.setText("Trying to connect...");
+                startConnection.setText(String.format("%s...", context.getString(R.string.tryingToConnect)));
                 absorb.setElevation(100);
                 BluetoothDevice device = btAdapter.getRemoteDevice(serverMac);
                 btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
@@ -51,7 +51,7 @@ public class PermanentConnection {
                 ((Activity) context).finish();
 
             } catch (Exception ex1) {
-                startConnection.setText("Connection failed, please try again");
+                startConnection.setText(R.string.failToEstablishConnection);
                 absorb.setElevation(-1);
                 try {
                     btSocket.close();

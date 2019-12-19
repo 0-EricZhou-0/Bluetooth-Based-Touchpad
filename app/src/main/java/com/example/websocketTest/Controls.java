@@ -398,7 +398,7 @@ class Controls {
         TaskDetail returnToDesktop = new TaskDetail("D", R.string.returnToDesktop, false, false).add();
         TaskDetail enableTaskMode = new TaskDetail("T", R.string.enableTaskMode, false, false).add();
         TaskDetail switchApplication = new TaskDetail("A", R.string.switchApplication, false, true).add();
-        TaskDetail switchTab = new TaskDetail("F", R.string.swithTab, false, true).add();
+        TaskDetail switchTab = new TaskDetail("F", R.string.switchTab, false, true).add();
         TaskDetail undo = new TaskDetail("B", R.string.undo, false, false).add();
         TaskDetail copy = new TaskDetail("O", R.string.copy, false, false).add();
         TaskDetail paste = new TaskDetail("P", R.string.paste, false, false).add();
@@ -542,7 +542,11 @@ class Controls {
             deviceDetails.add(new DeviceDetail(deviceMac, deviceName));
         }
 
-        DeviceDetail.setIndexSelected(jsonObject.get("currentlySelected").getAsInt());
+        int currentDevice = jsonObject.get("currentlySelected").getAsInt();
+        if (currentDevice != -1) {
+            PermanentConnection.setServerMac(deviceDetails.get(currentDevice).getMacAddress());
+        }
+        DeviceDetail.setIndexSelected(currentDevice);
     }
 
     /**
@@ -650,6 +654,9 @@ class Controls {
                 break;
             case MOVE_DOWN:
                 toReturn += context.getString(R.string.moveDown);
+                break;
+            case DOUBLE_TAP:
+                toReturn += context.getString(R.string.doubleTap);
                 break;
         }
         if (numFingers == 0) {

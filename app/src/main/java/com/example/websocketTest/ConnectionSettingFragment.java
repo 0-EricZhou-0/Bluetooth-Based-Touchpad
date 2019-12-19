@@ -34,12 +34,12 @@ public class ConnectionSettingFragment extends Fragment {
     private ArrayList<CheckBox> checkBoxList = new ArrayList<>();
     private boolean changeDevicePermitted;
 
-    private void disableEnableControls(boolean enable, ViewGroup vg) {
+    private void disableAllViews(boolean enable, ViewGroup vg) {
         for (int i = 0; i < vg.getChildCount(); i++) {
             View child = vg.getChildAt(i);
             child.setEnabled(enable);
             if (child instanceof ViewGroup) {
-                disableEnableControls(enable, (ViewGroup) child);
+                disableAllViews(enable, (ViewGroup) child);
             }
         }
     }
@@ -61,6 +61,7 @@ public class ConnectionSettingFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     final EditText rename = new EditText(getContext());
+                    rename.setHint(R.string.deviceNameHint);
                     new AlertDialog.Builder(getContext())
                             .setTitle(R.string.rename)
                             .setMessage(String.format("%s %s", getString(R.string.currentName), detail.getDeviceName()))
@@ -68,8 +69,11 @@ public class ConnectionSettingFragment extends Fragment {
                             .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    detail.setDeviceName(rename.getText().toString());
-                                    deviceName.setText(rename.getText().toString());
+                                    String newName = rename.getText().toString();
+                                    if (!newName.equals("")) {
+                                        detail.setDeviceName(newName);
+                                        deviceName.setText(newName);
+                                    }
                                 }
                             }).show();
                 }
@@ -135,8 +139,7 @@ public class ConnectionSettingFragment extends Fragment {
         final EditText deviceName = new EditText(getContext());
         final EditText deviceMac = new EditText(getContext());
         final TextView invalidMac = new TextView(getContext());
-        deviceName.setHint(String.format("%s (%s %s)", getString(R.string.deviceNameHint),
-                getString(R.string.setDefault), getString(R.string.defaultDeviceName)));
+        deviceName.setHint(String.format("%s (%s %s)", getString(R.string.deviceNameHint), getString(R.string.setDefault), getString(R.string.defaultDeviceName)));
         deviceName.setInputType(InputType.TYPE_CLASS_TEXT);
         deviceMac.setHint(R.string.deviceMacHint);
         // deviceMac.setText("5CE0C55B28AD");
@@ -152,6 +155,9 @@ public class ConnectionSettingFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String name = deviceName.getText().toString();
+                        if (name.equals("")) {
+                            name = getString(R.string.defaultDeviceName);
+                        }
                         String mac = deviceMac.getText().toString();
                         currentDevices.add(new Controls.DeviceDetail(mac, name));
                         loadDeviceList();
@@ -189,8 +195,13 @@ public class ConnectionSettingFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                String mac = deviceMac.getText().toString();
-                if (mac.length() >= Controls.MAC_LENGTH) {
+                String mac;
+                if (s.length() > Controls.MAC_LENGTH) {
+                    mac = s.delete(Controls.MAC_LENGTH, s.length()).toString();
+                } else {
+                    mac = s.toString();
+                }
+                if (mac.length() == Controls.MAC_LENGTH) {
                     if (Controls.DeviceDetail.isValidMac(mac)) {
                         if (Controls.DeviceDetail.isDuplicated(mac)) {
                             invalidMac.setText(R.string.duplicatedMac);
@@ -222,10 +233,12 @@ public class ConnectionSettingFragment extends Fragment {
             }
         });
         loadDeviceList();
+        final TextView connectionTabDescription = rootView.findViewById(R.id.connectionTabDescription);
         if (!changeDevicePermitted) {
-            final TextView connectionTabDescription = rootView.findViewById(R.id.connectionTabDescription);
             connectionTabDescription.setText(R.string.tabDisableDescription);
-            disableEnableControls(false, (ViewGroup) rootView);
+            disableAllViews(false, (ViewGroup) rootView);
+        } else {
+            connectionTabDescription.setText(R.string.connectionSettingDescription);
         }
     }
 

@@ -14,7 +14,7 @@
     <string name="confirm">确认</string>
     <string name="confirmDeleteDevice">你想要删除这个设备么？</string>
     <string name="connectionSetting">连接</string>
-    <string name="connectionSettingDescription">只要知道了目标设备的蓝牙mac地址，你就可以在这里添加设备。如果你不知道目标设备的蓝牙mac地址，电脑端程序会在运行时输出其蓝牙mac地址。点击设备名称可以修改。选择一个设备。</string>
+    <string name="connectionSettingDescription">只要知道了目标设备的蓝牙mac地址，你就可以在这里添加设备。如果你不知道目标设备的蓝牙mac地址，电脑端程序会在运行时输出其蓝牙mac地址。点击设备名称可以修改。选择一个设备以开始连接。</string>
     <string name="currentName">现在的名字是</string>
     <string name="currentSelected">现在选择的是</string>
     <string name="cursorMode">鼠标移动模式</string>
@@ -78,8 +78,12 @@
     <string name="rightClick">鼠标右键单击</string>
     <string name="scroll">鼠标滚轮</string>
     <string name="switchApplication">切换应用</string>
-    <string name="swithTab">切换窗口</string>
+    <string name="switchTab">切换窗口</string>
     <string name="undo">撤销</string>
     <string name="exitTouchPad">退出触摸板</string>
     <string name="taskSelect">选中</string>
+    <string name="doubleTap">双击</string>
+    <string name="tryingToConnect">尝试连接中</string>
+    <string name="failToEstablishConnection">连接失败，轻触以重试</string>
+    <string name="disconnect">确认断开连接？</string>
 </resources>
