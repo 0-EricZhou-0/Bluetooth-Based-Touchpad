@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
@@ -52,7 +51,7 @@ public class MappingFragment extends Fragment {
                     public void onClick(View v) {
                         new AlertDialog.Builder(getActivity())
                                 .setTitle(R.string.warning)
-                                .setMessage(R.string.removeMapping)
+                                .setMessage(String.format("%s\n %s", getString(R.string.removeMapping), description))
                                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
@@ -130,11 +129,7 @@ public class MappingFragment extends Fragment {
                     currentMappings.put(bundleAction, detail.duplicate());
                 }
                 reloadMapping();
-            } else {
-                Toast.makeText(getActivity(), "Action Canceled", Toast.LENGTH_SHORT).show();
             }
         }
-
     }
-
 }

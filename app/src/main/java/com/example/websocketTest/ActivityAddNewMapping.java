@@ -54,7 +54,7 @@ public class ActivityAddNewMapping extends AppCompatActivity {
         // Initiate exiting AlertDialog
         exitDialog = new AlertDialog.Builder(ActivityAddNewMapping.this)
                 .setTitle(R.string.warning)
-                .setMessage(R.string.abortCurrent)
+                .setMessage(R.string.abortCurrentOperation)
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -152,7 +152,6 @@ public class ActivityAddNewMapping extends AppCompatActivity {
                                                     addition = "";
                                                 }
                                                 new AlertDialog.Builder(ActivityAddNewMapping.this)
-                                                        .setTitle(R.string.confirm)
                                                         .setMessage(String.format("%s\n%s --- %s\n%s",getString(R.string.addMapping), currentMappingInfo.getText(), readableAction, addition))
                                                         .setNegativeButton(R.string.abort, new DialogInterface.OnClickListener() {
                                                             @Override

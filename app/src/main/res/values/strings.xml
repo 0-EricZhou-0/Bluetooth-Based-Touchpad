@@ -108,7 +108,7 @@
     <string name="addMapping">Add following mapping?</string>
     <string name="removeMapping">Remove following mapping?</string>
 
-    <string name="abortCurrent">Abort current mapping?</string>
+    <string name="abortCurrentOperation">Abort current operation?</string>
     <string name="select">Select</string>
     <string name="replace">Replace</string>
 

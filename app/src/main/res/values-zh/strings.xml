@@ -2,20 +2,20 @@
 <resources>
     <string name="app_name">触摸板</string>
     <string name="abort">放弃</string>
-    <string name="abortCurrent">放弃当前映射？</string>
+    <string name="abortCurrentOperation">放弃当前操作？</string>
     <string name="absolute">绝对</string>
     <string name="add">添加一个新的映射</string>
     <string name="addDevice">添加一个新的设备</string>
     <string name="addMapping">添加如下的映射？</string>
-    <string name="basicControl">（基本操作）</string>
+    <string name="basicControl">（基础操作）</string>
     <string name="bindAdding">这也会映射</string>
     <string name="cancel">取消</string>
     <string name="change">更改</string>
     <string name="confirm">确认</string>
-    <string name="confirmDeleteDevice">你想要删除这个设备么？</string>
+    <string name="confirmDeleteDevice">删除这个设备？</string>
     <string name="connectionSetting">连接</string>
-    <string name="connectionSettingDescription">只要知道了目标设备的蓝牙mac地址，你就可以在这里添加设备。如果你不知道目标设备的蓝牙mac地址，电脑端程序会在运行时输出其蓝牙mac地址。点击设备名称可以修改。选择一个设备以开始连接。</string>
-    <string name="currentName">现在的名字是</string>
+    <string name="connectionSettingDescription">在知道了目标电脑的蓝牙mac地址后，你就可以在这里添加该sh。如果你不知道目标设备的蓝牙mac地址，电脑端程序会在运行时输出其蓝牙mac地址。点击设备名称可以修改。选择一个设备以开始连接。</string>
+    <string name="currentName">现在的名称为</string>
     <string name="currentSelected">现在选择的是</string>
     <string name="cursorMode">鼠标移动模式</string>
     <string name="cursorModeDescription">电脑端的鼠标移动模式。绝对模式指手机触摸被直接映射到电脑上，类似于触摸屏。相对模式指只记录改变量，类似于触摸板。</string>
@@ -25,7 +25,7 @@
     <string name="disabled">禁用</string>
     <string name="duplicatedMac">已存在此mac地址</string>
     <string name="enabled">启用</string>
-    <string name="exitConfirm">你想要退出程序么？</string>
+    <string name="exitConfirm">退出应用程序？</string>
     <string name="finger">手指</string>
     <string name="forward">顺向</string>
     <string name="generalSetting">通用设置</string>
@@ -56,7 +56,7 @@
     <string name="setFingerNumDescription">选择动作中用到的手指个数</string>
     <string name="setting">设置</string>
     <string name="switchControl">切换</string>
-    <string name="tabDisableDescription">设备列表无法在已连接时修改</string>
+    <string name="tabDisableDescription">设备列表无法在连接时修改</string>
     <string name="tap">单击</string>
     <string name="to">到</string>
     <string name="touchWarning">触摸警告</string>
@@ -85,5 +85,5 @@
     <string name="doubleTap">双击</string>
     <string name="tryingToConnect">尝试连接中</string>
     <string name="failToEstablishConnection">连接失败，轻触以重试</string>
-    <string name="disconnect">确认断开连接？</string>
+    <string name="disconnect">断开连接？</string>
 </resources>

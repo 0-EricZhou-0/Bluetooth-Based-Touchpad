@@ -62,6 +62,7 @@ public class ConnectionSettingFragment extends Fragment {
                 public void onClick(View v) {
                     final EditText rename = new EditText(getContext());
                     rename.setHint(R.string.deviceNameHint);
+                    rename.setInputType(InputType.TYPE_CLASS_TEXT);
                     new AlertDialog.Builder(getContext())
                             .setTitle(R.string.rename)
                             .setMessage(String.format("%s %s", getString(R.string.currentName), detail.getDeviceName()))
@@ -117,6 +118,12 @@ public class ConnectionSettingFragment extends Fragment {
                             }).show();
                 }
             });
+            deviceMac.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    selection.setChecked(true);
+                }
+            });
             deviceContainer.addView(deviceDetail);
         }
         if (Controls.DeviceDetail.getIndexSelected() != -1) {
@@ -143,8 +150,6 @@ public class ConnectionSettingFragment extends Fragment {
         deviceName.setInputType(InputType.TYPE_CLASS_TEXT);
         deviceMac.setHint(R.string.deviceMacHint);
         // deviceMac.setText("5CE0C55B28AD");
-        deviceName.setText("");
-        deviceMac.setText("");
         deviceName.setTextColor(Color.BLACK);
         deviceMac.setTextColor(Color.BLACK);
         invalidMac.setTextColor(Color.TRANSPARENT);
@@ -229,6 +234,9 @@ public class ConnectionSettingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 addNew.show();
+                deviceName.setText("");
+                deviceMac.setText("");
+                invalidMac.setTextColor(Color.TRANSPARENT);
                 addNew.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
             }
         });
