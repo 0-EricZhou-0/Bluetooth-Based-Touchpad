@@ -21,6 +21,7 @@ import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -30,8 +31,8 @@ public class ConnectionSettingFragment extends Fragment {
 
     private View rootView;
     private LinearLayout deviceContainer;
-    private ArrayList<Controls.DeviceDetail> currentDevices;
-    private ArrayList<CheckBox> checkBoxList = new ArrayList<>();
+    private List<Controls.DeviceDetail> currentDevices;
+    private List<CheckBox> checkBoxList = new ArrayList<>();
     private boolean changeDevicePermitted;
 
     private void disableAllViews(boolean enable, ViewGroup vg) {
@@ -88,7 +89,8 @@ public class ConnectionSettingFragment extends Fragment {
                         }
                         Controls.DeviceDetail.setIndexSelected(checkBoxList.indexOf(selection));
                         selection.setChecked(true);
-                        PermanentConnection.setServerMac(detail.getMacAddress());
+                    } else {
+                        selection.setChecked(true);
                     }
                 }
             });

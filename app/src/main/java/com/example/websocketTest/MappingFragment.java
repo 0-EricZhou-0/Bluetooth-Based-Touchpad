@@ -101,7 +101,7 @@ public class MappingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), ActivityAddNewMapping.class);
-                startActivityForResult(intent, Controls.ADD_MAPPING);
+                startActivityForResult(intent, Controls.ACTIVITY_ADD_MAPPING);
             }
         });
         reloadMapping();
@@ -118,7 +118,7 @@ public class MappingFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Controls.ADD_MAPPING) {
+        if (requestCode == Controls.ACTIVITY_ADD_MAPPING) {
             if (resultCode == ActivitySettings.RESULT_OK) {
                 byte combinedAction = data.getByteExtra("combinedAction", (byte) -1);
                 byte bundleAction = data.getByteExtra("bundleAction", (byte) -1);

@@ -18,73 +18,79 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
 
 class Controls {
 
+    /**
+     * Identification int for starting an activity of adding new mapping.
+     */
+    static final int ACTIVITY_ADD_MAPPING = 0;
 
-    static final int ADD_MAPPING = 0;
+    /**
+     * Length of mac address.
+     */
     static final int MAC_LENGTH = 12;
-    /**
-     * Mapping task to its own TaskDetail.
-     */
-    private static HashMap<String, TaskDetail> taskDetail = new HashMap<>();
-
-    /**
-     * ArrayList storing all the settings.
-     */
-    private static ArrayList<SettingDetail> settingDetail = new ArrayList<>();
 
     /**
      * Mapping action (inner control) to task (outer control).
      */
     private static SparseArray<TaskDetail> actionToTask = new SparseArray<>();
 
-    /**
-     * ArrayList storing all the devices entered.
-     */
-    private static ArrayList<DeviceDetail> deviceDetails = new ArrayList<>();
-
     @SuppressLint("StaticFieldLeak")
     private static Context context;
 
     /**
-     * Get the readable description corresponds to the task.
-     *
-     * @param taskType the string representing the task
-     * @return string which describes the function of the task
+     * Setting tab number user will see when opening up settings.
      */
-    static String getReadableTask(String taskType) {
-        return Objects.requireNonNull(taskDetail.get(taskType)).getDescription();
-    }
-
-    /**
-     * Return the representation string of all tasks  supported now, and which descriptions are not null.
-     * Description is null indicates that the action is a functional action, which user does not need to see.
-     *
-     * @return a set of Strings representing the task
-     */
-    static Set<String> getAllTasks() {
-        Set<String> toReturn = new TreeSet<>();
-        for (String s : taskDetail.keySet()) {
-            if (Objects.requireNonNull(taskDetail.get(s)).getDescription() != null) {
-                toReturn.add(s);
-            }
-        }
-        return toReturn;
-    }
-
     static int currentSettingTab = 0;
 
     /**
-     * The class storing the description of every task.
+     * Configuration of tasks. Task what defines to be sent to pc.
      */
     static class TaskDetail {
+
+        /**
+         * Mapping task to its own TaskDetail.
+         */
+        private static HashMap<String, TaskDetail> taskDetails = new HashMap<>();
+
+        /**
+         * Get the readable description corresponds to the task.
+         *
+         * @param taskType the string representing the task
+         * @return string which describes the function of the task
+         */
+        static String getReadableTask(final String taskType) {
+            return Objects.requireNonNull(TaskDetail.taskDetails.get(taskType)).getDescription();
+        }
+
+        /**
+         * Return the representation string of all tasks  supported now, and which descriptions are not null.
+         * Description is null indicates that the action is a functional action, which user does not need to see.
+         *
+         * @return a set of Strings representing the task
+         */
+        static List<String> getAllTasks() {
+            ArrayList<String> toReturn = new ArrayList<>();
+            for (String s : TaskDetail.taskDetails.keySet()) {
+                if (Objects.requireNonNull(TaskDetail.taskDetails.get(s)).getDescription() != null) {
+                    toReturn.add(s);
+                }
+            }
+            return toReturn;
+        }
+
+        /**
+         * Get the corresponding outer control task of a outer control string.
+         *
+         * @param outerControl string representation of a outer control string
+         * @return TaskDetail instance corresponds to tht specific outer control string
+         */
         static TaskDetail correspondsTo(String outerControl) {
-            return taskDetail.get(outerControl);
+            return taskDetails.get(outerControl);
         }
 
         /**
@@ -93,10 +99,14 @@ class Controls {
         private String task;
 
         /**
-         * Readable description of the task.
+         * Readable description of the task, using @string resources..
          */
         private Integer description;
 
+        /**
+         * Whether the control is a basic control. Basic controls are not allowed to be modified in
+         * the settings.
+         */
         private boolean basicControl;
 
         /**
@@ -171,7 +181,7 @@ class Controls {
          * @return the detail itself
          */
         TaskDetail add() {
-            taskDetail.put(task, this);
+            taskDetails.put(task, this);
             return this;
         }
 
@@ -190,19 +200,51 @@ class Controls {
     }
 
     /**
-     * The class storing the description of every general setting.
+     * Configuration of each setting.
      */
     static class SettingDetail {
+
+        /**
+         * ArrayList storing all the settings.
+         */
+        private static ArrayList<SettingDetail> settingDetails = new ArrayList<>();
+
+        /**
+         * Description of the setting. Using @string resources.
+         */
         private int settingDescription;
+
+        /**
+         * Detailed explanation of the setting, including the function and usage of every choice in
+         * allStates array.
+         */
         private int detailedDescription;
+
+        /**
+         * The current choice of the state.
+         */
         private int currentIdx;
+
+        /**
+         * All the choice available of a setting.
+         */
         private int[] allStates;
 
+        /**
+         * Constructing a new setting using the description of the setting, detailed description of
+         * the setting, the current selected state and all the available choices.
+         *
+         * @param setSettingDescription  description of the setting, will appear on the setting button
+         * @param setDetailedDescription detailed description of the setting, including explanation
+         *                               of each choice
+         * @param setCurrentIdx          index of the state user currently selected
+         * @param setAllStates           all the choices of the setting
+         */
         SettingDetail(int setSettingDescription, int setDetailedDescription, int setCurrentIdx,
                       int... setAllStates) {
             if (setCurrentIdx > setAllStates.length) {
                 throw new IllegalArgumentException(String.format(
-                        "Current index cannot exceed number of states. Try to access %d. But only have %d states.",
+                        "Current index cannot exceed number of states. Try to access %d, but only have %d states.",
                         setCurrentIdx, setAllStates.length));
             }
             settingDescription = setSettingDescription;
@@ -211,26 +253,47 @@ class Controls {
             allStates = setAllStates;
         }
 
+        /**
+         * Get detailed description of a setting.
+         *
+         * @return detailed description of a setting
+         */
         String getDetailedDescription() {
             return context.getString(detailedDescription);
         }
 
+        /**
+         * Get current state fo the setting.
+         *
+         * @return current state fo the setting
+         */
         String getCurrentState() {
             return context.getString(allStates[currentIdx]);
         }
 
+        /**
+         * Get the combined description of the setting and its current state.
+         *
+         * @return combined description used when displaying on button
+         */
         String getSettingDescriptionAndState() {
             return String.format(Locale.getDefault(), "%s : %s", context.getString(settingDescription), context.getString(allStates[currentIdx]));
         }
 
+        /**
+         * Get the index of current state in all states.
+         *
+         * @return index of current state
+         */
         int getCurrentIdx() {
             return currentIdx;
         }
 
-        void setCurrentIdx(int idx) {
-            currentIdx = idx;
-        }
-
+        /**
+         * Get all the possible status of the setting.
+         *
+         * @return an array of strings representing all states that can be chosen
+         */
         String[] getAllStatus() {
             String[] toReturn = new String[allStates.length];
             for (int i = 0; i < toReturn.length; i++) {
@@ -239,19 +302,47 @@ class Controls {
             return toReturn;
         }
 
+        /**
+         * Set current state index. (Or switch state)
+         *
+         * @param idx index of current state.
+         */
         void changeSetting(int idx) {
             currentIdx = idx;
         }
 
+        /**
+         * Adding the detail to list for it to be functional, used when initialization
+         */
         void add() {
-            settingDetail.add(this);
+            settingDetails.add(this);
         }
 
     }
 
+    /**
+     * Configuration of devices.
+     */
     static class DeviceDetail {
+
+        /**
+         * ArrayList storing all the devices entered.
+         */
+        private static ArrayList<DeviceDetail> deviceDetails = new ArrayList<>();
+
+        /**
+         * Index of the current device that is selected.
+         */
         private static int indexSelected = -1;
 
+        /**
+         * Check of the input mac is valid. For it to be valid, the string will be 12 characters long,
+         * containing only numbers and both upper and lower case of the letter 'a', 'b', 'c', 'd', 'e',
+         * and 'f'.
+         *
+         * @param mac target device bluetooth mac
+         * @return whether the mac address is valid
+         */
         static boolean isValidMac(String mac) {
             if (mac.length() != 12) {
                 return false;
@@ -265,6 +356,9 @@ class Controls {
             return true;
         }
 
+        /**
+         * Check whether the mac is duplicated with current existing mac addresses.
+         */
         static boolean isDuplicated(String mac) {
             for (DeviceDetail detail : deviceDetails) {
                 if (detail.macAddress.equals(mac)) {
@@ -274,35 +368,91 @@ class Controls {
             return false;
         }
 
+        /**
+         * Set the current selected device to the device at specific index. Also update the mac to
+         * PermanentConnection.
+         *
+         * @param index index of currently selected device
+         */
         static void setIndexSelected(int index) {
+            if (index != -1) {
+                if (index >= deviceDetails.size()) {
+                    throw new IllegalArgumentException(String.format(
+                            "Index of device exceeds device count. Currently requesting %d, but only have%d",
+                            index, deviceDetails.size()));
+                }
+                PermanentConnection.setServerMac(deviceDetails.get(index).getMacAddress());
+            }
             indexSelected = index;
         }
 
+        /**
+         * Get the index of the currently selected device.
+         *
+         * @return the index of the currently selected device
+         */
         static int getIndexSelected() {
             return indexSelected;
         }
 
+        /**
+         * Mac address of the device.
+         */
         private String macAddress;
+
+        /**
+         * User defined name for the device.
+         */
         private String deviceName;
 
+        /**
+         * Constructing a new device using the mac address of the device, and the user defined name
+         * of the device. Mac address stored will be upper cased.
+         *
+         * @param setMacAddress mac address of the device
+         * @param setDeviceName user defined name of the device
+         */
         DeviceDetail(String setMacAddress, String setDeviceName) {
+            if (!isValidMac(setMacAddress) || isDuplicated(setMacAddress)) {
+                throw new IllegalArgumentException("Not a valid mac");
+            }
             macAddress = setMacAddress.toUpperCase(Locale.getDefault());
             deviceName = setDeviceName;
         }
 
+        /**
+         * Get the not formatted string of device mac.
+         *
+         * @return not formatted string of device mac
+         */
         String getRawMac() {
             return macAddress;
         }
 
+        /**
+         * Get the formatted string of the device mac. Formatted mac address look like "XX:XX:XX:XX:XX:XX"
+         *
+         * @return formatted string of device mac
+         */
         String getMacAddress() {
             return String.format("%s:%s:%s:%s:%s:%s", macAddress.substring(0, 2), macAddress.substring(2, 4),
                     macAddress.substring(4, 6), macAddress.substring(6, 8), macAddress.substring(8, 10), macAddress.substring(10, 12));
         }
 
+        /**
+         * Set name of the device.
+         *
+         * @param newDeviceName the user defined name for the device
+         */
         void setDeviceName(String newDeviceName) {
             deviceName = newDeviceName;
         }
 
+        /**
+         * Get name of the device.
+         *
+         * @return user defined name for the device
+         */
         String getDeviceName() {
             return deviceName;
         }
@@ -310,12 +460,11 @@ class Controls {
     }
 
     /**
-     * The size of the phone screen, used when cursor move state is absolute.
+     * Size of the phone screen, used when cursor move state is absolute.
      */
     static CoordinatePair phoneScreenSize;
 
-
-    /* All the inner control.
+    /* All inner controls
     Inner controls responsible for transmitting data inside the application, to send the data, a
     translation os inner control to outer control is required. */
     // Action
@@ -333,14 +482,9 @@ class Controls {
     static final byte THREE_FINGERS = 0b11000;      //24
     static final byte FOUR_FINGERS = 0b100000;      //32
     static final byte FIVE_FINGERS = 0b101000;      //40
-    static final byte SIX_FINGERS = 0b110000;       //48 Not recommended
-    static final byte SEVEN_FINGERS = 0b111000;     //56 Not recommended
-    static final byte EIGHT_FINGERS = 0b1000000;    //64 Not recommended
-    static final byte NINE_FINGERS = 0b1001000;     //72 Not recommended
-    static final byte TEN_FINGERS = 0b1010000;      //80 Not recommended
-    static final byte HEARTBEAT_ACTION = 0b1011000; //88 Not recommended
-    static final byte MOVE_CANCEL = 0b1100000;      //96 Not recommended
-    /* The Combined Action is the combination of one Action and one Action FingerCount.
+    static final byte HEARTBEAT_ACTION = 0b110000;  //48 Functional Control
+    static final byte MOVE_CANCEL = 0b111000;       //56 Functional Control
+    /* Combined Action is the combination of one Action and one Action FingerCount.
     It represents the action that user did on the screen. */
 
     // Functional outer controls
@@ -369,13 +513,13 @@ class Controls {
     static final int CURSOR_MODE_SETTING = 3;
 
     /**
-     * Initialize all the outer controls. If there is a file stored in the device which describes the
-     * mapping, read the file for mapping; otherwise, use default mapping.
+     * Initialize all the outer controls. If there is a file stored in the device which describes all
+     * the settings, read the file for all setting; otherwise, use default setting..
      */
     static void init(Context setContext) {
         context = setContext;
 
-        settingDetail.clear();
+        SettingDetail.settingDetails.clear();
         new SettingDetail(R.string.orientation, R.string.orientationDescription,
                 0, R.string.vertical, R.string.horizontal).add();
         new SettingDetail(R.string.scrollMode, R.string.scrollModeDescription,
@@ -385,7 +529,7 @@ class Controls {
         new SettingDetail(R.string.cursorMode, R.string.cursorModeDescription,
                 0, R.string.relative, R.string.absolute).add();
 
-        /* All the outer control.
+        /* All outer controls
         Outer controls are responsible for transmission and adding new mapping. Each outer control
         corresponds to a combination of inner controls. */
         TaskDetail click = new TaskDetail("C", R.string.click, true, false).add();
@@ -405,13 +549,13 @@ class Controls {
         TaskDetail cut = new TaskDetail("Q", R.string.cut, false, false).add();
         /* This list can be extended
         If the description contains R.string.BasicControl, it will not be allowed to be modified in the generalSettings
-        The format of any extension format is as follows:
+        Format of any extension format is as follows:
             TaskDetail NAME = new TaskDetail(stringRepresentation, intStringDescription, isBasicControl, canBeRepeated).add();     */
 
 
-        // These two will not be reached by the identifyAndSend method
+        // This will not be reached by the identifyAndSend method
         TaskDetail actionExitingTouchPad = new TaskDetail("I", R.string.exitTouchPad, true, false).add();
-        // Functional inner controls
+        // Functional outer controls
         addMapping(CANCEL_LAST_ACTION, HEARTBEAT, ACTION_NOT_FOUND);
 
         try {
@@ -419,7 +563,7 @@ class Controls {
             loadJsonFile();
         } catch (FileNotFoundException e) {
             // If the file does not exist
-            // The default mapping
+            // Default mapping
             actionToTask.append(SINGLE_FINGER + TAP, click);
             actionToTask.append(SINGLE_FINGER + DOUBLE_TAP, doubleClick);
             actionToTask.append(TWO_FINGERS + TAP, rightClick);
@@ -458,12 +602,12 @@ class Controls {
         return actionToTask;
     }
 
-    static ArrayList<SettingDetail> getCurrentSettings() {
-        return settingDetail;
+    static List<SettingDetail> getCurrentSettings() {
+        return SettingDetail.settingDetails;
     }
 
-    static ArrayList<DeviceDetail> getCurrentDevices() {
-        return deviceDetails;
+    static List<DeviceDetail> getCurrentDevices() {
+        return DeviceDetail.deviceDetails;
     }
 
     static void updateAllSetting() {
@@ -478,9 +622,9 @@ class Controls {
      */
     static void changeCursorMoveMode(boolean isRelative) {
         if (isRelative) {
-            actionToTask.put(SINGLE_FINGER + MOVE, taskDetail.get("M"));
+            actionToTask.put(SINGLE_FINGER + MOVE, TaskDetail.taskDetails.get("M"));
         } else {
-            actionToTask.put(SINGLE_FINGER + MOVE, taskDetail.get("J"));
+            actionToTask.put(SINGLE_FINGER + MOVE, TaskDetail.taskDetails.get("J"));
         }
         PermanentConnection.TouchEventMappingControl.updateMapping();
         saveJsonFile();
@@ -522,7 +666,7 @@ class Controls {
             JsonObject individualMapping = (JsonObject) o;
             byte combinedAction = individualMapping.get("combinedAction").getAsByte();
             String outerControl = individualMapping.get("task").getAsString();
-            actionToTask.put(combinedAction, taskDetail.get(outerControl));
+            actionToTask.put(combinedAction, TaskDetail.taskDetails.get(outerControl));
         }
 
         int setting = 0;
@@ -530,22 +674,19 @@ class Controls {
         for (JsonElement o : generalSettings) {
             JsonObject individualSetting = (JsonObject) o;
             int status = individualSetting.get("status").getAsInt();
-            settingDetail.get(setting++).setCurrentIdx(status);
+            SettingDetail.settingDetails.get(setting++).changeSetting(status);
         }
 
-        deviceDetails.clear();
+        DeviceDetail.deviceDetails.clear();
         JsonArray deviceList = (JsonArray) jsonObject.get("devices");
         for (JsonElement o : deviceList) {
             JsonObject individualDevice = (JsonObject) o;
             String deviceName = individualDevice.get("name").getAsString();
             String deviceMac = individualDevice.get("mac").getAsString();
-            deviceDetails.add(new DeviceDetail(deviceMac, deviceName));
+            DeviceDetail.deviceDetails.add(new DeviceDetail(deviceMac, deviceName));
         }
 
         int currentDevice = jsonObject.get("currentlySelected").getAsInt();
-        if (currentDevice != -1) {
-            PermanentConnection.setServerMac(deviceDetails.get(currentDevice).getMacAddress());
-        }
         DeviceDetail.setIndexSelected(currentDevice);
     }
 
@@ -560,7 +701,7 @@ class Controls {
         JsonArray mappingControls = new JsonArray();
         for (int i = 0; i < actionToTask.size(); i++) {
             JsonObject individualMapping = new JsonObject();
-            TaskDetail detail = taskDetail.get(actionToTask.valueAt(i).getTask());
+            TaskDetail detail = TaskDetail.taskDetails.get(actionToTask.valueAt(i).getTask());
             byte combinedAction = (byte) actionToTask.keyAt(i);
             assert detail != null;
             String outerControl = detail.getTask();
@@ -571,7 +712,7 @@ class Controls {
         toSave.add("mappingControls", mappingControls);
 
         JsonArray generalSettings = new JsonArray();
-        for (SettingDetail setting : settingDetail) {
+        for (SettingDetail setting : SettingDetail.settingDetails) {
             JsonObject individualSetting = new JsonObject();
             int status = setting.getCurrentIdx();
             individualSetting.addProperty("status", status);
@@ -580,7 +721,7 @@ class Controls {
         toSave.add("generalSettings", generalSettings);
 
         JsonArray deviceList = new JsonArray();
-        for (DeviceDetail device : deviceDetails) {
+        for (DeviceDetail device : DeviceDetail.deviceDetails) {
             JsonObject individualDevice = new JsonObject();
             individualDevice.addProperty("name", device.getDeviceName());
             individualDevice.addProperty("mac", device.getRawMac());
@@ -612,7 +753,7 @@ class Controls {
     }
 
     /**
-     * Get description by combined action and a taskDetail instance.
+     * Get description by combined action and a taskDetails instance.
      * <p>
      * If input action instead of combined action, the method will only return the readable description
      * of the action, and the detail is ignored. Otherwise, it will return the full description.
@@ -666,6 +807,6 @@ class Controls {
     }
 
     static String getSetting(int setting) {
-        return settingDetail.get(setting).getCurrentState();
+        return SettingDetail.settingDetails.get(setting).getCurrentState();
     }
 }

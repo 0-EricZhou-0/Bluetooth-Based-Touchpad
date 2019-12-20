@@ -14,7 +14,7 @@
     <string name="confirm">确认</string>
     <string name="confirmDeleteDevice">删除这个设备？</string>
     <string name="connectionSetting">连接</string>
-    <string name="connectionSettingDescription">在知道了目标电脑的蓝牙mac地址后，你就可以在这里添加该sh。如果你不知道目标设备的蓝牙mac地址，电脑端程序会在运行时输出其蓝牙mac地址。点击设备名称可以修改。选择一个设备以开始连接。</string>
+    <string name="connectionSettingDescription">你可以在知道了目标电脑的蓝牙mac地址后在这里添加该设备。如果你不知道目标设备的蓝牙mac地址，电脑端程序会在运行时输出其蓝牙mac地址。点击设备名称可以修改。选择一个设备以开始连接。</string>
     <string name="currentName">现在的名称为</string>
     <string name="currentSelected">现在选择的是</string>
     <string name="cursorMode">鼠标移动模式</string>

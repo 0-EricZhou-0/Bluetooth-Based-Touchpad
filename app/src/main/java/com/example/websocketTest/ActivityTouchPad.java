@@ -148,14 +148,14 @@ public class ActivityTouchPad extends AppCompatActivity implements
         mDetector.setOnDoubleTapListener(this);
 
         exitDialog = new AlertDialog.Builder(ActivityTouchPad.this)
-                .setTitle("Warning")
-                .setMessage("Do you want to exit touching pad?")
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                .setTitle(R.string.warning)
+                .setMessage(R.string.exitConfirm)
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                     }
                 })
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface arg0, int arg1) {
                         PermanentConnection.sendMessage("X");
                         finish();
@@ -171,19 +171,11 @@ public class ActivityTouchPad extends AppCompatActivity implements
         touchWarningMode = Controls.getSetting(Controls.TOUCH_WARNING_SETTING).equals(getString(R.string.enabled));
         cursorMode = Controls.getSetting(Controls.CURSOR_MODE_SETTING).equals(getString(R.string.relative));
 
-        try {
-            eventGroup[0] = new FingerEvent(1.2F);
-            eventGroup[1] = new FingerEvent(20F);
-            eventGroup[2] = new FingerEvent(60F);
-            eventGroup[3] = new FingerEvent(60F);
-            eventGroup[4] = new FingerEvent(60F);
-            eventGroup[5] = new FingerEvent(60F);
-            eventGroup[6] = new FingerEvent(60F);
-            eventGroup[7] = new FingerEvent(60F);
-            eventGroup[8] = new FingerEvent(60F);
-            eventGroup[9] = new FingerEvent(60F);
-        } catch (Exception ignore) {
-        }
+        eventGroup[0] = new FingerEvent(1.2F);
+        eventGroup[1] = new FingerEvent(20F);
+        eventGroup[2] = new FingerEvent(60F);
+        eventGroup[3] = new FingerEvent(60F);
+        eventGroup[4] = new FingerEvent(60F);
 
         final View decorView = getWindow().getDecorView();
         Controls.maximumWindow(decorView);

@@ -18,8 +18,8 @@
 
     <!-- Main activity -->
     <string name="exitConfirm">Do you want to exit?</string>
-    <string name="macRequired">"In order to connect to a pc, bluetooth mac address is required. Press
-        confirm to enter the setting to set mac address."</string>
+    <string name="macRequired">In order to connect to a pc, bluetooth mac address is required. Press
+        confirm to enter the setting to set mac address.</string>
 
     <!-- Controls -->
     <string name="basicControl">(Basic Control)</string>
