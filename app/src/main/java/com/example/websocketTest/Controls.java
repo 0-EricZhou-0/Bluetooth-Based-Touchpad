@@ -34,23 +34,19 @@ class Controls {
      */
     static final int MAC_LENGTH = 12;
 
-    /**
-     * Mapping action (inner control) to task (outer control).
-     */
-    private static SparseArray<TaskDetail> actionToTask = new SparseArray<>();
-
     @SuppressLint("StaticFieldLeak")
     private static Context context;
-
-    /**
-     * Setting tab number user will see when opening up settings.
-     */
-    static int currentSettingTab = 0;
 
     /**
      * Configuration of tasks. Task what defines to be sent to pc.
      */
     static class TaskDetail {
+
+        /**
+         * Mapping action (inner control) to task (outer control).
+         */
+        private static SparseArray<TaskDetail> actionToTask = new SparseArray<>();
+
 
         /**
          * Mapping task to its own TaskDetail.
@@ -205,6 +201,39 @@ class Controls {
     static class SettingDetail {
 
         /**
+         * Setting tab number user will see when opening up settings.
+         */
+        private static int currentSettingTab = 0;
+
+        /**
+         * Get page index of the setting the user is now on.
+         *
+         * @return current index of the setting page the user is on
+         */
+        static int getCurrentSettingTab() {
+            return currentSettingTab;
+        }
+
+        /**
+         * Set page index of the setting the user is now on.
+         *
+         * @param currentIdx index of the setting page
+         */
+        static void setCurrentSettingTab(int currentIdx) {
+            currentSettingTab = currentIdx;
+        }
+
+        /**
+         * Get the current status of a setting.
+         *
+         * @param setting index of the setting trying to find
+         * @return current status of the setting
+         */
+        static String getStatusOfSetting(int setting) {
+            return SettingDetail.settingDetails.get(setting).getCurrentState();
+        }
+
+        /**
          * ArrayList storing all the settings.
          */
         private static ArrayList<SettingDetail> settingDetails = new ArrayList<>();
@@ -336,6 +365,15 @@ class Controls {
         private static int indexSelected = -1;
 
         /**
+         * Get the index of the currently selected device.
+         *
+         * @return the index of the currently selected device
+         */
+        static int getIndexSelected() {
+            return indexSelected;
+        }
+
+        /**
          * Check of the input mac is valid. For it to be valid, the string will be 12 characters long,
          * containing only numbers and both upper and lower case of the letter 'a', 'b', 'c', 'd', 'e',
          * and 'f'.
@@ -382,17 +420,10 @@ class Controls {
                             index, deviceDetails.size()));
                 }
                 PermanentConnection.setServerMac(deviceDetails.get(index).getMacAddress());
+            } else {
+                PermanentConnection.setServerMac(null);
             }
             indexSelected = index;
-        }
-
-        /**
-         * Get the index of the currently selected device.
-         *
-         * @return the index of the currently selected device
-         */
-        static int getIndexSelected() {
-            return indexSelected;
         }
 
         /**
@@ -564,6 +595,8 @@ class Controls {
         } catch (FileNotFoundException e) {
             // If the file does not exist
             // Default mapping
+            SparseArray<TaskDetail> actionToTask = getCurrentMappings();
+
             actionToTask.append(SINGLE_FINGER + TAP, click);
             actionToTask.append(SINGLE_FINGER + DOUBLE_TAP, doubleClick);
             actionToTask.append(TWO_FINGERS + TAP, rightClick);
@@ -591,15 +624,15 @@ class Controls {
      */
     static SparseArray<TaskDetail> getCurrentMappingsDuplicated() {
         SparseArray<TaskDetail> toReturn = new SparseArray<>();
-        for (int i = 0; i < actionToTask.size(); i++) {
-            TaskDetail detail = actionToTask.valueAt(i);
-            toReturn.put(actionToTask.keyAt(i), detail.duplicate());
+        for (int i = 0; i < TaskDetail.actionToTask.size(); i++) {
+            TaskDetail detail = TaskDetail.actionToTask.valueAt(i);
+            toReturn.put(TaskDetail.actionToTask.keyAt(i), detail.duplicate());
         }
         return toReturn;
     }
 
     static SparseArray<TaskDetail> getCurrentMappings() {
-        return actionToTask;
+        return TaskDetail.actionToTask;
     }
 
     static List<SettingDetail> getCurrentSettings() {
@@ -610,9 +643,13 @@ class Controls {
         return DeviceDetail.deviceDetails;
     }
 
-    static void updateAllSetting() {
+    static void updateAllSetting(boolean saveFile) {
         PermanentConnection.TouchEventMappingControl.updateMapping();
-        saveJsonFile();
+        changeCursorMoveMode(SettingDetail.settingDetails.get(CURSOR_MODE_SETTING).getCurrentState()
+                .equals(context.getString(R.string.relative)));
+        if (saveFile) {
+            saveJsonFile();
+        }
     }
 
     /**
@@ -620,11 +657,11 @@ class Controls {
      *
      * @param isRelative boolean value states whether cursor move state is relative or not
      */
-    static void changeCursorMoveMode(boolean isRelative) {
+    private static void changeCursorMoveMode(boolean isRelative) {
         if (isRelative) {
-            actionToTask.put(SINGLE_FINGER + MOVE, TaskDetail.taskDetails.get("M"));
+            TaskDetail.actionToTask.put(SINGLE_FINGER + MOVE, TaskDetail.taskDetails.get("M"));
         } else {
-            actionToTask.put(SINGLE_FINGER + MOVE, TaskDetail.taskDetails.get("J"));
+            TaskDetail.actionToTask.put(SINGLE_FINGER + MOVE, TaskDetail.taskDetails.get("J"));
         }
         PermanentConnection.TouchEventMappingControl.updateMapping();
         saveJsonFile();
@@ -661,12 +698,12 @@ class Controls {
         }
         JsonArray mappingControls = (JsonArray) jsonObject.get("mappingControls");
 
-        actionToTask.clear();
+        TaskDetail.actionToTask.clear();
         for (JsonElement o : mappingControls) {
             JsonObject individualMapping = (JsonObject) o;
             byte combinedAction = individualMapping.get("combinedAction").getAsByte();
             String outerControl = individualMapping.get("task").getAsString();
-            actionToTask.put(combinedAction, TaskDetail.taskDetails.get(outerControl));
+            TaskDetail.actionToTask.put(combinedAction, TaskDetail.taskDetails.get(outerControl));
         }
 
         int setting = 0;
@@ -688,6 +725,8 @@ class Controls {
 
         int currentDevice = jsonObject.get("currentlySelected").getAsInt();
         DeviceDetail.setIndexSelected(currentDevice);
+
+        updateAllSetting(false);
     }
 
     /**
@@ -695,14 +734,14 @@ class Controls {
      * <p>
      * Mapping info comes from actionToTask and general setting info comes from generalSettings.
      */
-    private static void saveJsonFile() {
+    static void saveJsonFile() {
         JsonObject toSave = new JsonObject();
 
         JsonArray mappingControls = new JsonArray();
-        for (int i = 0; i < actionToTask.size(); i++) {
+        for (int i = 0; i < TaskDetail.actionToTask.size(); i++) {
             JsonObject individualMapping = new JsonObject();
-            TaskDetail detail = TaskDetail.taskDetails.get(actionToTask.valueAt(i).getTask());
-            byte combinedAction = (byte) actionToTask.keyAt(i);
+            TaskDetail detail = TaskDetail.taskDetails.get(TaskDetail.actionToTask.valueAt(i).getTask());
+            byte combinedAction = (byte) TaskDetail.actionToTask.keyAt(i);
             assert detail != null;
             String outerControl = detail.getTask();
             individualMapping.addProperty("combinedAction", combinedAction);
@@ -804,9 +843,5 @@ class Controls {
             return toReturn;
         }
         return toReturn + " --- " + detail.getDescription();
-    }
-
-    static String getSetting(int setting) {
-        return SettingDetail.settingDetails.get(setting).getCurrentState();
     }
 }

@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
                             .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    Controls.currentSettingTab = 0;
+                                    Controls.SettingDetail.setCurrentSettingTab(0);
                                     Intent intent = new Intent(MainActivity.this, ActivitySettings.class);
                                     startActivity(intent);
                                 }

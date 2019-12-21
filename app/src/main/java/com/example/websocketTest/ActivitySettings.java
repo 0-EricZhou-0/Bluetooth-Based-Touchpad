@@ -40,7 +40,7 @@ public class ActivitySettings extends AppCompatActivity {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 viewPager.setCurrentItem(tab.getPosition());
-                Controls.currentSettingTab = tab.getPosition();
+                Controls.SettingDetail.setCurrentSettingTab(tab.getPosition());
             }
 
             @Override
@@ -53,13 +53,13 @@ public class ActivitySettings extends AppCompatActivity {
         });
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabContainer));
 
-        Objects.requireNonNull(tabContainer.getTabAt(Controls.currentSettingTab)).select();
+        Objects.requireNonNull(tabContainer.getTabAt(Controls.SettingDetail.getCurrentSettingTab())).select();
 
     }
 
     @Override
     public void onBackPressed() {
-        Controls.updateAllSetting();
+        Controls.updateAllSetting(true);
         finish();
     }
 }

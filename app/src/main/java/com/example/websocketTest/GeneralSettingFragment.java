@@ -43,6 +43,7 @@ public class GeneralSettingFragment extends Fragment {
                                 public void onClick(DialogInterface dialog, int which) {
                                     setting.changeSetting(which);
                                     stateDescription.setText(setting.getSettingDescriptionAndState());
+                                    Controls.saveJsonFile();
                                 }
                             }).show();
                 }

@@ -86,4 +86,5 @@
     <string name="tryingToConnect">尝试连接中</string>
     <string name="failToEstablishConnection">连接失败，轻触以重试</string>
     <string name="disconnect">断开连接？</string>
+    <string name="deleteDevice">删除设备</string>
 </resources>

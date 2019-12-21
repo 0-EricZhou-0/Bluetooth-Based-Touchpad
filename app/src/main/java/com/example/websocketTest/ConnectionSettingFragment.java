@@ -55,6 +55,7 @@ public class ConnectionSettingFragment extends Fragment {
             final TextView deviceName = deviceDetail.findViewById(R.id.deviceName);
             final TextView deviceMac = deviceDetail.findViewById(R.id.deviceMac);
             final ImageButton deleteDevice = deviceDetail.findViewById(R.id.deleteDevice);
+            final LinearLayout selectionPanel = deviceDetail.findViewById(R.id.selectionPanel);
             checkBoxList.add(selection);
             deviceName.setText(detail.getDeviceName());
             deviceMac.setText(detail.getMacAddress());
@@ -90,7 +91,7 @@ public class ConnectionSettingFragment extends Fragment {
                         Controls.DeviceDetail.setIndexSelected(checkBoxList.indexOf(selection));
                         selection.setChecked(true);
                     } else {
-                        selection.setChecked(true);
+                        Controls.DeviceDetail.setIndexSelected(-1);
                     }
                 }
             });
@@ -120,10 +121,10 @@ public class ConnectionSettingFragment extends Fragment {
                             }).show();
                 }
             });
-            deviceMac.setOnClickListener(new View.OnClickListener() {
+            selectionPanel.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    selection.setChecked(true);
+                    selection.setChecked(!selection.isChecked());
                 }
             });
             deviceContainer.addView(deviceDetail);
