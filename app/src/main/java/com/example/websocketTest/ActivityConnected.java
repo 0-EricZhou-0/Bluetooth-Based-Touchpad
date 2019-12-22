@@ -71,7 +71,7 @@ public class ActivityConnected extends AppCompatActivity {
 
         exitDialog = new AlertDialog.Builder(ActivityConnected.this)
                 .setTitle(R.string.warning)
-                .setMessage("Disconnect?")
+                .setMessage(R.string.disconnect)
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

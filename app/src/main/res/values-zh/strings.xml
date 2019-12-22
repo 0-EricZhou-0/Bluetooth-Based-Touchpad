@@ -63,7 +63,6 @@
     <string name="touchWarningDescription">是否在检测到多余5个手指时弹出警告</string>
     <string name="vertical">纵向</string>
     <string name="warning">警告</string>
-    <string name="language">语言</string>
     <string name="tryConnect">连接</string>
     <string name="exit">退出应用</string>
     <string name="click">鼠标左键单击</string>
@@ -87,4 +86,8 @@
     <string name="failToEstablishConnection">连接失败，轻触以重试</string>
     <string name="disconnect">断开连接？</string>
     <string name="deleteDevice">删除设备</string>
+    <string name="followSystem">跟随系统</string>
+    <string name="phoneAsTouchPad">触摸板模式</string>
+    <string name="viberationModeDescription">手机是否会在某些情况下震动</string>
+    <string name="vibrationMode">震动模式</string>
 </resources>

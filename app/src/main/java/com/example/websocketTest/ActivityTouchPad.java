@@ -35,7 +35,8 @@ public class ActivityTouchPad extends AppCompatActivity implements
      * time using the touch pad. And the value should not be too big, otherwise it may not successfully
      * detect the user actions.
      */
-    private final int DELAY_BEFORE_START_DETECTION = 6;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final int DELAY_BEFORE_START_DETECTION = 15;
 
     /**
      * The number of milliseconds waited until it is sure that the user does not want to tap twice.
@@ -282,27 +283,12 @@ public class ActivityTouchPad extends AppCompatActivity implements
                                 PermanentConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + direction), setDirection);
                                 direction = setDirection;
                             }
-                            if (setDirection == Controls.MOVE_UP && direction != 0) {
+                            if (setDirection == Controls.MOVE_DOWN && direction != 0) {
                                 direction = 0;
                                 exitDialog.show();
-                            } else if (setDirection == Controls.MOVE_DOWN && direction != 0) {
-                                direction = 0;
-                                new AlertDialog.Builder(ActivityTouchPad.this)
-                                        .setTitle("Warning")
-                                        .setMessage("Do you want to enter settings?\nThis will cause current activity to be finished.")
-                                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                            }
-                                        })
-                                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface arg0, int arg1) {
-                                                PermanentConnection.sendMessage("X");
-                                                Intent intent = new Intent(ActivityTouchPad.this, ActivitySettings.class);
-                                                startActivity(intent);
-                                                finish();
-                                            }
-                                        }).show();
+                            }
+                            if (setDirection == Controls.MOVE_UP && direction != 0) {
+
                             }
                         }
                         break;
@@ -379,6 +365,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                             public void run() {
                                 if (maxNumPointers == 2 && eventGroup[1].getDistanceLessThan(100)) {
                                     PermanentConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.LONG_PRESS));
+                                    Controls.vibrate();
                                 }
                             }
                         }, LONG_PRESS_LENGTH);
@@ -402,6 +389,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                             public void run() {
                                 if (maxNumPointers == 3 && eventGroup[2].getDistanceLessThan(100)) {
                                     PermanentConnection.identifyAndSend((byte) (Controls.THREE_FINGERS + Controls.LONG_PRESS));
+                                    Controls.vibrate();
                                 }
                             }
                         }, LONG_PRESS_LENGTH);
@@ -425,6 +413,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                             public void run() {
                                 if (maxNumPointers == 4 && eventGroup[3].getDistanceLessThan(100)) {
                                     PermanentConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + Controls.LONG_PRESS));
+                                    Controls.vibrate();
                                 }
                             }
                         }, LONG_PRESS_LENGTH);
@@ -448,6 +437,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                             public void run() {
                                 if (maxNumPointers == 5 && eventGroup[4].getDistanceLessThan(100)) {
                                     PermanentConnection.identifyAndSend((byte) (Controls.FIVE_FINGERS + Controls.LONG_PRESS));
+                                    Controls.vibrate();
                                 }
                             }
                         }, LONG_PRESS_LENGTH);
@@ -468,6 +458,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
     @Override
     public void onLongPress(MotionEvent event) {
         PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.LONG_PRESS));
+        Controls.vibrate();
     }
 
     @Override

@@ -16,10 +16,11 @@
     <string name="change">Change</string>
     <string name="remove">Remove</string>
 
-    <!-- Main activity -->
+    <!-- Main activity & Activity Connected-->
     <string name="exitConfirm">Do you want to exit?</string>
     <string name="macRequired">In order to connect to a pc, bluetooth mac address is required. Press
         confirm to enter the setting to set mac address.</string>
+    <string name="phoneAsTouchPad">Touch Pad</string>
 
     <!-- Controls -->
     <string name="basicControl">(Basic Control)</string>
@@ -76,9 +77,11 @@
     <string name="touchWarning">Touch Warning</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
-    <string name="language">Language</string>
-    <string name="english" translatable="false">English</string>
-    <string name="chinese" translatable="false">中文</string>
+    <string name="vibrationMode">Vibration</string>
+    <!-- <string name="enabled">Enabled</string>
+         <string name="disabled">Disabled</string> -->
+    <string name="followSystem">Follow the system setting</string>
+
     <string name="orientationDescription">Orientation will only work in touch pad mode, the launch
         screen orientation will not be changed by this setting.</string>
     <string name="cursorModeDescription">Controls how the cursor move on a remote computer. Absolute
@@ -89,6 +92,7 @@
     <string name="touchWarningDescription">This controls if a warning message box is showed in any
         touch pad mode when the number of fingers detected on the screen is more than 5. (For
         accuracy reason, those events will be ignored.)</string>
+    <string name="viberationModeDescription">Will the device vibrate in some circumstances.</string>
 
     <!-- Connection setting -->
     <string name="connectionSettingDescription">You can always add a new device here as long as its

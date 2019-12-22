@@ -2,6 +2,9 @@ package com.example.websocketTest;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.media.AudioManager;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.SparseArray;
 import android.view.View;
 
@@ -36,6 +39,11 @@ class Controls {
 
     @SuppressLint("StaticFieldLeak")
     private static Context context;
+
+
+    private static Vibrator vibrator;
+    private static AudioManager audioManager;
+
 
     /**
      * Configuration of tasks. Task what defines to be sent to pc.
@@ -538,15 +546,27 @@ class Controls {
         }
     }
 
+    static void vibrate() {
+        String currentState = SettingDetail.settingDetails.get(VIBRATION_SETTING).getCurrentState();
+        int ringerMode = audioManager.getRingerMode();
+        if (currentState.equals(context.getString(R.string.enabled))
+                || (currentState.equals(context.getString(R.string.followSystem))
+                && (ringerMode == AudioManager.RINGER_MODE_NORMAL || ringerMode == AudioManager.RINGER_MODE_VIBRATE))) {
+            vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE));
+        }
+    }
+
     static final int ORIENTATION_SETTING = 0;
     static final int SCROLL_MODE_SETTING = 1;
     static final int TOUCH_WARNING_SETTING = 2;
     static final int CURSOR_MODE_SETTING = 3;
+    static final int VIBRATION_SETTING = 4;
 
     /**
      * Initialize all the outer controls. If there is a file stored in the device which describes all
      * the settings, read the file for all setting; otherwise, use default setting..
      */
+    @SuppressWarnings("unused")
     static void init(Context setContext) {
         context = setContext;
 
@@ -559,6 +579,8 @@ class Controls {
                 0, R.string.enabled, R.string.disabled).add();
         new SettingDetail(R.string.cursorMode, R.string.cursorModeDescription,
                 0, R.string.relative, R.string.absolute).add();
+        new SettingDetail(R.string.vibrationMode, R.string.viberationModeDescription,
+                2, R.string.enabled, R.string.disabled, R.string.followSystem).add();
 
         /* All outer controls
         Outer controls are responsible for transmission and adding new mapping. Each outer control
@@ -588,6 +610,9 @@ class Controls {
         TaskDetail actionExitingTouchPad = new TaskDetail("I", R.string.exitTouchPad, true, false).add();
         // Functional outer controls
         addMapping(CANCEL_LAST_ACTION, HEARTBEAT, ACTION_NOT_FOUND);
+
+        vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
         try {
             // Try to load the json file
@@ -804,7 +829,7 @@ class Controls {
     static String getReadableDefinedAction(byte combinedAction, TaskDetail detail) {
         int numFingers = combinedAction / 8;
         int action = combinedAction % 8;
-        if (numFingers > 10) {
+        if (numFingers > 5) {
             return null;
         }
         String toReturn;
