@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
@@ -43,7 +44,6 @@ public class GeneralSettingFragment extends Fragment {
                                 public void onClick(DialogInterface dialog, int which) {
                                     setting.changeSetting(which);
                                     stateDescription.setText(setting.getSettingDescriptionAndState());
-                                    Controls.saveJsonFile();
                                 }
                             }).show();
                 }
@@ -51,6 +51,10 @@ public class GeneralSettingFragment extends Fragment {
             detailedDescription.setText(setting.getDetailedDescription());
             generalSettingContainer.addView(generalSetting);
         }
+        final View sensitivitySetting = getLayoutInflater().inflate(R.layout.chunk_sensitivity_setting,
+                generalSettingContainer, false);
+        final View sensitivityDescription = sensitivitySetting.findViewById(R.id.sensitivityDescription);
+        final SeekBar sensitivitySeekBar = sensitivitySetting.findViewById(R.id.sensitivitySeekBar);
     }
 
     public GeneralSettingFragment() {

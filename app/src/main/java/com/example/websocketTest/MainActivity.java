@@ -7,9 +7,9 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -27,13 +27,12 @@ public class MainActivity extends AppCompatActivity {
         final Button startConnection = findViewById(R.id.tryConnect);
         final Button settings = findViewById(R.id.settingInMainScreen);
         final Button exit = findViewById(R.id.exit);
-        final TextView absorbMotionEvent = findViewById(R.id.absorbMotionEvent);
+        final ConstraintLayout mainWindow = findViewById(R.id.mainWindow);
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         Controls.phoneScreenSize = new CoordinatePair(displayMetrics.widthPixels, displayMetrics.heightPixels);
 
-        absorbMotionEvent.setElevation(-1);
 
         exitDialog = new AlertDialog.Builder(MainActivity.this)
                 .setTitle(R.string.warning)
@@ -92,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
         };
         exit.setOnClickListener(exitApplication);
 
-        PermanentConnection.init(MainActivity.this, startConnection, absorbMotionEvent);
+        PermanentConnection.init(MainActivity.this, MainActivity.this, startConnection, mainWindow);
     }
 
     @Override

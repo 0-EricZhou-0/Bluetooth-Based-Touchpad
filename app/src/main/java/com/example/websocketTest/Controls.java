@@ -5,8 +5,10 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -546,6 +548,9 @@ class Controls {
         }
     }
 
+    /**
+     * Make the phone vibrate if it has a vibrator and either it is on normal or vibrate state.
+     */
     static void vibrate() {
         String currentState = SettingDetail.settingDetails.get(VIBRATION_SETTING).getCurrentState();
         int ringerMode = audioManager.getRingerMode();
@@ -560,7 +565,7 @@ class Controls {
     static final int SCROLL_MODE_SETTING = 1;
     static final int TOUCH_WARNING_SETTING = 2;
     static final int CURSOR_MODE_SETTING = 3;
-    static final int VIBRATION_SETTING = 4;
+    private static final int VIBRATION_SETTING = 4;
 
     /**
      * Initialize all the outer controls. If there is a file stored in the device which describes all
@@ -700,6 +705,7 @@ class Controls {
      * @throws FileNotFoundException If local file does not exist.
      */
     private static void loadJsonFile() throws FileNotFoundException {
+        Log.println(Log.INFO, "FileAccessing", "Loading settings file.");
         StringBuilder stringBuilder = new StringBuilder();
         InputStreamReader inputStreamReader = new InputStreamReader(context.openFileInput("settingDetails.json"), StandardCharsets.UTF_8);
         try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
@@ -709,10 +715,11 @@ class Controls {
                 line = reader.readLine();
             }
         } catch (IOException e) {
-            // Error occurred when opening raw file for reading.
+            Log.println(Log.ERROR, "FileAccessing", "Settings file reading error.");
             throw new FileNotFoundException();
         }
         if (stringBuilder.toString().equals("")) {
+            Log.println(Log.INFO, "FileAccessing", "Settings file does not exist.");
             throw new FileNotFoundException();
         }
 
@@ -759,9 +766,9 @@ class Controls {
      * <p>
      * Mapping info comes from actionToTask and general setting info comes from generalSettings.
      */
-    static void saveJsonFile() {
+    private static void saveJsonFile() {
+        Log.println(Log.INFO, "FileAccessing", "Writing settings file.");
         JsonObject toSave = new JsonObject();
-
         JsonArray mappingControls = new JsonArray();
         for (int i = 0; i < TaskDetail.actionToTask.size(); i++) {
             JsonObject individualMapping = new JsonObject();
@@ -799,7 +806,7 @@ class Controls {
             outputStreamWriter.write(toSave.toString().getBytes());
             outputStreamWriter.close();
         } catch (IOException e) {
-            // Toast.makeText(context, "SAVE ERROR", Toast.LENGTH_SHORT).show();
+            Log.println(Log.ERROR, "FileAccessing", "Settings file writing error.");
         }
     }
 
@@ -814,6 +821,17 @@ class Controls {
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_FULLSCREEN);
+    }
+
+
+    static void setUsability(boolean enable, ViewGroup vg) {
+        for (int i = 0; i < vg.getChildCount(); i++) {
+            View child = vg.getChildAt(i);
+            child.setEnabled(enable);
+            if (child instanceof ViewGroup) {
+                setUsability(enable, (ViewGroup) child);
+            }
+        }
     }
 
     /**

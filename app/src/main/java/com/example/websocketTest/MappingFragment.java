@@ -77,7 +77,6 @@ public class MappingFragment extends Fragment {
                                             mappingContainer.removeView(keyMapping);
                                             currentMappings.remove(combinedAction);
                                         }
-                                        Controls.saveJsonFile();
                                     }
                                 }).show();
                     }
@@ -130,7 +129,6 @@ public class MappingFragment extends Fragment {
                     currentMappings.put(bundleAction, detail.duplicate());
                 }
                 reloadMapping();
-                Controls.saveJsonFile();
             }
         }
     }

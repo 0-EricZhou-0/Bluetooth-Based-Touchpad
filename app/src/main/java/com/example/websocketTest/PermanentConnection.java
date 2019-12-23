@@ -8,8 +8,8 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.util.SparseArray;
+import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,11 +26,8 @@ public class PermanentConnection {
      * Try connect using multithreading.
      */
     private static class TryConnect extends Thread {
-        @SuppressLint("SetTextI18n")
         public void run() {
             try {
-                startConnection.setText(String.format("%s...", context.getString(R.string.tryingToConnect)));
-                absorb.setElevation(100);
                 BluetoothDevice device = btAdapter.getRemoteDevice(serverMac);
                 btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
                 btAdapter.cancelDiscovery();
@@ -51,8 +48,13 @@ public class PermanentConnection {
                 ((Activity) context).finish();
 
             } catch (Exception ex1) {
-                startConnection.setText(R.string.failToEstablishConnection);
-                absorb.setElevation(-1);
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Controls.setUsability(true, rootView);
+                        startConnection.setText(R.string.failToEstablishConnection);
+                    }
+                });
                 try {
                     btSocket.close();
                 } catch (Exception ignore) {
@@ -71,9 +73,11 @@ public class PermanentConnection {
     @SuppressLint("StaticFieldLeak")
     private static Context context;
     @SuppressLint("StaticFieldLeak")
+    private static Activity activity;
+    @SuppressLint("StaticFieldLeak")
     private static Button startConnection;
     @SuppressLint("StaticFieldLeak")
-    private static TextView absorb;
+    private static ViewGroup rootView;
 
     static void setServerMac(String mac) {
         serverMac = mac;
@@ -122,10 +126,11 @@ public class PermanentConnection {
         }
     }
 
-    static void init(Context setContext, Button tryConnect, TextView setAbsorb) {
+    static void init(Context setContext, Activity setActivity, Button tryConnect, ViewGroup root) {
         startConnection = tryConnect;
-        absorb = setAbsorb;
+        rootView = root;
         context = setContext;
+        activity = setActivity;
         TouchEventMappingControl.updateMapping();
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         if (btAdapter != null) {
@@ -138,6 +143,13 @@ public class PermanentConnection {
 
     static void connect() {
         TryConnect tryConnect = new TryConnect();
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                startConnection.setText(String.format("%s...", context.getString(R.string.tryingToConnect)));
+                Controls.setUsability(false, rootView);
+            }
+        });
         tryConnect.start();
     }
 

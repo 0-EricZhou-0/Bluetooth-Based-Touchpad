@@ -80,7 +80,7 @@
     <string name="vibrationMode">Vibration</string>
     <!-- <string name="enabled">Enabled</string>
          <string name="disabled">Disabled</string> -->
-    <string name="followSystem">Follow the system setting</string>
+    <string name="followSystem">Follow system setting</string>
 
     <string name="orientationDescription">Orientation will only work in touch pad mode, the launch
         screen orientation will not be changed by this setting.</string>

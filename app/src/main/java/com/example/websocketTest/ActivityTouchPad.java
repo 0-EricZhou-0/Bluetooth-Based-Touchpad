@@ -1,15 +1,21 @@
 package com.example.websocketTest;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -49,6 +55,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
     private final int LONG_PRESS_LENGTH = 800;
 
     private GestureDetectorCompat mDetector;
+    private EditText keyboardInput;
 
     private FingerEvent[] eventGroup = new FingerEvent[MAX_NUM_OF_FINGERS_SUPPORTED];
 
@@ -147,6 +154,9 @@ public class ActivityTouchPad extends AppCompatActivity implements
 
         mDetector = new GestureDetectorCompat(this, this);
         mDetector.setOnDoubleTapListener(this);
+        keyboardInput = new EditText(ActivityTouchPad.this);
+        keyboardInput.setVisibility(View.INVISIBLE);
+        background.addView(keyboardInput);
 
         exitDialog = new AlertDialog.Builder(ActivityTouchPad.this)
                 .setTitle(R.string.warning)
@@ -191,6 +201,24 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         Controls.maximumWindow(decorView);
                     }
                 }, 1700);
+            }
+        });
+
+        keyboardInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                PermanentConnection.sendMessage("K " + s.toString());
+                s.clear();
             }
         });
     }
@@ -288,7 +316,11 @@ public class ActivityTouchPad extends AppCompatActivity implements
                                 exitDialog.show();
                             }
                             if (setDirection == Controls.MOVE_UP && direction != 0) {
-
+                                Log.println(Log.INFO, "TouchPad", "On-Screen keyboard show");
+                                direction = 0;
+                                keyboardInput.requestFocus();
+                                ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE))
+                                        .showSoftInput(keyboardInput, InputMethodManager.SHOW_FORCED);
                             }
                         }
                         break;

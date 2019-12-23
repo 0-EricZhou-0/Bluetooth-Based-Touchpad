@@ -35,16 +35,6 @@ public class ConnectionSettingFragment extends Fragment {
     private List<CheckBox> checkBoxList = new ArrayList<>();
     private boolean changeDevicePermitted;
 
-    private void disableAllViews(boolean enable, ViewGroup vg) {
-        for (int i = 0; i < vg.getChildCount(); i++) {
-            View child = vg.getChildAt(i);
-            child.setEnabled(enable);
-            if (child instanceof ViewGroup) {
-                disableAllViews(enable, (ViewGroup) child);
-            }
-        }
-    }
-
     private void loadDeviceList() {
         deviceContainer.removeAllViews();
         checkBoxList.clear();
@@ -247,7 +237,7 @@ public class ConnectionSettingFragment extends Fragment {
         final TextView connectionTabDescription = rootView.findViewById(R.id.connectionTabDescription);
         if (!changeDevicePermitted) {
             connectionTabDescription.setText(R.string.tabDisableDescription);
-            disableAllViews(false, (ViewGroup) rootView);
+            Controls.setUsability(false, (ViewGroup) rootView);
         } else {
             connectionTabDescription.setText(R.string.connectionSettingDescription);
         }
