@@ -22,6 +22,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GestureDetectorCompat;
 
+import java.util.List;
+
 import static com.example.websocketTest.Controls.NOT_STARTED;
 import static com.example.websocketTest.Controls.ZERO;
 
@@ -47,12 +49,15 @@ public class ActivityTouchPad extends AppCompatActivity implements
     /**
      * The number of milliseconds waited until it is sure that the user does not want to tap twice.
      */
-    private final int WAIT_UNTIL_CONFIRM = 160;
+    private final int WAIT_UNTIL_CONFIRM = 550;
 
     /**
      * The number of milliseconds waited until it is sure that the user is trying to long press.
      */
     private final int LONG_PRESS_LENGTH = 800;
+
+    @SuppressWarnings("FieldCanBeLocal")
+    private final int MAXIMUM_ALLOWANCE_BEFORE_RECOGNIZING = 15;
 
     private GestureDetectorCompat mDetector;
     private EditText keyboardInput;
@@ -62,6 +67,8 @@ public class ActivityTouchPad extends AppCompatActivity implements
     private int maxNumPointers = 1;
     private int currentNumPointers = 1;
     private int direction = -1;
+    private boolean isSinglePress;
+    private long lastAccessed;
 
     private boolean forwardScrollMode;
     private boolean touchWarningMode;
@@ -70,9 +77,9 @@ public class ActivityTouchPad extends AppCompatActivity implements
     private AlertDialog.Builder exitDialog;
 
     private class FingerEvent {
-        CoordinatePair startPos = NOT_STARTED;
-        CoordinatePair currentPos = NOT_STARTED;
-        float maximumTolerance;
+        private CoordinatePair startPos = NOT_STARTED;
+        private CoordinatePair currentPos = NOT_STARTED;
+        private float maximumTolerance;
 
         FingerEvent(float setTolerance) {
             maximumTolerance = setTolerance;
@@ -108,8 +115,8 @@ public class ActivityTouchPad extends AppCompatActivity implements
             currentPos = NOT_STARTED;
         }
 
-        boolean getDistanceLessThan(int maximumDist) {
-            return startPos.getDistance(currentPos) < maximumDist;
+        boolean getDistanceLessThan() {
+            return startPos.getDistance(currentPos) < MAXIMUM_ALLOWANCE_BEFORE_RECOGNIZING;
         }
 
         boolean hasNotStarted() {
@@ -182,11 +189,11 @@ public class ActivityTouchPad extends AppCompatActivity implements
         touchWarningMode = Controls.SettingDetail.getStatusOfSetting(Controls.TOUCH_WARNING_SETTING).equals(getString(R.string.enabled));
         cursorMode = Controls.SettingDetail.getStatusOfSetting(Controls.CURSOR_MODE_SETTING).equals(getString(R.string.relative));
 
-        eventGroup[0] = new FingerEvent(1.2F);
-        eventGroup[1] = new FingerEvent(20F);
-        eventGroup[2] = new FingerEvent(60F);
-        eventGroup[3] = new FingerEvent(60F);
-        eventGroup[4] = new FingerEvent(60F);
+        List<Controls.SensitivitySetting> currentSensitivities = Controls.getCurrentSensitivities();
+
+        for (int i = 0; i < currentSensitivities.size(); i++) {
+            eventGroup[i] = new FingerEvent(currentSensitivities.get(i).getRealSensitivity());
+        }
 
         final View decorView = getWindow().getDecorView();
         Controls.maximumWindow(decorView);
@@ -253,6 +260,8 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         // Cannot be customized
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
                             eventGroup[0].startEvent(currentX, currentY);
+                            isSinglePress = System.currentTimeMillis() - lastAccessed >= LONG_PRESS_LENGTH;
+                            Log.println(Log.INFO, "Touch Pad", "Single Press? " + isSinglePress);
                         } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
                             CoordinatePair pair = eventGroup[0].moveTo(currentX, currentY);
                             if (!pair.equals(ZERO)) {
@@ -366,6 +375,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                             direction = 0;
                         }
                 }
+                lastAccessed = System.currentTimeMillis();
             }
         }
         return true;
@@ -385,7 +395,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         twoFingerSingleTapConfirmedHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                if (maxNumPointers < 2) {
+                                if (maxNumPointers < 2 && isSinglePress) {
                                     PermanentConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.TAP));
                                 }
                             }
@@ -395,9 +405,13 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         twoFingerLongPressHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                if (maxNumPointers == 2 && eventGroup[1].getDistanceLessThan(100)) {
-                                    PermanentConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.LONG_PRESS));
-                                    Controls.vibrate();
+                                if (maxNumPointers == 2 && eventGroup[1].getDistanceLessThan()) {
+                                    if (isSinglePress) {
+                                        PermanentConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.LONG_TAP));
+                                        Controls.vibrate();
+                                    } else {
+                                        PermanentConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.DOUBLE_TAP));
+                                    }
                                 }
                             }
                         }, LONG_PRESS_LENGTH);
@@ -409,7 +423,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         threeFingerSingleTapConfirmedHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                if (maxNumPointers < 3) {
+                                if (maxNumPointers < 3 && isSinglePress) {
                                     PermanentConnection.identifyAndSend((byte) (Controls.THREE_FINGERS + Controls.TAP));
                                 }
                             }
@@ -419,9 +433,13 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         threeFingerLongPressHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                if (maxNumPointers == 3 && eventGroup[2].getDistanceLessThan(100)) {
-                                    PermanentConnection.identifyAndSend((byte) (Controls.THREE_FINGERS + Controls.LONG_PRESS));
-                                    Controls.vibrate();
+                                if (maxNumPointers == 3 && eventGroup[2].getDistanceLessThan()) {
+                                    if (isSinglePress) {
+                                        PermanentConnection.identifyAndSend((byte) (Controls.THREE_FINGERS + Controls.LONG_TAP));
+                                        Controls.vibrate();
+                                    } else {
+                                        PermanentConnection.identifyAndSend((byte) (Controls.THREE_FINGERS + Controls.DOUBLE_TAP));
+                                    }
                                 }
                             }
                         }, LONG_PRESS_LENGTH);
@@ -433,7 +451,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         fourFingerSingleTapConfirmedHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                if (maxNumPointers < 4) {
+                                if (maxNumPointers < 4 && isSinglePress) {
                                     PermanentConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + Controls.TAP));
                                 }
                             }
@@ -443,8 +461,8 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         fourFingerLongPressHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                if (maxNumPointers == 4 && eventGroup[3].getDistanceLessThan(100)) {
-                                    PermanentConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + Controls.LONG_PRESS));
+                                if (maxNumPointers == 4 && eventGroup[3].getDistanceLessThan() && isSinglePress) {
+                                    PermanentConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + Controls.LONG_TAP));
                                     Controls.vibrate();
                                 }
                             }
@@ -457,7 +475,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         fiveFingerSingleTapConfirmedHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                if (maxNumPointers < 5) {
+                                if (maxNumPointers < 5 && isSinglePress) {
                                     PermanentConnection.identifyAndSend((byte) (Controls.FIVE_FINGERS + Controls.TAP));
                                 }
                             }
@@ -467,8 +485,8 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         fiveFingerLongPressHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                if (maxNumPointers == 5 && eventGroup[4].getDistanceLessThan(100)) {
-                                    PermanentConnection.identifyAndSend((byte) (Controls.FIVE_FINGERS + Controls.LONG_PRESS));
+                                if (maxNumPointers == 5 && eventGroup[4].getDistanceLessThan() && isSinglePress) {
+                                    PermanentConnection.identifyAndSend((byte) (Controls.FIVE_FINGERS + Controls.LONG_TAP));
                                     Controls.vibrate();
                                 }
                             }
@@ -489,8 +507,10 @@ public class ActivityTouchPad extends AppCompatActivity implements
 
     @Override
     public void onLongPress(MotionEvent event) {
-        PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.LONG_PRESS));
-        Controls.vibrate();
+        if (isSinglePress) {
+            PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.LONG_TAP));
+            Controls.vibrate();
+        }
     }
 
     @Override

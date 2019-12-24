@@ -92,7 +92,10 @@
     <string name="touchWarningDescription">This controls if a warning message box is showed in any
         touch pad mode when the number of fingers detected on the screen is more than 5. (For
         accuracy reason, those events will be ignored.)</string>
-    <string name="viberationModeDescription">Will the device vibrate in some circumstances.</string>
+    <string name="vibrationModeDescription">Will the device vibrate in some circumstances.</string>
+
+
+    <string name="sensitivityHeading">Sensitivity</string>
 
     <!-- Connection setting -->
     <string name="connectionSettingDescription">You can always add a new device here as long as its

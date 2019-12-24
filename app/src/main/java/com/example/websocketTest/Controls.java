@@ -42,7 +42,6 @@ class Controls {
     @SuppressLint("StaticFieldLeak")
     private static Context context;
 
-
     private static Vibrator vibrator;
     private static AudioManager audioManager;
 
@@ -353,8 +352,8 @@ class Controls {
         /**
          * Adding the detail to list for it to be functional, used when initialization
          */
-        void add() {
-            settingDetails.add(this);
+        void add(int index) {
+            settingDetails.add(index, this);
         }
 
     }
@@ -462,15 +461,6 @@ class Controls {
         }
 
         /**
-         * Get the not formatted string of device mac.
-         *
-         * @return not formatted string of device mac
-         */
-        String getRawMac() {
-            return macAddress;
-        }
-
-        /**
          * Get the formatted string of the device mac. Formatted mac address look like "XX:XX:XX:XX:XX:XX"
          *
          * @return formatted string of device mac
@@ -500,6 +490,36 @@ class Controls {
 
     }
 
+    static class SensitivitySetting {
+        private static List<SensitivitySetting> sensitivitySettings = new ArrayList<>();
+
+        static final int MIN = 20;
+        static final int MAX = 100;
+        private int multiplicativeFactor;
+        private int sensitivity;
+
+        SensitivitySetting(int setFactor, int setSensitivity) {
+            multiplicativeFactor = setFactor;
+            sensitivity = setSensitivity;
+        }
+
+        int getSensitivity() {
+            return sensitivity;
+        }
+
+        float getRealSensitivity() {
+            return (float) (MAX + MIN - sensitivity) / multiplicativeFactor;
+        }
+
+        void setSensitivity(int newSensitivity) {
+            sensitivity = newSensitivity;
+        }
+
+        void add() {
+            sensitivitySettings.add(this);
+        }
+    }
+
     /**
      * Size of the phone screen, used when cursor move state is absolute.
      */
@@ -511,7 +531,7 @@ class Controls {
     // Action
     static final byte TAP = 0b000;                  //0
     static final byte MOVE = 0b001;                 //1
-    static final byte LONG_PRESS = 0b010;           //2
+    static final byte LONG_TAP = 0b010;           //2
     static final byte MOVE_LEFT = 0b011;            //3
     static final byte MOVE_RIGHT = 0b100;           //4
     static final byte MOVE_UP = 0b101;              //5
@@ -537,30 +557,6 @@ class Controls {
     static final CoordinatePair NOT_STARTED = new CoordinatePair(-1, -1);
     static final CoordinatePair ZERO = new CoordinatePair(0, 0);
 
-    /**
-     * Used when adding functional outer controls to the mapping for them to be functional.
-     *
-     * @param details all the functional outer controls
-     */
-    private static void addMapping(TaskDetail... details) {
-        for (TaskDetail detail : details) {
-            detail.add();
-        }
-    }
-
-    /**
-     * Make the phone vibrate if it has a vibrator and either it is on normal or vibrate state.
-     */
-    static void vibrate() {
-        String currentState = SettingDetail.settingDetails.get(VIBRATION_SETTING).getCurrentState();
-        int ringerMode = audioManager.getRingerMode();
-        if (currentState.equals(context.getString(R.string.enabled))
-                || (currentState.equals(context.getString(R.string.followSystem))
-                && (ringerMode == AudioManager.RINGER_MODE_NORMAL || ringerMode == AudioManager.RINGER_MODE_VIBRATE))) {
-            vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE));
-        }
-    }
-
     static final int ORIENTATION_SETTING = 0;
     static final int SCROLL_MODE_SETTING = 1;
     static final int TOUCH_WARNING_SETTING = 2;
@@ -577,15 +573,23 @@ class Controls {
 
         SettingDetail.settingDetails.clear();
         new SettingDetail(R.string.orientation, R.string.orientationDescription,
-                0, R.string.vertical, R.string.horizontal).add();
+                0, R.string.vertical, R.string.horizontal).add(ORIENTATION_SETTING);
         new SettingDetail(R.string.scrollMode, R.string.scrollModeDescription,
-                0, R.string.forward, R.string.reverse).add();
+                0, R.string.forward, R.string.reverse).add(SCROLL_MODE_SETTING);
         new SettingDetail(R.string.touchWarning, R.string.touchWarningDescription,
-                0, R.string.enabled, R.string.disabled).add();
+                0, R.string.enabled, R.string.disabled).add(TOUCH_WARNING_SETTING);
         new SettingDetail(R.string.cursorMode, R.string.cursorModeDescription,
-                0, R.string.relative, R.string.absolute).add();
-        new SettingDetail(R.string.vibrationMode, R.string.viberationModeDescription,
-                2, R.string.enabled, R.string.disabled, R.string.followSystem).add();
+                0, R.string.relative, R.string.absolute).add(CURSOR_MODE_SETTING);
+        new SettingDetail(R.string.vibrationMode, R.string.vibrationModeDescription,
+                2, R.string.enabled, R.string.disabled, R.string.followSystem).add(VIBRATION_SETTING);
+
+        SensitivitySetting.sensitivitySettings.clear();
+        int averageSensitivity = (SensitivitySetting.MAX + SensitivitySetting.MIN) / 2;
+        new SensitivitySetting(80, averageSensitivity).add();
+        new SensitivitySetting(5, averageSensitivity).add();
+        new SensitivitySetting(2, averageSensitivity).add();
+        new SensitivitySetting(2, averageSensitivity).add();
+        new SensitivitySetting(2, averageSensitivity).add();
 
         /* All outer controls
         Outer controls are responsible for transmission and adding new mapping. Each outer control
@@ -622,7 +626,7 @@ class Controls {
         try {
             // Try to load the json file
             loadJsonFile();
-        } catch (FileNotFoundException e) {
+        } catch (Exception e) {
             // If the file does not exist
             // Default mapping
             SparseArray<TaskDetail> actionToTask = getCurrentMappings();
@@ -631,7 +635,7 @@ class Controls {
             actionToTask.append(SINGLE_FINGER + DOUBLE_TAP, doubleClick);
             actionToTask.append(TWO_FINGERS + TAP, rightClick);
             actionToTask.append(SINGLE_FINGER + MOVE, moveCursorRelative);
-            actionToTask.append(SINGLE_FINGER + LONG_PRESS, select);
+            actionToTask.append(SINGLE_FINGER + LONG_TAP, select);
             actionToTask.append(TWO_FINGERS + MOVE, scroll);
             actionToTask.append(THREE_FINGERS + MOVE_DOWN, returnToDesktop);
             actionToTask.append(THREE_FINGERS + MOVE_UP, enableTaskMode);
@@ -671,6 +675,10 @@ class Controls {
 
     static List<DeviceDetail> getCurrentDevices() {
         return DeviceDetail.deviceDetails;
+    }
+
+    static List<SensitivitySetting> getCurrentSensitivities() {
+        return SensitivitySetting.sensitivitySettings;
     }
 
     static void updateAllSetting(boolean saveFile) {
@@ -755,6 +763,15 @@ class Controls {
             DeviceDetail.deviceDetails.add(new DeviceDetail(deviceMac, deviceName));
         }
 
+        SensitivitySetting.sensitivitySettings.clear();;
+        JsonArray sensitivityList = (JsonArray) jsonObject.get("sensitivities");
+        for (JsonElement o : sensitivityList) {
+            JsonObject individualSensitivity = (JsonObject) o;
+            int multiplicativeFactor = individualSensitivity.get("factor").getAsInt();
+            int sensitivity = individualSensitivity.get("sensitivity").getAsInt();
+            SensitivitySetting.sensitivitySettings.add(new SensitivitySetting(multiplicativeFactor, sensitivity));
+        }
+
         int currentDevice = jsonObject.get("currentlySelected").getAsInt();
         DeviceDetail.setIndexSelected(currentDevice);
 
@@ -794,11 +811,21 @@ class Controls {
         JsonArray deviceList = new JsonArray();
         for (DeviceDetail device : DeviceDetail.deviceDetails) {
             JsonObject individualDevice = new JsonObject();
-            individualDevice.addProperty("name", device.getDeviceName());
-            individualDevice.addProperty("mac", device.getRawMac());
+            individualDevice.addProperty("name", device.deviceName);
+            individualDevice.addProperty("mac", device.macAddress);
             deviceList.add(individualDevice);
         }
         toSave.add("devices", deviceList);
+
+        JsonArray sensitivityList = new JsonArray();
+        for (SensitivitySetting sensitivity : SensitivitySetting.sensitivitySettings) {
+            JsonObject individualSensitivity = new JsonObject();
+            individualSensitivity.addProperty("factor", sensitivity.multiplicativeFactor);
+            individualSensitivity.addProperty("sensitivity", sensitivity.sensitivity);
+            sensitivityList.add(individualSensitivity);
+        }
+        toSave.add("sensitivities", sensitivityList);
+
         toSave.addProperty("currentlySelected", DeviceDetail.getIndexSelected());
 
         try {
@@ -809,6 +836,31 @@ class Controls {
             Log.println(Log.ERROR, "FileAccessing", "Settings file writing error.");
         }
     }
+
+    /**
+     * Used when adding functional outer controls to the mapping for them to be functional.
+     *
+     * @param details all the functional outer controls
+     */
+    private static void addMapping(TaskDetail... details) {
+        for (TaskDetail detail : details) {
+            detail.add();
+        }
+    }
+
+    /**
+     * Make the phone vibrate if it has a vibrator and either it is on normal or vibrate state.
+     */
+    static void vibrate() {
+        String currentState = SettingDetail.settingDetails.get(VIBRATION_SETTING).getCurrentState();
+        int ringerMode = audioManager.getRingerMode();
+        if (currentState.equals(context.getString(R.string.enabled))
+                || (currentState.equals(context.getString(R.string.followSystem))
+                && (ringerMode == AudioManager.RINGER_MODE_NORMAL || ringerMode == AudioManager.RINGER_MODE_VIBRATE))) {
+            vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE));
+        }
+    }
+
 
     /**
      * Set the current window state to be maximized.
@@ -823,7 +875,12 @@ class Controls {
                         | View.SYSTEM_UI_FLAG_FULLSCREEN);
     }
 
-
+    /**
+     * Change the usability of all the views under the root view group.
+     *
+     * @param enable usability of views
+     * @param vg     root view group
+     */
     static void setUsability(boolean enable, ViewGroup vg) {
         for (int i = 0; i < vg.getChildCount(); i++) {
             View child = vg.getChildAt(i);
@@ -863,7 +920,7 @@ class Controls {
             case MOVE:
                 toReturn += context.getString(R.string.move);
                 break;
-            case LONG_PRESS:
+            case LONG_TAP:
                 toReturn += context.getString(R.string.longPress);
                 break;
             case MOVE_LEFT:

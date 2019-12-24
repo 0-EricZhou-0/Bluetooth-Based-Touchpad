@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -15,13 +16,16 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 public class MainActivity extends AppCompatActivity {
 
 
-
     private AlertDialog.Builder exitDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Controls.init(MainActivity.this);
+        try {
+            Controls.init(MainActivity.this);
+        } catch (Exception e) {
+            Log.println(Log.ERROR, "MainActivity", e.getMessage());
+        }
         setContentView(R.layout.activity_main);
 
         final Button startConnection = findViewById(R.id.tryConnect);

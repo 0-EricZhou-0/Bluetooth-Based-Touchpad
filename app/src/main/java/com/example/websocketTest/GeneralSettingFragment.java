@@ -3,6 +3,7 @@ package com.example.websocketTest;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 
 import java.util.List;
+import java.util.Locale;
 
 
 /**
@@ -51,10 +53,42 @@ public class GeneralSettingFragment extends Fragment {
             detailedDescription.setText(setting.getDetailedDescription());
             generalSettingContainer.addView(generalSetting);
         }
-        final View sensitivitySetting = getLayoutInflater().inflate(R.layout.chunk_sensitivity_setting,
-                generalSettingContainer, false);
-        final View sensitivityDescription = sensitivitySetting.findViewById(R.id.sensitivityDescription);
-        final SeekBar sensitivitySeekBar = sensitivitySetting.findViewById(R.id.sensitivitySeekBar);
+
+        final TextView sensitivityHeading = new TextView(getContext());
+        sensitivityHeading.setTypeface(Typeface.DEFAULT_BOLD);
+        sensitivityHeading.setText(String.format("\n\n%s", getString(R.string.sensitivityHeading)));
+        generalSettingContainer.addView(sensitivityHeading);
+
+        final List<Controls.SensitivitySetting> currentSensitivities = Controls.getCurrentSensitivities();
+        int numFingers = 0;
+        for (final Controls.SensitivitySetting sensitivity : currentSensitivities) {
+            final View sensitivitySetting = getLayoutInflater().inflate(R.layout.chunk_sensitivity_setting,
+                    generalSettingContainer, false);
+            final TextView sensitivityDescription = sensitivitySetting.findViewById(R.id.sensitivityDescription);
+            final SeekBar sensitivitySeekBar = sensitivitySetting.findViewById(R.id.sensitivitySeekBar);
+            final String description = String.format(Locale.getDefault(), " %d %s", ++numFingers, getString(R.string.finger));
+            sensitivityDescription.setText(String.format(Locale.getDefault(), " %s %d", description, sensitivity.getSensitivity()));
+            sensitivitySeekBar.setMin(Controls.SensitivitySetting.MIN);
+            sensitivitySeekBar.setMax(Controls.SensitivitySetting.MAX);
+            sensitivitySeekBar.setProgress(sensitivity.getSensitivity());
+            sensitivitySeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    sensitivityDescription.setText(String.format(Locale.getDefault(), " %s %d", description, progress));
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+                    sensitivity.setSensitivity(seekBar.getProgress());
+                }
+            });
+            generalSettingContainer.addView(sensitivitySetting);
+        }
     }
 
     public GeneralSettingFragment() {

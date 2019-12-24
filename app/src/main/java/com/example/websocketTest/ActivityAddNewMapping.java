@@ -93,7 +93,7 @@ public class ActivityAddNewMapping extends AppCompatActivity {
                     currentMappingInfo.setText(String.format(" %s\n  %s", getString(R.string.currentSelected), numOfFingers.getText()));
                     actionFingerCount = (byte) (fingerCount * 8);
                     mappingSettings.removeAllViews();
-                    for (int actionCoding = Controls.TAP; actionCoding <= Controls.MOVE_DOWN; actionCoding++) {
+                    for (int actionCoding = Controls.TAP; actionCoding <= Controls.DOUBLE_TAP; actionCoding++) {
                         final int action = actionCoding;
 
                         if (action == Controls.MOVE || ((action == Controls.MOVE_LEFT || action == Controls.MOVE_RIGHT

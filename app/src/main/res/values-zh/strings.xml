@@ -88,6 +88,7 @@
     <string name="deleteDevice">删除设备</string>
     <string name="followSystem">跟随系统</string>
     <string name="phoneAsTouchPad">触摸板模式</string>
-    <string name="viberationModeDescription">手机是否会在某些情况下震动</string>
+    <string name="vibrationModeDescription">手机是否会在某些情况下震动</string>
     <string name="vibrationMode">震动模式</string>
+    <string name="sensitivityHeading">灵敏度</string>
 </resources>
