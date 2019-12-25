@@ -71,7 +71,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
     private boolean isSinglePress;
     private long lastAccessed;
     private boolean lastMoved;
-    private boolean doublePressed = false;
+    private boolean canDetectDoublePress = true;
 
     private boolean forwardScrollMode;
     private boolean touchWarningMode;
@@ -118,7 +118,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
             currentPos = NOT_STARTED;
         }
 
-        boolean getDistanceLessThan() {
+        boolean isPointerNotMoved() {
             return startPos.getDistance(currentPos) < MAXIMUM_ALLOWANCE_BEFORE_RECOGNIZING;
         }
 /*
@@ -171,7 +171,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
 
         exitDialog = new AlertDialog.Builder(ActivityTouchPad.this)
                 .setTitle(R.string.warning)
-                .setMessage(R.string.exitConfirm)
+                .setMessage(R.string.exitTouchPad)
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -392,7 +392,8 @@ public class ActivityTouchPad extends AppCompatActivity implements
     @Override
     public boolean onDown(final MotionEvent event) {
         final boolean moved = lastMoved;
-        Log.println(Log.INFO, "TouchPad", "Last moved: " + lastMoved);
+        canDetectDoublePress = !lastMoved;
+        Log.println(Log.INFO, "TouchPad", "Last moved: " + lastMoved + " at " + System.currentTimeMillis());
         lastMoved = false;
         final Handler tapHandler = new Handler();
         tapHandler.postDelayed(new Runnable() {
@@ -409,13 +410,14 @@ public class ActivityTouchPad extends AppCompatActivity implements
                     @Override
                     public void run() {
                         if (moved) {
-                            return;
-                        }
-                        Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger long press runnable start");
-                        if (maxNumPointers == currentMaxNumPointers && eventGroup[currentMaxNumPointers - 1].getDistanceLessThan()) {
-                            Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger long press confirmed");
-                            PermanentConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.LONG_TAP));
-                            Controls.vibrate();
+                            Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger long press examination aborted due to moved before. In " + pressHandler.toString());
+                        } else {
+                            Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger long press examination started in " + pressHandler.toString());
+                            if (maxNumPointers == currentMaxNumPointers && eventGroup[currentMaxNumPointers - 1].isPointerNotMoved()) {
+                                Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger long press confirmed in " + pressHandler.toString());
+                                PermanentConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.LONG_TAP));
+                                Controls.vibrate();
+                            }
                         }
                     }
                 };
@@ -423,22 +425,19 @@ public class ActivityTouchPad extends AppCompatActivity implements
                     @Override
                     public void run() {
                         if (moved) {
+                            Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger single/double press examination aborted due to moved before. In " + pressHandler.toString());
                             return;
                         }
-                        Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger single/double press runnable start");
-                        if (!isSinglePress) {
-                            Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger double press confirmed" + System.currentTimeMillis());
+                        Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger single/double press examination started in " + pressHandler.toString());
+                        if (!isSinglePress && canDetectDoublePress) {
+                            Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger double press confirmed in " + pressHandler.toString());
                             isSinglePress = true;
-                            doublePressed = true;
+                            Log.println(Log.INFO, "TouchPad", "Double pressed assign at " + System.currentTimeMillis());
                             pressHandler.removeCallbacks(confirmLongPress);
                             PermanentConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.DOUBLE_TAP));
                         } else if (maxNumPointers < currentMaxNumPointers) {
-                            if (doublePressed) {
-                                doublePressed = false;
-                            } else {
-                                Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger single press confirmed" + System.currentTimeMillis());
-                                PermanentConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.TAP));
-                            }
+                            Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger single press confirmed in " + pressHandler.toString());
+                            PermanentConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.TAP));
                             pressHandler.removeCallbacks(confirmLongPress);
                         }
                     }
@@ -462,7 +461,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
 
     @Override
     public void onLongPress(MotionEvent event) {
-        if (isSinglePress || lastMoved) {
+        if (eventGroup[0].isPointerNotMoved()) {
             PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.LONG_TAP));
             Controls.vibrate();
         }

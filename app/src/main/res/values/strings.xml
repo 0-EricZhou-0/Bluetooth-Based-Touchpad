@@ -17,7 +17,7 @@
     <string name="remove">Remove</string>
 
     <!-- Main activity & Activity Connected-->
-    <string name="exitConfirm">Do you want to exit?</string>
+    <string name="exitApplicationConfirm">Do you want to exit?</string>
     <string name="macRequired">In order to connect to a pc, bluetooth mac address is required. Press
         confirm to enter the setting to set mac address.</string>
     <string name="phoneAsTouchPad">Touch Pad</string>
@@ -41,8 +41,7 @@
     <string name="click">Click</string>
     <string name="rightClick">Right Click</string>
     <string name="doubleClick">Double Click</string>
-    <string name="moveCursorRelative">Move Cursor (Relative)</string>
-    <string name="moveCursorAbsolute">Move Cursor (Absolute)</string>
+    <string name="moveCursor">Move Cursor</string>
     <string name="taskSelect">Select</string>
     <string name="scroll">Scroll</string>
     <string name="returnToDesktop">Return to Desktop</string>

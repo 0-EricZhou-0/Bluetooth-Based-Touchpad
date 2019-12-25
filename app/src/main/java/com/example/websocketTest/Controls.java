@@ -531,7 +531,7 @@ class Controls {
     // Action
     static final byte TAP = 0b000;                  //0
     static final byte MOVE = 0b001;                 //1
-    static final byte LONG_TAP = 0b010;           //2
+    static final byte LONG_TAP = 0b010;             //2
     static final byte MOVE_LEFT = 0b011;            //3
     static final byte MOVE_RIGHT = 0b100;           //4
     static final byte MOVE_UP = 0b101;              //5
@@ -586,7 +586,7 @@ class Controls {
         SensitivitySetting.sensitivitySettings.clear();
         int averageSensitivity = (SensitivitySetting.MAX + SensitivitySetting.MIN) / 2;
         new SensitivitySetting(80, averageSensitivity).add();
-        new SensitivitySetting(5, averageSensitivity).add();
+        new SensitivitySetting(6, averageSensitivity).add();
         new SensitivitySetting(2, averageSensitivity).add();
         new SensitivitySetting(2, averageSensitivity).add();
         new SensitivitySetting(2, averageSensitivity).add();
@@ -597,8 +597,8 @@ class Controls {
         TaskDetail click = new TaskDetail("C", R.string.click, true, false).add();
         TaskDetail rightClick = new TaskDetail("R", R.string.rightClick, true, false).add();
         TaskDetail doubleClick = new TaskDetail("G", R.string.doubleClick, true, false).add();
-        TaskDetail moveCursorRelative = new TaskDetail("M", R.string.moveCursorRelative, true, true).add();
-        TaskDetail moveCursorAbsolute = new TaskDetail("J", R.string.moveCursorAbsolute, true, true).add();
+        TaskDetail moveCursorRelative = new TaskDetail("M", R.string.moveCursor, true, true).add();
+        TaskDetail moveCursorAbsolute = new TaskDetail("J", R.string.moveCursor, true, true).add();
         TaskDetail select = new TaskDetail("S", R.string.taskSelect, true, false).add();
         TaskDetail scroll = new TaskDetail("L", R.string.scroll, true, true).add();
         TaskDetail returnToDesktop = new TaskDetail("D", R.string.returnToDesktop, false, false).add();
@@ -763,7 +763,7 @@ class Controls {
             DeviceDetail.deviceDetails.add(new DeviceDetail(deviceMac, deviceName));
         }
 
-        SensitivitySetting.sensitivitySettings.clear();;
+        SensitivitySetting.sensitivitySettings.clear();
         JsonArray sensitivityList = (JsonArray) jsonObject.get("sensitivities");
         for (JsonElement o : sensitivityList) {
             JsonObject individualSensitivity = (JsonObject) o;

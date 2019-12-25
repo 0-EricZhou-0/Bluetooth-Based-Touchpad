@@ -25,7 +25,7 @@
     <string name="disabled">禁用</string>
     <string name="duplicatedMac">已存在此mac地址</string>
     <string name="enabled">启用</string>
-    <string name="exitConfirm">退出应用程序？</string>
+    <string name="exitApplicationConfirm">退出应用程序？</string>
     <string name="finger">手指</string>
     <string name="forward">顺向</string>
     <string name="generalSetting">通用设置</string>
@@ -70,8 +70,7 @@
     <string name="cut">剪切</string>
     <string name="doubleClick">鼠标左键双击</string>
     <string name="enableTaskMode">打开多任务模式</string>
-    <string name="moveCursorAbsolute">移动鼠标（绝对）</string>
-    <string name="moveCursorRelative">移动鼠标（相对）</string>
+    <string name="moveCursor">移动鼠标</string>
     <string name="paste">粘贴</string>
     <string name="returnToDesktop">返回桌面</string>
     <string name="rightClick">鼠标右键单击</string>

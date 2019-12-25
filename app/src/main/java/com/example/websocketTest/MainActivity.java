@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
         exitDialog = new AlertDialog.Builder(MainActivity.this)
                 .setTitle(R.string.warning)
-                .setMessage(R.string.exitConfirm)
+                .setMessage(R.string.exitApplicationConfirm)
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
