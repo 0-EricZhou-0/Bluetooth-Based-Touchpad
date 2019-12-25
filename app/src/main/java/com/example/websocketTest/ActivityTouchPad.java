@@ -49,12 +49,12 @@ public class ActivityTouchPad extends AppCompatActivity implements
     /**
      * The number of milliseconds waited until it is sure that the user does not want to tap twice.
      */
-    private final int WAIT_UNTIL_CONFIRM = 550;
+    private final int WAIT_UNTIL_CONFIRM = 450;
 
     /**
      * The number of milliseconds waited until it is sure that the user is trying to long press.
      */
-    private final int LONG_PRESS_LENGTH = 800;
+    private final int LONG_PRESS_LENGTH = 600;
 
     @SuppressWarnings("FieldCanBeLocal")
     private final int MAXIMUM_ALLOWANCE_BEFORE_RECOGNIZING = 15;
@@ -67,8 +67,11 @@ public class ActivityTouchPad extends AppCompatActivity implements
     private int maxNumPointers = 1;
     private int currentNumPointers = 1;
     private int direction = -1;
+
     private boolean isSinglePress;
     private long lastAccessed;
+    private boolean lastMoved;
+    private boolean doublePressed = false;
 
     private boolean forwardScrollMode;
     private boolean touchWarningMode;
@@ -118,7 +121,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
         boolean getDistanceLessThan() {
             return startPos.getDistance(currentPos) < MAXIMUM_ALLOWANCE_BEFORE_RECOGNIZING;
         }
-
+/*
         boolean hasNotStarted() {
             return !startPos.equals(NOT_STARTED);
         }
@@ -126,6 +129,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
         byte getDirection() {
             return currentPos.getDirection(startPos);
         }
+ */
     }
 
     @Override
@@ -261,8 +265,9 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
                             eventGroup[0].startEvent(currentX, currentY);
                             isSinglePress = System.currentTimeMillis() - lastAccessed >= LONG_PRESS_LENGTH;
-                            Log.println(Log.INFO, "Touch Pad", "Single Press? " + isSinglePress);
+                            Log.println(Log.INFO, "TouchyPad", "Single Press? " + isSinglePress);
                         } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                            lastMoved = true;
                             CoordinatePair pair = eventGroup[0].moveTo(currentX, currentY);
                             if (!pair.equals(ZERO)) {
                                 if (cursorMode) {
@@ -282,6 +287,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         // Cannot be customized
                         CoordinatePair motion2 = eventGroup[1].moveTo(currentX, currentY);
                         if (!((int) motion2.getY() == 0)) {
+                            lastMoved = true;
                             if (forwardScrollMode) {
                                 PermanentConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.MOVE), (int) motion2.getY());
                             } else {
@@ -293,6 +299,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         // Move left/right/up/down actions of three fingers
                         CoordinatePair motion3 = eventGroup[2].moveTo(currentX, currentY);
                         if (!motion3.equals(ZERO)) {
+                            lastMoved = true;
                             int setDirection = motion3.getDirection(ZERO);
                             if (direction == -1
                                     || ((setDirection == Controls.MOVE_LEFT || setDirection == Controls.MOVE_RIGHT)
@@ -309,7 +316,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         // Four finger move up & down are reserved
                         CoordinatePair motion4 = eventGroup[3].moveTo(currentX, currentY);
                         if (!motion4.equals(ZERO)) {
-                            // Toast.makeText(ActivityTouchPad.this, direction, Toast.LENGTH_SHORT).show();
+                            lastMoved = true;
                             int setDirection = motion4.getDirection(ZERO);
                             if (direction == -1) {
                                 PermanentConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + direction), setDirection);
@@ -337,6 +344,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         // Move left/right/up/down actions of five fingers
                         CoordinatePair motion5 = eventGroup[4].moveTo(currentX, currentY);
                         if (!motion5.equals(ZERO)) {
+                            lastMoved = true;
                             int setDirection = motion5.getDirection(ZERO);
                             if (direction == -1
                                     || ((setDirection == Controls.MOVE_LEFT || setDirection == Controls.MOVE_RIGHT)
@@ -383,116 +391,63 @@ public class ActivityTouchPad extends AppCompatActivity implements
 
     @Override
     public boolean onDown(final MotionEvent event) {
-        final Handler SingleTapHandler = new Handler();
-        SingleTapHandler.postDelayed(new Runnable() {
+        final boolean moved = lastMoved;
+        Log.println(Log.INFO, "TouchPad", "Last moved: " + lastMoved);
+        lastMoved = false;
+        final Handler tapHandler = new Handler();
+        tapHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                switch (maxNumPointers) {
-                    case 2:
-                        // Two finger single tap confirmed
-                        eventGroup[1].startEvent(event.getRawX(), event.getRawY());
-                        final Handler twoFingerSingleTapConfirmedHandler = new Handler();
-                        twoFingerSingleTapConfirmedHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (maxNumPointers < 2 && isSinglePress) {
-                                    PermanentConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.TAP));
-                                }
-                            }
-                        }, WAIT_UNTIL_CONFIRM);
-                        // Two finger long press
-                        final Handler twoFingerLongPressHandler = new Handler();
-                        twoFingerLongPressHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (maxNumPointers == 2 && eventGroup[1].getDistanceLessThan()) {
-                                    if (isSinglePress) {
-                                        PermanentConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.LONG_TAP));
-                                        Controls.vibrate();
-                                    } else {
-                                        PermanentConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.DOUBLE_TAP));
-                                    }
-                                }
-                            }
-                        }, LONG_PRESS_LENGTH);
-                        break;
-                    case 3:
-                        // Three finger single tap confirmed
-                        eventGroup[2].startEvent(event.getRawX(), event.getRawY());
-                        final Handler threeFingerSingleTapConfirmedHandler = new Handler();
-                        threeFingerSingleTapConfirmedHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (maxNumPointers < 3 && isSinglePress) {
-                                    PermanentConnection.identifyAndSend((byte) (Controls.THREE_FINGERS + Controls.TAP));
-                                }
-                            }
-                        }, WAIT_UNTIL_CONFIRM);
-                        // Three finger long press
-                        final Handler threeFingerLongPressHandler = new Handler();
-                        threeFingerLongPressHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (maxNumPointers == 3 && eventGroup[2].getDistanceLessThan()) {
-                                    if (isSinglePress) {
-                                        PermanentConnection.identifyAndSend((byte) (Controls.THREE_FINGERS + Controls.LONG_TAP));
-                                        Controls.vibrate();
-                                    } else {
-                                        PermanentConnection.identifyAndSend((byte) (Controls.THREE_FINGERS + Controls.DOUBLE_TAP));
-                                    }
-                                }
-                            }
-                        }, LONG_PRESS_LENGTH);
-                        break;
-                    case 4:
-                        // Four finger single tap confirmed
-                        eventGroup[3].startEvent(event.getRawX(), event.getRawY());
-                        final Handler fourFingerSingleTapConfirmedHandler = new Handler();
-                        fourFingerSingleTapConfirmedHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (maxNumPointers < 4 && isSinglePress) {
-                                    PermanentConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + Controls.TAP));
-                                }
-                            }
-                        }, WAIT_UNTIL_CONFIRM);
-                        // Four finger long press
-                        final Handler fourFingerLongPressHandler = new Handler();
-                        fourFingerLongPressHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (maxNumPointers == 4 && eventGroup[3].getDistanceLessThan() && isSinglePress) {
-                                    PermanentConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + Controls.LONG_TAP));
-                                    Controls.vibrate();
-                                }
-                            }
-                        }, LONG_PRESS_LENGTH);
-                        break;
-                    case 5:
-                        // Five finger single tap confirmed
-                        eventGroup[4].startEvent(event.getRawX(), event.getRawY());
-                        final Handler fiveFingerSingleTapConfirmedHandler = new Handler();
-                        fiveFingerSingleTapConfirmedHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (maxNumPointers < 5 && isSinglePress) {
-                                    PermanentConnection.identifyAndSend((byte) (Controls.FIVE_FINGERS + Controls.TAP));
-                                }
-                            }
-                        }, WAIT_UNTIL_CONFIRM);
-                        // Five finger long press
-                        final Handler fiveFingerLongPressHandler = new Handler();
-                        fiveFingerLongPressHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (maxNumPointers == 5 && eventGroup[4].getDistanceLessThan() && isSinglePress) {
-                                    PermanentConnection.identifyAndSend((byte) (Controls.FIVE_FINGERS + Controls.LONG_TAP));
-                                    Controls.vibrate();
-                                }
-                            }
-                        }, LONG_PRESS_LENGTH);
-                        break;
+                final int currentMaxNumPointers = maxNumPointers;
+                if (currentMaxNumPointers == 1) {
+                    return;
                 }
+                eventGroup[currentMaxNumPointers - 1].startEvent(event.getRawX(), event.getRawY());
+                final byte fingerNumInnerControl = Controls.convertNumFingersToInnerControl(maxNumPointers);
+                final Handler pressHandler = new Handler();
+                final Runnable confirmLongPress = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (moved) {
+                            return;
+                        }
+                        Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger long press runnable start");
+                        if (maxNumPointers == currentMaxNumPointers && eventGroup[currentMaxNumPointers - 1].getDistanceLessThan()) {
+                            Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger long press confirmed");
+                            PermanentConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.LONG_TAP));
+                            Controls.vibrate();
+                        }
+                    }
+                };
+                final Runnable confirmSingleAndDoubleTap = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (moved) {
+                            return;
+                        }
+                        Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger single/double press runnable start");
+                        if (!isSinglePress) {
+                            Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger double press confirmed" + System.currentTimeMillis());
+                            isSinglePress = true;
+                            doublePressed = true;
+                            pressHandler.removeCallbacks(confirmLongPress);
+                            PermanentConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.DOUBLE_TAP));
+                        } else if (maxNumPointers < currentMaxNumPointers) {
+                            if (doublePressed) {
+                                doublePressed = false;
+                            } else {
+                                Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger single press confirmed" + System.currentTimeMillis());
+                                PermanentConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.TAP));
+                            }
+                            pressHandler.removeCallbacks(confirmLongPress);
+                        }
+                    }
+                };
+
+                // Single/double tap confirmed
+                pressHandler.postDelayed(confirmSingleAndDoubleTap, WAIT_UNTIL_CONFIRM);
+                // Long press confirmed
+                pressHandler.postDelayed(confirmLongPress, LONG_PRESS_LENGTH);
             }
         }, DELAY_BEFORE_START_DETECTION);
         return true;
@@ -507,7 +462,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
 
     @Override
     public void onLongPress(MotionEvent event) {
-        if (isSinglePress) {
+        if (isSinglePress || lastMoved) {
             PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.LONG_TAP));
             Controls.vibrate();
         }

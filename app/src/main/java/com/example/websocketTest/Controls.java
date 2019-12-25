@@ -575,7 +575,7 @@ class Controls {
         new SettingDetail(R.string.orientation, R.string.orientationDescription,
                 0, R.string.vertical, R.string.horizontal).add(ORIENTATION_SETTING);
         new SettingDetail(R.string.scrollMode, R.string.scrollModeDescription,
-                0, R.string.forward, R.string.reverse).add(SCROLL_MODE_SETTING);
+                1, R.string.forward, R.string.reverse).add(SCROLL_MODE_SETTING);
         new SettingDetail(R.string.touchWarning, R.string.touchWarningDescription,
                 0, R.string.enabled, R.string.disabled).add(TOUCH_WARNING_SETTING);
         new SettingDetail(R.string.cursorMode, R.string.cursorModeDescription,
@@ -889,6 +889,10 @@ class Controls {
                 setUsability(enable, (ViewGroup) child);
             }
         }
+    }
+
+    static byte convertNumFingersToInnerControl(int fingerNum) {
+        return (byte) (8 * fingerNum);
     }
 
     /**
