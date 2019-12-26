@@ -7,7 +7,7 @@ import androidx.fragment.app.FragmentPagerAdapter;
 
 class PageAdapter extends FragmentPagerAdapter {
 
-    private final int PAGE_COUNT = 3;
+    private final int PAGE_COUNT = 4;
     private boolean changeDevicePermitted;
     PageAdapter(@NonNull FragmentManager fm, int behavior, boolean isPermitted) {
         super(fm, behavior);

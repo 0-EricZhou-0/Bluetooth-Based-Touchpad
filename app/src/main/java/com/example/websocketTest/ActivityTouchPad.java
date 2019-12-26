@@ -211,7 +211,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                     public void run() {
                         Controls.maximumWindow(decorView);
                     }
-                }, 1700);
+                }, 2500);
             }
         });
 
@@ -264,7 +264,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         // Cannot be customized
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
                             eventGroup[0].startEvent(currentX, currentY);
-                            isSinglePress = System.currentTimeMillis() - lastAccessed >= LONG_PRESS_LENGTH;
+                            isSinglePress = System.currentTimeMillis() - lastAccessed >= WAIT_UNTIL_CONFIRM;
                             Log.println(Log.INFO, "TouchyPad", "Single Press? " + isSinglePress);
                         } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
                             lastMoved = true;

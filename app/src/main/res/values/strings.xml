@@ -55,12 +55,12 @@
     <string name="exitTouchPad">Exit Touch Pad</string>
 
 
-
     <!-- All settings -->
     <string name="setting">Setting</string>
     <string name="connectionSetting">Connection</string>
     <string name="generalSetting">General Setting</string>
     <string name="mappingControl">Mapping</string>
+    <string name="sizeSetting">Touch pad size</string>
 
 
     <!-- General setting -->
