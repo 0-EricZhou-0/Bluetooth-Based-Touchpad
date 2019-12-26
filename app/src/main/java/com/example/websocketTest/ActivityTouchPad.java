@@ -192,6 +192,12 @@ public class ActivityTouchPad extends AppCompatActivity implements
         forwardScrollMode = Controls.SettingDetail.getStatusOfSetting(Controls.SCROLL_MODE_SETTING).equals(getString(R.string.forward));
         touchWarningMode = Controls.SettingDetail.getStatusOfSetting(Controls.TOUCH_WARNING_SETTING).equals(getString(R.string.enabled));
         cursorMode = Controls.SettingDetail.getStatusOfSetting(Controls.CURSOR_MODE_SETTING).equals(getString(R.string.relative));
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Controls.phoneScreenSize = new CoordinatePair(background.getWidth(), background.getHeight());
+            }
+        }, 100);
 
         List<Controls.SensitivitySetting> currentSensitivities = Controls.getCurrentSensitivities();
 
@@ -275,8 +281,8 @@ public class ActivityTouchPad extends AppCompatActivity implements
                                     int deltaY = (int) pair.getY();
                                     PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), deltaX, deltaY);
                                 } else {
-                                    int targetX = (int) ((currentX * 0.9 / Controls.phoneScreenSize.getX() + 0.05) * 10000);
-                                    int targetY = (int) ((currentY * 0.9 / Controls.phoneScreenSize.getY() + 0.05) * 10000);
+                                    int targetX = (int) (currentX / Controls.phoneScreenSize.getX() * 10000);
+                                    int targetY = (int) (currentY / Controls.phoneScreenSize.getY() * 10000);
                                     PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), targetX, targetY);
                                 }
                             }

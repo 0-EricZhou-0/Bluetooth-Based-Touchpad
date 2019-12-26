@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -32,11 +31,6 @@ public class MainActivity extends AppCompatActivity {
         final Button settings = findViewById(R.id.settingInMainScreen);
         final Button exit = findViewById(R.id.exit);
         final ConstraintLayout mainWindow = findViewById(R.id.mainWindow);
-
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        Controls.phoneScreenSize = new CoordinatePair(displayMetrics.widthPixels, displayMetrics.heightPixels);
-
 
         exitDialog = new AlertDialog.Builder(MainActivity.this)
                 .setTitle(R.string.warning)

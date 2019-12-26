@@ -60,39 +60,36 @@
     <string name="connectionSetting">Connection</string>
     <string name="generalSetting">General Setting</string>
     <string name="mappingControl">Mapping</string>
-    <string name="sizeSetting">Touch pad size</string>
 
 
     <!-- General setting -->
     <string name="orientation">Touch pad orientation</string>
     <string name="vertical">Vertical</string>
     <string name="horizontal">Horizontal</string>
+    <string name="orientationDescription">Orientation will only work in touch pad mode, the launch
+        screen orientation will not be changed by this setting.</string>
     <string name="cursorMode">Cursor Mode</string>
     <string name="relative">Relative</string>
     <string name="absolute">Absolute</string>
+    <string name="cursorModeDescription">Controls how the cursor move on a remote computer. Absolute
+        indicates all the actions are directly mapped onto the computer, behaving like a touch screen;
+        while relative indicates that only changing in position is recorded, behaving like a real touch pad.</string>
     <string name="scrollMode">Scroll Mode</string>
     <string name="forward">Forward</string>
     <string name="reverse">Reverse</string>
+    <string name="scrollModeDescription">Normally, the setting for a computer run on Mac OS is forward,
+        and the scroll mode for a computer run on Windows is reverse</string>
     <string name="touchWarning">Touch Warning</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
+    <string name="touchWarningDescription">This controls if a warning message box is showed in any
+        touch pad mode when the number of fingers detected on the screen is more than 5. (For
+        accuracy reason, those events will be ignored.)</string>
     <string name="vibrationMode">Vibration</string>
     <!-- <string name="enabled">Enabled</string>
          <string name="disabled">Disabled</string> -->
     <string name="followSystem">Follow system setting</string>
-
-    <string name="orientationDescription">Orientation will only work in touch pad mode, the launch
-        screen orientation will not be changed by this setting.</string>
-    <string name="cursorModeDescription">Controls how the cursor move on a remote computer. Absolute
-        indicates all the actions are directly mapped onto the computer, behaving like a touch screen;
-        while relative indicates that only changing in position is recorded, behaving like a real touch pad.</string>
-    <string name="scrollModeDescription">Normally, the setting for a computer run on Mac OS is FORWARD,
-        and the scroll mode for a computer run on Windows is REVERSE</string>
-    <string name="touchWarningDescription">This controls if a warning message box is showed in any
-        touch pad mode when the number of fingers detected on the screen is more than 5. (For
-        accuracy reason, those events will be ignored.)</string>
     <string name="vibrationModeDescription">Will the device vibrate in some circumstances.</string>
-
 
     <string name="sensitivityHeading">Sensitivity</string>
 
