@@ -7,9 +7,12 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.util.SparseArray;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,46 +24,105 @@ import java.io.PrintWriter;
 import java.util.UUID;
 
 public class PermanentConnection {
+    private static final String TAG = "PermanentConnection";
 
     /**
      * Try connect using multithreading.
      */
     private static class TryConnect extends Thread {
+        boolean isConnecting = true;
+        ProgressBar progressBar = activity.findViewById(R.id.connectionProgress);
+        final int progressMax = progressBar.getMax();
         public void run() {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    progressBar.setVisibility(View.VISIBLE);
+                }
+            });
             try {
+                new Thread(new Runnable() {
+                    int progressNow = progressBar.getMin();
+                    int eachProgress = (int) Math.exp(Math.log((progressMax - progressNow) / 500));
+                    @Override
+                    public void run() {
+                        while (isConnecting && progressNow + eachProgress < progressMax) {
+                            try {
+                                sleep(3);
+                                eachProgress = (int) Math.exp(Math.log((progressMax - progressNow) / 500));
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            progressBar.setProgress(progressNow += eachProgress);
+                        }
+                    }
+                }).start();
+                Log.i(TAG, "Start connection");
                 BluetoothDevice device = btAdapter.getRemoteDevice(serverMac);
                 btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
                 btAdapter.cancelDiscovery();
                 btSocket.connect();
+                Log.i(TAG, "Connecting");
                 Thread.sleep(1000);
                 InputStream inStream = btSocket.getInputStream();
                 inReader = new BufferedReader(new InputStreamReader(inStream));
                 OutputStream outStream = btSocket.getOutputStream();
                 outWriter = new PrintWriter(new OutputStreamWriter(outStream));
-
+                Log.i(TAG, "inReader: " + inReader);
                 String lineIn = inReader.readLine();
                 if (!lineIn.equals("CONNECTED")) {
                     throw new IllegalArgumentException("MESSAGE ERROR");
                 }
+                Log.i(TAG, "Connected");
 
+                isConnecting = false;
+                completeProgressLoading(progressBar);
                 Intent intent = new Intent(context, ActivityConnected.class);
                 context.startActivity(intent);
                 ((Activity) context).finish();
 
             } catch (Exception ex1) {
+                Log.i(TAG, "Exception not connected");
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Controls.setUsability(true, rootView);
+                        completeProgressLoading(progressBar);
                         startConnection.setText(R.string.failToEstablishConnection);
                     }
                 });
+                isConnecting = false;
                 try {
                     btSocket.close();
                 } catch (Exception ignore) {
                 }
             }
         }
+    }
+
+    private static void completeProgressLoading(final ProgressBar progressBar) {
+        final int progressNow = progressBar.getProgress();
+        final int progressMax = progressBar.getMax();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 100; i++) {
+                    try{
+                        Thread.sleep(2);
+                        progressBar.setProgress((progressMax - progressNow) / 100 * i + progressNow);
+                    } catch (InterruptedException e) {
+                        progressBar.setProgress(progressMax);
+                    }
+                }
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressBar.setVisibility(View.INVISIBLE);
+                    }
+                });
+                progressBar.setProgress(progressBar.getMin());
+            }
+        }).start();
     }
 
     private static final UUID MY_UUID =

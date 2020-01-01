@@ -29,6 +29,7 @@ import static com.example.websocketTest.Controls.ZERO;
 
 public class ActivityTouchPad extends AppCompatActivity implements
         GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
+    private static final String TAG = "TouchPad";
     /**
      * The highest number of fingers that would be detected. Actions with higher number of fingers
      * will be discard.
@@ -79,59 +80,6 @@ public class ActivityTouchPad extends AppCompatActivity implements
 
     private AlertDialog.Builder exitDialog;
 
-    private class FingerEvent {
-        private CoordinatePair startPos = NOT_STARTED;
-        private CoordinatePair currentPos = NOT_STARTED;
-        private float maximumTolerance;
-
-        FingerEvent(float setTolerance) {
-            maximumTolerance = setTolerance;
-        }
-
-        void startEvent(float x, float y) {
-            startPos = new CoordinatePair(x, y);
-            currentPos = startPos;
-        }
-
-        void setCurrentPos(float x, float y) {
-            currentPos = new CoordinatePair(x, y);
-        }
-
-        CoordinatePair moveTo(float x, float y) {
-            CoordinatePair undeterminedCurrentPos = new CoordinatePair(x, y);
-            float currentXChange = undeterminedCurrentPos.getXChange(currentPos);
-            float currentYChange = undeterminedCurrentPos.getYChange(currentPos);
-            int sendXChange = 0, sendYChange = 0;
-            if (Math.abs(currentXChange) > maximumTolerance) {
-                sendXChange = (int) (currentXChange / maximumTolerance);
-                currentPos = undeterminedCurrentPos;
-            }
-            if (Math.abs(currentYChange) > maximumTolerance) {
-                sendYChange = (int) (currentYChange / maximumTolerance);
-                currentPos = undeterminedCurrentPos;
-            }
-            return new CoordinatePair(sendXChange, sendYChange);
-        }
-
-        void reset() {
-            startPos = NOT_STARTED;
-            currentPos = NOT_STARTED;
-        }
-
-        boolean isPointerNotMoved() {
-            return startPos.getDistance(currentPos) < MAXIMUM_ALLOWANCE_BEFORE_RECOGNIZING;
-        }
-/*
-        boolean hasNotStarted() {
-            return !startPos.equals(NOT_STARTED);
-        }
-
-        byte getDirection() {
-            return currentPos.getDirection(startPos);
-        }
- */
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -166,7 +114,6 @@ public class ActivityTouchPad extends AppCompatActivity implements
         mDetector = new GestureDetectorCompat(this, this);
         mDetector.setOnDoubleTapListener(this);
         keyboardInput = new EditText(ActivityTouchPad.this);
-        keyboardInput.setVisibility(View.INVISIBLE);
         background.addView(keyboardInput);
 
         exitDialog = new AlertDialog.Builder(ActivityTouchPad.this)
@@ -234,6 +181,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
 
             @Override
             public void afterTextChanged(Editable s) {
+                Log.i(TAG, "Type character " + s.toString());
                 PermanentConnection.sendMessage("K " + s.toString());
                 s.clear();
             }
@@ -271,7 +219,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
                             eventGroup[0].startEvent(currentX, currentY);
                             isSinglePress = System.currentTimeMillis() - lastAccessed >= WAIT_UNTIL_CONFIRM;
-                            Log.println(Log.INFO, "TouchyPad", "Single Press? " + isSinglePress);
+                            Log.i(TAG, "Single Press? " + isSinglePress);
                         } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
                             lastMoved = true;
                             CoordinatePair pair = eventGroup[0].moveTo(currentX, currentY);
@@ -338,11 +286,11 @@ public class ActivityTouchPad extends AppCompatActivity implements
                                 exitDialog.show();
                             }
                             if (setDirection == Controls.MOVE_UP && direction != 0) {
-                                Log.println(Log.INFO, "TouchPad", "On-Screen keyboard show");
+                                Log.i(TAG, "On-Screen keyboard show");
                                 direction = 0;
-                                keyboardInput.requestFocus();
+                                keyboardInput.requestFocusFromTouch();
                                 ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE))
-                                        .showSoftInput(keyboardInput, InputMethodManager.SHOW_FORCED);
+                                        .toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
                             }
                         }
                         break;
@@ -399,7 +347,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
     public boolean onDown(final MotionEvent event) {
         final boolean moved = lastMoved;
         canDetectDoublePress = !lastMoved;
-        Log.println(Log.INFO, "TouchPad", "Last moved: " + lastMoved + " at " + System.currentTimeMillis());
+        Log.i(TAG, "Last moved: " + lastMoved + " at " + System.currentTimeMillis());
         lastMoved = false;
         final Handler tapHandler = new Handler();
         tapHandler.postDelayed(new Runnable() {
@@ -416,11 +364,11 @@ public class ActivityTouchPad extends AppCompatActivity implements
                     @Override
                     public void run() {
                         if (moved) {
-                            Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger long press examination aborted due to moved before. In " + pressHandler.toString());
+                            Log.i(TAG, currentMaxNumPointers + " Finger long press examination aborted due to moved before. In " + pressHandler.toString());
                         } else {
-                            Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger long press examination started in " + pressHandler.toString());
+                            Log.i(TAG, currentMaxNumPointers + " Finger long press examination started in " + pressHandler.toString());
                             if (maxNumPointers == currentMaxNumPointers && eventGroup[currentMaxNumPointers - 1].isPointerNotMoved()) {
-                                Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger long press confirmed in " + pressHandler.toString());
+                                Log.i(TAG, currentMaxNumPointers + " Finger long press confirmed in " + pressHandler.toString());
                                 PermanentConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.LONG_TAP));
                                 Controls.vibrate();
                             }
@@ -431,18 +379,18 @@ public class ActivityTouchPad extends AppCompatActivity implements
                     @Override
                     public void run() {
                         if (moved) {
-                            Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger single/double press examination aborted due to moved before. In " + pressHandler.toString());
+                            Log.i(TAG, currentMaxNumPointers + " Finger single/double press examination aborted due to moved before. In " + pressHandler.toString());
                             return;
                         }
-                        Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger single/double press examination started in " + pressHandler.toString());
+                        Log.i(TAG, currentMaxNumPointers + " Finger single/double press examination started in " + pressHandler.toString());
                         if (!isSinglePress && canDetectDoublePress) {
-                            Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger double press confirmed in " + pressHandler.toString());
+                            Log.i(TAG, currentMaxNumPointers + " Finger double press confirmed in " + pressHandler.toString());
                             isSinglePress = true;
-                            Log.println(Log.INFO, "TouchPad", "Double pressed assign at " + System.currentTimeMillis());
+                            Log.i(TAG, "Double pressed assign at " + System.currentTimeMillis());
                             pressHandler.removeCallbacks(confirmLongPress);
                             PermanentConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.DOUBLE_TAP));
                         } else if (maxNumPointers < currentMaxNumPointers) {
-                            Log.println(Log.INFO, "TouchPad", currentMaxNumPointers + " Finger single press confirmed in " + pressHandler.toString());
+                            Log.i(TAG, currentMaxNumPointers + " Finger single press confirmed in " + pressHandler.toString());
                             PermanentConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.TAP));
                             pressHandler.removeCallbacks(confirmLongPress);
                         }
@@ -518,5 +466,58 @@ public class ActivityTouchPad extends AppCompatActivity implements
     @Override
     public void onBackPressed() {
         exitDialog.show();
+    }
+
+    private class FingerEvent {
+        private CoordinatePair startPos = NOT_STARTED;
+        private CoordinatePair currentPos = NOT_STARTED;
+        private float maximumTolerance;
+
+        FingerEvent(float setTolerance) {
+            maximumTolerance = setTolerance;
+        }
+
+        void startEvent(float x, float y) {
+            startPos = new CoordinatePair(x, y);
+            currentPos = startPos;
+        }
+
+        void setCurrentPos(float x, float y) {
+            currentPos = new CoordinatePair(x, y);
+        }
+
+        CoordinatePair moveTo(float x, float y) {
+            CoordinatePair undeterminedCurrentPos = new CoordinatePair(x, y);
+            float currentXChange = undeterminedCurrentPos.getXChange(currentPos);
+            float currentYChange = undeterminedCurrentPos.getYChange(currentPos);
+            int sendXChange = 0, sendYChange = 0;
+            if (Math.abs(currentXChange) > maximumTolerance) {
+                sendXChange = (int) (currentXChange / maximumTolerance);
+                currentPos = undeterminedCurrentPos;
+            }
+            if (Math.abs(currentYChange) > maximumTolerance) {
+                sendYChange = (int) (currentYChange / maximumTolerance);
+                currentPos = undeterminedCurrentPos;
+            }
+            return new CoordinatePair(sendXChange, sendYChange);
+        }
+
+        void reset() {
+            startPos = NOT_STARTED;
+            currentPos = NOT_STARTED;
+        }
+
+        boolean isPointerNotMoved() {
+            return startPos.getDistance(currentPos) < MAXIMUM_ALLOWANCE_BEFORE_RECOGNIZING;
+        }
+/*
+        boolean hasNotStarted() {
+            return !startPos.equals(NOT_STARTED);
+        }
+
+        byte getDirection() {
+            return currentPos.getDirection(startPos);
+        }
+ */
     }
 }
