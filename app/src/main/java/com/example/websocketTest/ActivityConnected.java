@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GestureDetectorCompat;
 
 public class ActivityConnected extends AppCompatActivity {
+    private static final String TAG = "ActivityConnected";
     public static int noInteractionTime;
     private boolean exitFlag = false;
     private GestureDetectorCompat mDetector;
@@ -53,7 +55,7 @@ public class ActivityConnected extends AppCompatActivity {
             public void run() {
                 while (true) {
                     try {
-                        Thread.sleep(2000);
+                        Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         return;
                     }
@@ -61,8 +63,9 @@ public class ActivityConnected extends AppCompatActivity {
                         return;
                     }
                     noInteractionTime++;
-                    if (noInteractionTime > 1) {
+                    if (noInteractionTime >= 3) {
                         PermanentConnection.identifyAndSend(Controls.HEARTBEAT_ACTION);
+                        noInteractionTime = 0;
                     }
                 }
             }

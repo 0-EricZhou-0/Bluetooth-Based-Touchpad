@@ -20,6 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GestureDetectorCompat;
 
 import java.util.List;
@@ -84,7 +85,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_touchpad);
-        final LinearLayout background = findViewById(R.id.touchPadBackground);
+        final ConstraintLayout background = findViewById(R.id.touchPadBackground);
 
         background.setBackgroundColor(Color.argb(255,
                 0, 0, 0));
@@ -113,8 +114,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
 
         mDetector = new GestureDetectorCompat(this, this);
         mDetector.setOnDoubleTapListener(this);
-        keyboardInput = new EditText(ActivityTouchPad.this);
-        background.addView(keyboardInput);
+        keyboardInput = findViewById(R.id.keyboardInput);
 
         exitDialog = new AlertDialog.Builder(ActivityTouchPad.this)
                 .setTitle(R.string.warning)
@@ -181,6 +181,9 @@ public class ActivityTouchPad extends AppCompatActivity implements
 
             @Override
             public void afterTextChanged(Editable s) {
+                if (s.length() == 0) {
+                    return;
+                }
                 Log.i(TAG, "Type character " + s.toString());
                 PermanentConnection.sendMessage("K " + s.toString());
                 s.clear();

@@ -15,12 +15,15 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 public class PermanentConnection {
@@ -33,6 +36,32 @@ public class PermanentConnection {
         boolean isConnecting = true;
         ProgressBar progressBar = activity.findViewById(R.id.connectionProgress);
         final int progressMax = progressBar.getMax();
+
+        private void completeProgressLoading(final ProgressBar progressBar) {
+            final int progressNow = progressBar.getProgress();
+            final int progressMax = progressBar.getMax();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < 100; i++) {
+                        try{
+                            Thread.sleep(2);
+                            progressBar.setProgress((progressMax - progressNow) / 100 * i + progressNow);
+                        } catch (InterruptedException e) {
+                            progressBar.setProgress(progressMax);
+                        }
+                    }
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            progressBar.setVisibility(View.INVISIBLE);
+                        }
+                    });
+                    progressBar.setProgress(progressBar.getMin());
+                }
+            }).start();
+        }
+
         public void run() {
             activity.runOnUiThread(new Runnable() {
                 @Override
@@ -43,13 +72,13 @@ public class PermanentConnection {
             try {
                 new Thread(new Runnable() {
                     int progressNow = progressBar.getMin();
-                    int eachProgress = (int) Math.exp(Math.log((progressMax - progressNow) / 500));
+                    int eachProgress = 0;
                     @Override
                     public void run() {
                         while (isConnecting && progressNow + eachProgress < progressMax) {
                             try {
                                 sleep(3);
-                                eachProgress = (int) Math.exp(Math.log((progressMax - progressNow) / 500));
+                                eachProgress = (int) Math.exp(Math.log((progressMax - progressNow) / 300));
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
@@ -63,17 +92,22 @@ public class PermanentConnection {
                 btAdapter.cancelDiscovery();
                 btSocket.connect();
                 Log.i(TAG, "Connecting");
-                Thread.sleep(1000);
+                Thread.sleep(300);
                 InputStream inStream = btSocket.getInputStream();
-                inReader = new BufferedReader(new InputStreamReader(inStream));
+                inReader = new BufferedReader(new InputStreamReader(new DataInputStream(inStream), StandardCharsets.UTF_8));
                 OutputStream outStream = btSocket.getOutputStream();
-                outWriter = new PrintWriter(new OutputStreamWriter(outStream));
+                outWriter = new PrintWriter(new OutputStreamWriter(new DataOutputStream(outStream), StandardCharsets.UTF_8));
                 Log.i(TAG, "inReader: " + inReader);
-                String lineIn = inReader.readLine();
-                if (!lineIn.equals("CONNECTED")) {
-                    throw new IllegalArgumentException("MESSAGE ERROR");
+                Thread.sleep(200);
+                if (inReader.ready()) {
+                    String lineIn = inReader.readLine();
+                    if (!lineIn.equals("CONNECTED")) {
+                        throw new IllegalArgumentException("MESSAGE ERROR");
+                    }
+                    Log.i(TAG, "Connected");
+                } else {
+                    throw new Exception("Overtime");
                 }
-                Log.i(TAG, "Connected");
 
                 isConnecting = false;
                 completeProgressLoading(progressBar);
@@ -98,31 +132,6 @@ public class PermanentConnection {
                 }
             }
         }
-    }
-
-    private static void completeProgressLoading(final ProgressBar progressBar) {
-        final int progressNow = progressBar.getProgress();
-        final int progressMax = progressBar.getMax();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < 100; i++) {
-                    try{
-                        Thread.sleep(2);
-                        progressBar.setProgress((progressMax - progressNow) / 100 * i + progressNow);
-                    } catch (InterruptedException e) {
-                        progressBar.setProgress(progressMax);
-                    }
-                }
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        progressBar.setVisibility(View.INVISIBLE);
-                    }
-                });
-                progressBar.setProgress(progressBar.getMin());
-            }
-        }).start();
     }
 
     private static final UUID MY_UUID =
@@ -159,7 +168,7 @@ public class PermanentConnection {
             }
         }
 
-        static void identifyAndSend(byte innerAction, int[] parameters) {
+        private static void identifyAndSend(byte innerAction, Object[] parameters) {
             Controls.TaskDetail detail = mapping.get(innerAction);
             if (detail != null) {
                 String outerAction = detail.getTask();
@@ -173,11 +182,12 @@ public class PermanentConnection {
                     }
                     StringBuilder toSend = new StringBuilder(outerAction);
                     if (parameters != null) {
-                        for (int param : parameters) {
+                        for (Object param : parameters) {
                             toSend.append(" ").append(param);
                         }
                     }
                     PermanentConnection.sendMessage(toSend.toString());
+                    ActivityConnected.noInteractionTime = 0;
                 }
                 if (innerAction == Controls.MOVE_CANCEL) {
                     for (int i = 0; i < mapping.size(); i++) {
@@ -225,11 +235,11 @@ public class PermanentConnection {
     static void sendMessage(String toSend) {
         outWriter.print(toSend + "\n");
         outWriter.flush();
+        Log.i(TAG, "Message sent: " + toSend);
     }
 
-    static void identifyAndSend(byte info, int... parameters) {
+    static void identifyAndSend(byte info, Object... parameters) {
         TouchEventMappingControl.identifyAndSend(info, parameters);
-        ActivityConnected.noInteractionTime = 0;
     }
 
     public static String receiveMessage() throws IOException {
