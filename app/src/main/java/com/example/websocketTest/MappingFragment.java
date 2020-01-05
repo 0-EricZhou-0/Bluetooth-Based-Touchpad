@@ -122,7 +122,7 @@ public class MappingFragment extends Fragment {
             if (resultCode == ActivitySettings.RESULT_OK) {
                 byte combinedAction = data.getByteExtra("combinedAction", (byte) -1);
                 byte bundleAction = data.getByteExtra("bundleAction", (byte) -1);
-                String taskType = data.getStringExtra("taskType");
+                int taskType = data.getIntExtra("taskType", -1);
                 Controls.TaskDetail detail = Controls.TaskDetail.correspondsTo(taskType);
                 currentMappings.put(combinedAction, detail.duplicate());
                 if (bundleAction != -1) {

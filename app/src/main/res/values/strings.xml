@@ -54,13 +54,11 @@
     <string name="cut">Cut</string>
     <string name="exitTouchPad">Exit Touch Pad</string>
 
-
     <!-- All settings -->
     <string name="setting">Setting</string>
     <string name="connectionSetting">Connection</string>
     <string name="generalSetting">General Setting</string>
     <string name="mappingControl">Mapping</string>
-
 
     <!-- General setting -->
     <string name="orientation">Touch pad orientation</string>
@@ -99,6 +97,10 @@
         application on the other side to see its address.\nThe name of the device can be changed by
         clicking the device name.\nSelect the device you want to connect.</string>
     <string name="addDevice">Add a new device</string>
+
+    <!-- ActivityTouchPad -->
+    <string name="pasteFromClipboard">Paste from clipboard</string>
+    <string name="noContentInClipboard">No content in clipboard</string>
 
     <!-- Add new mapping -->
     <string name="add">Add new mapping</string>

@@ -26,7 +26,7 @@ public class ActivityAddNewMapping extends AppCompatActivity {
     /**
      * To see the task, see the Controls.java
      */
-    private String taskType;
+    private int taskType;
 
     /**
      * The intent used to return to ActivitySettings when the adding mapping process finished or aborted.
@@ -123,10 +123,11 @@ public class ActivityAddNewMapping extends AppCompatActivity {
                                 currentMappingInfo.setText(String.format("%s %s", currentMappingInfo.getText(), actionType.getText()));
                                 final byte combinedAction = (byte) (actionFingerCount + action);
                                 mappingSettings.removeAllViews();
-                                List<String> allActions = Controls.TaskDetail.getAllTasks();
-                                for (final String individualAction : allActions) {
+                                SparseArray<Controls.TaskDetail> allActions = Controls.getAllTasks();
+                                for (int index = 0; index < allActions.size(); index++) {
+                                    final int individualAction = allActions.keyAt(index);
                                     final String readableAction = Controls.TaskDetail.getReadableTask(individualAction);
-                                    if (readableAction.contains(getString(R.string.basicControl))
+                                    if (readableAction == null || readableAction.contains(getString(R.string.basicControl))
                                             || readableAction.contains(getString(R.string.switchControl)) && (action != Controls.MOVE_LEFT && action != Controls.MOVE_RIGHT)) {
                                         continue;
                                     }

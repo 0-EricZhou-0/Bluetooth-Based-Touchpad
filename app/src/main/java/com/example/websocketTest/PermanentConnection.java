@@ -44,7 +44,7 @@ public class PermanentConnection {
                 @Override
                 public void run() {
                     for (int i = 0; i < 100; i++) {
-                        try{
+                        try {
                             Thread.sleep(2);
                             progressBar.setProgress((progressMax - progressNow) / 100 * i + progressNow);
                         } catch (InterruptedException e) {
@@ -73,6 +73,7 @@ public class PermanentConnection {
                 new Thread(new Runnable() {
                     int progressNow = progressBar.getMin();
                     int eachProgress = 0;
+
                     @Override
                     public void run() {
                         while (isConnecting && progressNow + eachProgress < progressMax) {
@@ -87,26 +88,32 @@ public class PermanentConnection {
                     }
                 }).start();
                 Log.i(TAG, "Start connection");
-                BluetoothDevice device = btAdapter.getRemoteDevice(serverMac);
-                btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
-                btAdapter.cancelDiscovery();
-                btSocket.connect();
-                Log.i(TAG, "Connecting");
-                Thread.sleep(300);
-                InputStream inStream = btSocket.getInputStream();
-                inReader = new BufferedReader(new InputStreamReader(new DataInputStream(inStream), StandardCharsets.UTF_8));
-                OutputStream outStream = btSocket.getOutputStream();
-                outWriter = new PrintWriter(new OutputStreamWriter(new DataOutputStream(outStream), StandardCharsets.UTF_8));
-                Log.i(TAG, "inReader: " + inReader);
-                Thread.sleep(200);
-                if (inReader.ready()) {
-                    String lineIn = inReader.readLine();
-                    if (!lineIn.equals("CONNECTED")) {
-                        throw new IllegalArgumentException("MESSAGE ERROR");
-                    }
-                    Log.i(TAG, "Connected");
+                if (serverMac.equals("00:00:00:00:00:00")) {
+                    Log.i(TAG, "Dummy connection started");
+                    inReader = new BufferedReader(new InputStreamReader(new DataInputStream(System.in), StandardCharsets.UTF_8));
+                    outWriter = new PrintWriter(new OutputStreamWriter(new DataOutputStream(System.out), StandardCharsets.UTF_8), true);
                 } else {
-                    throw new Exception("Overtime");
+                    BluetoothDevice device = btAdapter.getRemoteDevice(serverMac);
+                    btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
+                    btAdapter.cancelDiscovery();
+                    btSocket.connect();
+                    Log.i(TAG, "Connecting");
+                    Thread.sleep(300);
+                    InputStream inStream = btSocket.getInputStream();
+                    inReader = new BufferedReader(new InputStreamReader(new DataInputStream(inStream), StandardCharsets.UTF_8));
+                    OutputStream outStream = btSocket.getOutputStream();
+                    outWriter = new PrintWriter(new OutputStreamWriter(new DataOutputStream(outStream), StandardCharsets.UTF_8));
+                    Log.i(TAG, "inReader: " + inReader);
+                    Thread.sleep(200);
+                    if (inReader.ready()) {
+                        String lineIn = inReader.readLine();
+                        if (!lineIn.equals("CONNECTED")) {
+                            throw new IllegalArgumentException("MESSAGE ERROR");
+                        }
+                        Log.i(TAG, "Connected");
+                    } else {
+                        throw new Exception("Overtime");
+                    }
                 }
 
                 isConnecting = false;
@@ -114,9 +121,8 @@ public class PermanentConnection {
                 Intent intent = new Intent(context, ActivityConnected.class);
                 context.startActivity(intent);
                 ((Activity) context).finish();
-
             } catch (Exception ex1) {
-                Log.i(TAG, "Exception not connected");
+                Log.i(TAG, "Connection not established");
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -169,18 +175,17 @@ public class PermanentConnection {
         }
 
         private static void identifyAndSend(byte innerAction, Object[] parameters) {
-            Controls.TaskDetail detail = mapping.get(innerAction);
+            Controls.TaskDetail detail = mapping.get(innerAction, Controls.ACTION_NOT_FOUND);
             if (detail != null) {
-                String outerAction = detail.getTask();
-                // Toast.makeText(context, innerAction + outerAction, Toast.LENGTH_LONG).show();
-                if (!outerAction.equals(Controls.ACTION_NOT_FOUND.getTask())) {
+                int outerAction = detail.getTask();
+                if (outerAction != Controls.ACTION_NOT_FOUND.getTask()) {
                     if (!detail.getCanBeRepeated()) {
                         return;
                     }
                     if (!Controls.TaskDetail.correspondsTo(outerAction).getCanBeRepeated() && detail.getCanBeRepeated()) {
                         detail.setCanBeRepeated(false);
                     }
-                    StringBuilder toSend = new StringBuilder(outerAction);
+                    StringBuilder toSend = new StringBuilder(Integer.toString(outerAction));
                     if (parameters != null) {
                         for (Object param : parameters) {
                             toSend.append(" ").append(param);

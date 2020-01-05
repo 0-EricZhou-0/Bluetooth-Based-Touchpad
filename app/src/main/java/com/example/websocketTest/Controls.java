@@ -1,6 +1,8 @@
 package com.example.websocketTest;
 
 import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.VibrationEffect;
@@ -22,10 +24,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 class Controls {
 
@@ -44,6 +44,7 @@ class Controls {
 
     private static Vibrator vibrator;
     private static AudioManager audioManager;
+    private static ClipboardManager clipboard;
 
 
     /**
@@ -60,48 +61,32 @@ class Controls {
         /**
          * Mapping task to its own TaskDetail.
          */
-        private static HashMap<String, TaskDetail> taskDetails = new HashMap<>();
+        private static SparseArray<TaskDetail> taskDetails = new SparseArray<>();
 
         /**
          * Get the readable description corresponds to the task.
          *
-         * @param taskType the string representing the task
+         * @param taskTypeRepresentation the string representing the task
          * @return string which describes the function of the task
          */
-        static String getReadableTask(final String taskType) {
-            return Objects.requireNonNull(TaskDetail.taskDetails.get(taskType)).getDescription();
-        }
-
-        /**
-         * Return the representation string of all tasks  supported now, and which descriptions are not null.
-         * Description is null indicates that the action is a functional action, which user does not need to see.
-         *
-         * @return a set of Strings representing the task
-         */
-        static List<String> getAllTasks() {
-            ArrayList<String> toReturn = new ArrayList<>();
-            for (String s : TaskDetail.taskDetails.keySet()) {
-                if (Objects.requireNonNull(TaskDetail.taskDetails.get(s)).getDescription() != null) {
-                    toReturn.add(s);
-                }
-            }
-            return toReturn;
+        static String getReadableTask(int taskTypeRepresentation) {
+            return taskDetails.valueAt(taskTypeRepresentation).getDescription();
         }
 
         /**
          * Get the corresponding outer control task of a outer control string.
          *
-         * @param outerControl string representation of a outer control string
+         * @param taskTypeRepresentation string representation of a outer control string
          * @return TaskDetail instance corresponds to tht specific outer control string
          */
-        static TaskDetail correspondsTo(String outerControl) {
-            return taskDetails.get(outerControl);
+        static TaskDetail correspondsTo(int taskTypeRepresentation) {
+            return taskDetails.get(taskTypeRepresentation);
         }
 
         /**
          * string representation of task.
          */
-        private String task;
+        private int task;
 
         /**
          * Readable description of the task, using @string resources..
@@ -131,7 +116,7 @@ class Controls {
          * @param isBasicControl is task a basic control
          * @param canRepeat      can the task be repeated
          */
-        TaskDetail(String setTask, Integer setDescription, boolean isBasicControl, boolean canRepeat) {
+        TaskDetail(int setTask, Integer setDescription, boolean isBasicControl, boolean canRepeat) {
             task = setTask;
             description = setDescription;
             basicControl = isBasicControl;
@@ -152,7 +137,7 @@ class Controls {
          *
          * @return representation string of the task
          */
-        String getTask() {
+        int getTask() {
             return task;
         }
 
@@ -544,14 +529,38 @@ class Controls {
     static final byte FOUR_FINGERS = 0b100000;      //32
     static final byte FIVE_FINGERS = 0b101000;      //40
     static final byte HEARTBEAT_ACTION = 0b110000;  //48 Functional Control
-    static final byte MOVE_CANCEL = 0b111000;       //56 Functional Control
+    static final byte MOVE_CANCEL = 0b110001;       //49 Functional Control
+    static final byte INPUT_CHARACTER = 0b110010;   //50 Functional Control
     /* Combined Action is the combination of one Action and one Action FingerCount.
     It represents the action that user did on the screen. */
 
+    private static final int CLICK = 1;
+    private static final int RIGHT_CLICK = 2;
+    private static final int DOUBLE_CLICK = 3;
+    private static final int MOVE_CURSOR_RELATIVE = 4;
+    private static final int MOVE_CURSOR_ABSOLUTE = 5;
+    private static final int SELECT = 6;
+    private static final int SCROLL = 7;
+    private static final int UNDO = 8;
+    private static final int COPY = 9;
+    private static final int PASTE = 10;
+    private static final int CUT = 11;
+    private static final int RETURN_TO_DESKTOP = 12;
+    private static final int ENABLE_TASK_MODE = 13;
+    private static final int SWITCH_APPLICATION = 14;
+    private static final int SWITCH_TAB = 15;
+    private static final int TYPE_CHARACTER_FUNCTIONAL = 16;
+
+    private static final int CANCEL_LAST_ACTION_FUNCTIONAL = 100;
+    private static final int HEARTBEAT_FUNCTIONAL = 101;
+    private static final int ACTION_NOT_FOUND_FUNCTIONAL = 102;
+    private static final int EXITING_TOUCH_PAD_FUNCTIONAL = 103;
+
     // Functional outer controls
-    private static final TaskDetail CANCEL_LAST_ACTION = new TaskDetail("N", null, true, true);
-    private static final TaskDetail HEARTBEAT = new TaskDetail("H", null, true, true);
-    static final TaskDetail ACTION_NOT_FOUND = new TaskDetail("W", null, true, false);
+    private static final TaskDetail TYPE_CHARACTER = new TaskDetail(TYPE_CHARACTER_FUNCTIONAL, null, true, true);
+    private static final TaskDetail CANCEL_LAST_ACTION = new TaskDetail(CANCEL_LAST_ACTION_FUNCTIONAL, null, true, true);
+    private static final TaskDetail HEARTBEAT = new TaskDetail(HEARTBEAT_FUNCTIONAL, null, true, true);
+    static final TaskDetail ACTION_NOT_FOUND = new TaskDetail(ACTION_NOT_FOUND_FUNCTIONAL, null, true, false);
 
     // Coordinate pairs used in comparisons
     static final CoordinatePair NOT_STARTED = new CoordinatePair(-1, -1);
@@ -562,6 +571,7 @@ class Controls {
     static final int TOUCH_WARNING_SETTING = 2;
     static final int CURSOR_MODE_SETTING = 3;
     private static final int VIBRATION_SETTING = 4;
+
 
     /**
      * Initialize all the outer controls. If there is a file stored in the device which describes all
@@ -594,21 +604,21 @@ class Controls {
         /* All outer controls
         Outer controls are responsible for transmission and adding new mapping. Each outer control
         corresponds to a combination of inner controls. */
-        TaskDetail click = new TaskDetail("C", R.string.click, true, false).add();
-        TaskDetail rightClick = new TaskDetail("R", R.string.rightClick, true, false).add();
-        TaskDetail doubleClick = new TaskDetail("G", R.string.doubleClick, true, false).add();
-        TaskDetail moveCursorRelative = new TaskDetail("M", R.string.moveCursor, true, true).add();
-        TaskDetail moveCursorAbsolute = new TaskDetail("J", R.string.moveCursor, true, true).add();
-        TaskDetail select = new TaskDetail("S", R.string.taskSelect, true, false).add();
-        TaskDetail scroll = new TaskDetail("L", R.string.scroll, true, true).add();
-        TaskDetail returnToDesktop = new TaskDetail("D", R.string.returnToDesktop, false, false).add();
-        TaskDetail enableTaskMode = new TaskDetail("T", R.string.enableTaskMode, false, false).add();
-        TaskDetail switchApplication = new TaskDetail("A", R.string.switchApplication, false, true).add();
-        TaskDetail switchTab = new TaskDetail("F", R.string.switchTab, false, true).add();
-        TaskDetail undo = new TaskDetail("B", R.string.undo, false, false).add();
-        TaskDetail copy = new TaskDetail("O", R.string.copy, false, false).add();
-        TaskDetail paste = new TaskDetail("P", R.string.paste, false, false).add();
-        TaskDetail cut = new TaskDetail("Q", R.string.cut, false, false).add();
+        TaskDetail click = new TaskDetail(CLICK, R.string.click, true, false).add();
+        TaskDetail rightClick = new TaskDetail(RIGHT_CLICK, R.string.rightClick, true, false).add();
+        TaskDetail doubleClick = new TaskDetail(DOUBLE_CLICK, R.string.doubleClick, true, false).add();
+        TaskDetail moveCursorRelative = new TaskDetail(MOVE_CURSOR_RELATIVE, R.string.moveCursor, true, true).add();
+        TaskDetail moveCursorAbsolute = new TaskDetail(MOVE_CURSOR_ABSOLUTE, R.string.moveCursor, true, true).add();
+        TaskDetail select = new TaskDetail(SELECT, R.string.taskSelect, true, false).add();
+        TaskDetail scroll = new TaskDetail(SCROLL, R.string.scroll, true, true).add();
+        TaskDetail undo = new TaskDetail(UNDO, R.string.undo, false, false).add();
+        TaskDetail copy = new TaskDetail(COPY, R.string.copy, false, false).add();
+        TaskDetail paste = new TaskDetail(PASTE, R.string.paste, false, false).add();
+        TaskDetail cut = new TaskDetail(CUT, R.string.cut, false, false).add();
+        TaskDetail returnToDesktop = new TaskDetail(RETURN_TO_DESKTOP, R.string.returnToDesktop, false, false).add();
+        TaskDetail enableTaskMode = new TaskDetail(ENABLE_TASK_MODE, R.string.enableTaskMode, false, false).add();
+        TaskDetail switchApplication = new TaskDetail(SWITCH_APPLICATION, R.string.switchApplication, false, true).add();
+        TaskDetail switchTab = new TaskDetail(SWITCH_TAB, R.string.switchTab, false, true).add();
         /* This list can be extended
         If the description contains R.string.BasicControl, it will not be allowed to be modified in the generalSettings
         Format of any extension format is as follows:
@@ -616,12 +626,13 @@ class Controls {
 
 
         // This will not be reached by the identifyAndSend method
-        TaskDetail actionExitingTouchPad = new TaskDetail("I", R.string.exitTouchPad, true, false).add();
+        TaskDetail actionExitingTouchPad = new TaskDetail(EXITING_TOUCH_PAD_FUNCTIONAL, R.string.exitTouchPad, true, false).add();
         // Functional outer controls
-        addMapping(CANCEL_LAST_ACTION, HEARTBEAT, ACTION_NOT_FOUND);
+        addMapping(TYPE_CHARACTER, CANCEL_LAST_ACTION, HEARTBEAT, ACTION_NOT_FOUND);
 
         vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
 
         try {
             // Try to load the json file
@@ -645,6 +656,7 @@ class Controls {
 
             actionToTask.append(MOVE_CANCEL, CANCEL_LAST_ACTION);
             actionToTask.append(HEARTBEAT_ACTION, HEARTBEAT);
+            actionToTask.append(INPUT_CHARACTER, TYPE_CHARACTER);
 
             // Save the default actionToTask file
             saveJsonFile();
@@ -677,6 +689,10 @@ class Controls {
         return DeviceDetail.deviceDetails;
     }
 
+    static SparseArray<TaskDetail> getAllTasks() {
+        return TaskDetail.taskDetails;
+    }
+
     static List<SensitivitySetting> getCurrentSensitivities() {
         return SensitivitySetting.sensitivitySettings;
     }
@@ -697,12 +713,11 @@ class Controls {
      */
     private static void changeCursorMoveMode(boolean isRelative) {
         if (isRelative) {
-            TaskDetail.actionToTask.put(SINGLE_FINGER + MOVE, TaskDetail.taskDetails.get("M"));
+            TaskDetail.actionToTask.put(SINGLE_FINGER + MOVE, TaskDetail.taskDetails.get(MOVE_CURSOR_RELATIVE));
         } else {
-            TaskDetail.actionToTask.put(SINGLE_FINGER + MOVE, TaskDetail.taskDetails.get("J"));
+            TaskDetail.actionToTask.put(SINGLE_FINGER + MOVE, TaskDetail.taskDetails.get(MOVE_CURSOR_ABSOLUTE));
         }
         PermanentConnection.TouchEventMappingControl.updateMapping();
-        saveJsonFile();
     }
 
     /**
@@ -742,7 +757,7 @@ class Controls {
         for (JsonElement o : mappingControls) {
             JsonObject individualMapping = (JsonObject) o;
             byte combinedAction = individualMapping.get("combinedAction").getAsByte();
-            String outerControl = individualMapping.get("task").getAsString();
+            int outerControl = individualMapping.get("task").getAsInt();
             TaskDetail.actionToTask.put(combinedAction, TaskDetail.taskDetails.get(outerControl));
         }
 
@@ -789,10 +804,10 @@ class Controls {
         JsonArray mappingControls = new JsonArray();
         for (int i = 0; i < TaskDetail.actionToTask.size(); i++) {
             JsonObject individualMapping = new JsonObject();
-            TaskDetail detail = TaskDetail.taskDetails.get(TaskDetail.actionToTask.valueAt(i).getTask());
+            TaskDetail detail = TaskDetail.actionToTask.valueAt(i);
             byte combinedAction = (byte) TaskDetail.actionToTask.keyAt(i);
             assert detail != null;
-            String outerControl = detail.getTask();
+            int outerControl = detail.getTask();
             individualMapping.addProperty("combinedAction", combinedAction);
             individualMapping.addProperty("task", outerControl);
             mappingControls.add(individualMapping);
@@ -859,6 +874,22 @@ class Controls {
                 && (ringerMode == AudioManager.RINGER_MODE_NORMAL || ringerMode == AudioManager.RINGER_MODE_VIBRATE))) {
             vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE));
         }
+    }
+
+    static String[] getClipboardContent() {
+        ClipData clipData = clipboard.getPrimaryClip();
+        if (clipData != null && clipData.getItemCount() > 0) {
+            clipData.addItem(new ClipData.Item("Text1"));
+            clipData.addItem(new ClipData.Item("Text11"));
+            clipData.addItem(new ClipData.Item("Text111"));
+            clipData.addItem(new ClipData.Item("Text1111"));
+            String[] toReturn = new String[clipData.getItemCount()];
+            for (int index= 0; index < clipData.getItemCount(); index++) {
+                toReturn[index] = (clipData.getItemAt(index).getText().toString());
+            }
+            return toReturn;
+        }
+        return null;
     }
 
 

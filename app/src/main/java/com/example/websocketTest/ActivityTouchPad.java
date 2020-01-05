@@ -15,8 +15,8 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -62,7 +62,10 @@ public class ActivityTouchPad extends AppCompatActivity implements
     private final int MAXIMUM_ALLOWANCE_BEFORE_RECOGNIZING = 15;
 
     private GestureDetectorCompat mDetector;
+    private InputMethodManager inputMethod;
+
     private EditText keyboardInput;
+    private Button pasteFromClipboard;
 
     private FingerEvent[] eventGroup = new FingerEvent[MAX_NUM_OF_FINGERS_SUPPORTED];
 
@@ -114,8 +117,34 @@ public class ActivityTouchPad extends AppCompatActivity implements
 
         mDetector = new GestureDetectorCompat(this, this);
         mDetector.setOnDoubleTapListener(this);
-        keyboardInput = findViewById(R.id.keyboardInput);
 
+        keyboardInput = findViewById(R.id.keyboardInput);
+        pasteFromClipboard = findViewById(R.id.pasteFromClipboard);
+
+        inputMethod = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        pasteFromClipboard.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final String[] clipboardList = Controls.getClipboardContent();
+                if (clipboardList == null) {
+                    Toast.makeText(ActivityTouchPad.this, R.string.noContentInClipboard, Toast.LENGTH_SHORT).show();
+                } else {
+                    new AlertDialog.Builder(ActivityTouchPad.this)
+                            .setTitle(R.string.pasteFromClipboard)
+                            .setItems(clipboardList, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    PermanentConnection.identifyAndSend(Controls.INPUT_CHARACTER, clipboardList[i]);
+                                }
+                            })
+                            .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                }
+                            }).show();
+                }
+            }
+        });
         exitDialog = new AlertDialog.Builder(ActivityTouchPad.this)
                 .setTitle(R.string.warning)
                 .setMessage(R.string.exitTouchPad)
@@ -126,7 +155,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                 })
                 .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface arg0, int arg1) {
-                        PermanentConnection.sendMessage("X");
+                        PermanentConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + Controls.MOVE_DOWN));
                         finish();
                     }
                 });
@@ -185,7 +214,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                     return;
                 }
                 Log.i(TAG, "Type character " + s.toString());
-                PermanentConnection.sendMessage("K " + s.toString());
+                PermanentConnection.identifyAndSend(Controls.INPUT_CHARACTER, s.toString());
                 s.clear();
             }
         });
@@ -292,8 +321,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                                 Log.i(TAG, "On-Screen keyboard show");
                                 direction = 0;
                                 keyboardInput.requestFocusFromTouch();
-                                ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE))
-                                        .toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
+                                inputMethod.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS);
                             }
                         }
                         break;

@@ -90,4 +90,6 @@
     <string name="vibrationModeDescription">手机是否会在某些情况下震动</string>
     <string name="vibrationMode">震动模式</string>
     <string name="sensitivityHeading">灵敏度</string>
+    <string name="pasteFromClipboard">从触摸板粘贴</string>
+    <string name="noContentInClipboard">剪贴板内没有内容</string>
 </resources>
