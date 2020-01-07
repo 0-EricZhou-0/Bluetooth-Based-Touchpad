@@ -125,16 +125,17 @@ public class ActivityTouchPad extends AppCompatActivity implements
         pasteFromClipboard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final String[] clipboardList = Controls.getClipboardContent();
-                if (clipboardList == null) {
+                final String content = Controls.getClipboardContent();
+                if (content == null) {
                     Toast.makeText(ActivityTouchPad.this, R.string.noContentInClipboard, Toast.LENGTH_SHORT).show();
                 } else {
                     new AlertDialog.Builder(ActivityTouchPad.this)
                             .setTitle(R.string.pasteFromClipboard)
-                            .setItems(clipboardList, new DialogInterface.OnClickListener() {
+                            .setMessage(Controls.getClipboardContent())
+                            .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    PermanentConnection.identifyAndSend(Controls.INPUT_CHARACTER, clipboardList[i]);
+                                    PermanentConnection.identifyAndSend(Controls.PASTE_TEXT, content);
                                 }
                             })
                             .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -214,7 +215,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                     return;
                 }
                 Log.i(TAG, "Type character " + s.toString());
-                PermanentConnection.identifyAndSend(Controls.INPUT_CHARACTER, s.toString());
+                PermanentConnection.identifyAndSend(Controls.PASTE_TEXT, s.toString());
                 s.clear();
             }
         });
@@ -336,7 +337,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                                     && (direction == Controls.MOVE_LEFT || direction == Controls.MOVE_RIGHT))
                                     || ((setDirection == Controls.MOVE_UP || setDirection == Controls.MOVE_DOWN)
                                     && (direction == Controls.MOVE_UP || direction == Controls.MOVE_DOWN))) {
-                                PermanentConnection.identifyAndSend((byte) (Controls.THREE_FINGERS + direction), setDirection);
+                                PermanentConnection.identifyAndSend((byte) (Controls.FIVE_FINGERS + direction), setDirection);
                                 direction = setDirection;
                             }
                         }

@@ -47,7 +47,7 @@ public class ActivityConnected extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connected);
-        Toast.makeText(this, "Connected", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, R.string.connected, Toast.LENGTH_LONG).show();
         mDetector = new GestureDetectorCompat(this, new CustomGestureListener());
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         heartbeatThread = new Thread(new Runnable() {

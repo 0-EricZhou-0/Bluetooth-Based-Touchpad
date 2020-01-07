@@ -21,6 +21,7 @@
     <string name="macRequired">In order to connect to a pc, bluetooth mac address is required. Press
         confirm to enter the setting to set mac address.</string>
     <string name="phoneAsTouchPad">Touch Pad</string>
+    <string name="connected">Connected</string>
 
     <!-- Controls -->
     <string name="basicControl">(Basic Control)</string>
@@ -128,6 +129,6 @@
     <string name="deviceMacHint">Device Mac</string>
     <string name="invalidMac">Invalid Mac Address</string>
     <string name="duplicatedMac">Duplicated Mac Address</string>
-    <string name="tabDisableDescription">"When connected, device list does not allowed to be modified"</string>
+    <string name="tabDisableDescription">"Device list is not allowed to be modified when connected"</string>
 
 </resources>

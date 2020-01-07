@@ -2,6 +2,7 @@ package com.example.websocketTest;
 
 import android.annotation.SuppressLint;
 import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.media.AudioManager;
@@ -530,7 +531,7 @@ class Controls {
     static final byte FIVE_FINGERS = 0b101000;      //40
     static final byte HEARTBEAT_ACTION = 0b110000;  //48 Functional Control
     static final byte MOVE_CANCEL = 0b110001;       //49 Functional Control
-    static final byte INPUT_CHARACTER = 0b110010;   //50 Functional Control
+    static final byte PASTE_TEXT = 0b110010;   //50 Functional Control
     /* Combined Action is the combination of one Action and one Action FingerCount.
     It represents the action that user did on the screen. */
 
@@ -549,7 +550,7 @@ class Controls {
     private static final int ENABLE_TASK_MODE = 13;
     private static final int SWITCH_APPLICATION = 14;
     private static final int SWITCH_TAB = 15;
-    private static final int TYPE_CHARACTER_FUNCTIONAL = 16;
+    private static final int INPUT_TEXT_FUNCTIONAL = 16;
 
     private static final int CANCEL_LAST_ACTION_FUNCTIONAL = 100;
     private static final int HEARTBEAT_FUNCTIONAL = 101;
@@ -557,7 +558,7 @@ class Controls {
     private static final int EXITING_TOUCH_PAD_FUNCTIONAL = 103;
 
     // Functional outer controls
-    private static final TaskDetail TYPE_CHARACTER = new TaskDetail(TYPE_CHARACTER_FUNCTIONAL, null, true, true);
+    private static final TaskDetail INPUT_TEXT = new TaskDetail(INPUT_TEXT_FUNCTIONAL, null, true, true);
     private static final TaskDetail CANCEL_LAST_ACTION = new TaskDetail(CANCEL_LAST_ACTION_FUNCTIONAL, null, true, true);
     private static final TaskDetail HEARTBEAT = new TaskDetail(HEARTBEAT_FUNCTIONAL, null, true, true);
     static final TaskDetail ACTION_NOT_FOUND = new TaskDetail(ACTION_NOT_FOUND_FUNCTIONAL, null, true, false);
@@ -628,7 +629,7 @@ class Controls {
         // This will not be reached by the identifyAndSend method
         TaskDetail actionExitingTouchPad = new TaskDetail(EXITING_TOUCH_PAD_FUNCTIONAL, R.string.exitTouchPad, true, false).add();
         // Functional outer controls
-        addMapping(TYPE_CHARACTER, CANCEL_LAST_ACTION, HEARTBEAT, ACTION_NOT_FOUND);
+        addMapping(INPUT_TEXT, CANCEL_LAST_ACTION, HEARTBEAT, ACTION_NOT_FOUND);
 
         vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
@@ -656,7 +657,7 @@ class Controls {
 
             actionToTask.append(MOVE_CANCEL, CANCEL_LAST_ACTION);
             actionToTask.append(HEARTBEAT_ACTION, HEARTBEAT);
-            actionToTask.append(INPUT_CHARACTER, TYPE_CHARACTER);
+            actionToTask.append(PASTE_TEXT, INPUT_TEXT);
 
             // Save the default actionToTask file
             saveJsonFile();
@@ -876,18 +877,13 @@ class Controls {
         }
     }
 
-    static String[] getClipboardContent() {
+    static String getClipboardContent() {
         ClipData clipData = clipboard.getPrimaryClip();
-        if (clipData != null && clipData.getItemCount() > 0) {
-            clipData.addItem(new ClipData.Item("Text1"));
-            clipData.addItem(new ClipData.Item("Text11"));
-            clipData.addItem(new ClipData.Item("Text111"));
-            clipData.addItem(new ClipData.Item("Text1111"));
-            String[] toReturn = new String[clipData.getItemCount()];
-            for (int index= 0; index < clipData.getItemCount(); index++) {
-                toReturn[index] = (clipData.getItemAt(index).getText().toString());
+        if (clipData != null && clipData.getItemCount() > 0 && clipData.getDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
+            String content = clipData.getItemAt(0).getText().toString();
+            if (!(content.equals("") || content.equals(" "))) {
+                return content;
             }
-            return toReturn;
         }
         return null;
     }

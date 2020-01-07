@@ -92,4 +92,5 @@
     <string name="sensitivityHeading">灵敏度</string>
     <string name="pasteFromClipboard">从触摸板粘贴</string>
     <string name="noContentInClipboard">剪贴板内没有内容</string>
+    <string name="connected">已连接</string>
 </resources>

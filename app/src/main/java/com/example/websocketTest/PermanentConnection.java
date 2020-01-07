@@ -102,7 +102,7 @@ public class PermanentConnection {
                     InputStream inStream = btSocket.getInputStream();
                     inReader = new BufferedReader(new InputStreamReader(new DataInputStream(inStream), StandardCharsets.UTF_8));
                     OutputStream outStream = btSocket.getOutputStream();
-                    outWriter = new PrintWriter(new OutputStreamWriter(new DataOutputStream(outStream), StandardCharsets.UTF_8));
+                    outWriter = new PrintWriter(new OutputStreamWriter(new DataOutputStream(outStream), StandardCharsets.UTF_8), true);
                     Log.i(TAG, "inReader: " + inReader);
                     Thread.sleep(200);
                     if (inReader.ready()) {
@@ -238,8 +238,7 @@ public class PermanentConnection {
     }
 
     static void sendMessage(String toSend) {
-        outWriter.print(toSend + "\n");
-        outWriter.flush();
+        outWriter.println(toSend);
         Log.i(TAG, "Message sent: " + toSend);
     }
 
