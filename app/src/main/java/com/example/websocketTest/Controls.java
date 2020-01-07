@@ -531,7 +531,7 @@ class Controls {
     static final byte FIVE_FINGERS = 0b101000;      //40
     static final byte HEARTBEAT_ACTION = 0b110000;  //48 Functional Control
     static final byte MOVE_CANCEL = 0b110001;       //49 Functional Control
-    static final byte PASTE_TEXT = 0b110010;   //50 Functional Control
+    static final byte INPUT_TEXT = 0b110010;   //50 Functional Control
     /* Combined Action is the combination of one Action and one Action FingerCount.
     It represents the action that user did on the screen. */
 
@@ -558,7 +558,7 @@ class Controls {
     private static final int EXITING_TOUCH_PAD_FUNCTIONAL = 103;
 
     // Functional outer controls
-    private static final TaskDetail INPUT_TEXT = new TaskDetail(INPUT_TEXT_FUNCTIONAL, null, true, true);
+    private static final TaskDetail PASTE_TEXT = new TaskDetail(INPUT_TEXT_FUNCTIONAL, null, true, true);
     private static final TaskDetail CANCEL_LAST_ACTION = new TaskDetail(CANCEL_LAST_ACTION_FUNCTIONAL, null, true, true);
     private static final TaskDetail HEARTBEAT = new TaskDetail(HEARTBEAT_FUNCTIONAL, null, true, true);
     static final TaskDetail ACTION_NOT_FOUND = new TaskDetail(ACTION_NOT_FOUND_FUNCTIONAL, null, true, false);
@@ -629,7 +629,7 @@ class Controls {
         // This will not be reached by the identifyAndSend method
         TaskDetail actionExitingTouchPad = new TaskDetail(EXITING_TOUCH_PAD_FUNCTIONAL, R.string.exitTouchPad, true, false).add();
         // Functional outer controls
-        addMapping(INPUT_TEXT, CANCEL_LAST_ACTION, HEARTBEAT, ACTION_NOT_FOUND);
+        addMapping(PASTE_TEXT, CANCEL_LAST_ACTION, HEARTBEAT, ACTION_NOT_FOUND);
 
         vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
@@ -657,7 +657,7 @@ class Controls {
 
             actionToTask.append(MOVE_CANCEL, CANCEL_LAST_ACTION);
             actionToTask.append(HEARTBEAT_ACTION, HEARTBEAT);
-            actionToTask.append(PASTE_TEXT, INPUT_TEXT);
+            actionToTask.append(INPUT_TEXT, PASTE_TEXT);
 
             // Save the default actionToTask file
             saveJsonFile();

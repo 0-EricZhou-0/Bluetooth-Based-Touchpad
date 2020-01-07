@@ -28,6 +28,7 @@ import java.util.UUID;
 
 public class PermanentConnection {
     private static final String TAG = "PermanentConnection";
+    private static final String separator = Character.toString((char) 9);
 
     /**
      * Try connect using multithreading.
@@ -188,7 +189,7 @@ public class PermanentConnection {
                     StringBuilder toSend = new StringBuilder(Integer.toString(outerAction));
                     if (parameters != null) {
                         for (Object param : parameters) {
-                            toSend.append(" ").append(param);
+                            toSend.append(separator).append(param);
                         }
                     }
                     PermanentConnection.sendMessage(toSend.toString());

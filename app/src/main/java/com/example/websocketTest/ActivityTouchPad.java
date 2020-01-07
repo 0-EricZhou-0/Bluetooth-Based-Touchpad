@@ -65,7 +65,6 @@ public class ActivityTouchPad extends AppCompatActivity implements
     private InputMethodManager inputMethod;
 
     private EditText keyboardInput;
-    private Button pasteFromClipboard;
 
     private FingerEvent[] eventGroup = new FingerEvent[MAX_NUM_OF_FINGERS_SUPPORTED];
 
@@ -119,7 +118,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
         mDetector.setOnDoubleTapListener(this);
 
         keyboardInput = findViewById(R.id.keyboardInput);
-        pasteFromClipboard = findViewById(R.id.pasteFromClipboard);
+        Button pasteFromClipboard = findViewById(R.id.pasteFromClipboard);
 
         inputMethod = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         pasteFromClipboard.setOnClickListener(new View.OnClickListener() {
@@ -135,7 +134,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                             .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    PermanentConnection.identifyAndSend(Controls.PASTE_TEXT, content);
+                                    PermanentConnection.identifyAndSend(Controls.INPUT_TEXT, content);
                                 }
                             })
                             .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -206,16 +205,13 @@ public class ActivityTouchPad extends AppCompatActivity implements
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
+                Log.i(TAG, String.format("Text changed, current s: |%s|", s.toString()));
             }
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (s.length() == 0) {
-                    return;
-                }
                 Log.i(TAG, "Type character " + s.toString());
-                PermanentConnection.identifyAndSend(Controls.PASTE_TEXT, s.toString());
+                PermanentConnection.identifyAndSend(Controls.INPUT_TEXT, s.toString().substring(1));
                 s.clear();
             }
         });
@@ -359,7 +355,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                                         })
                                         .setPositiveButton("Settings", new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface arg0, int arg1) {
-                                                PermanentConnection.sendMessage("X");
+                                                PermanentConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + Controls.MOVE_DOWN));
                                                 Intent intent = new Intent(ActivityTouchPad.this, ActivitySettings.class);
                                                 startActivity(intent);
                                                 finish();
