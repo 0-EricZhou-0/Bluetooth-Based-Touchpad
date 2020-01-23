@@ -71,7 +71,7 @@ class Controls {
          * @return string which describes the function of the task
          */
         static String getReadableTask(int taskTypeRepresentation) {
-            return taskDetails.valueAt(taskTypeRepresentation).getDescription();
+            return taskDetails.get(taskTypeRepresentation).getDescription();
         }
 
         /**
