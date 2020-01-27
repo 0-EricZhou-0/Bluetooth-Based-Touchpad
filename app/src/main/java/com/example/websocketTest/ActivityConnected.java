@@ -14,15 +14,18 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GestureDetectorCompat;
 
 public class ActivityConnected extends AppCompatActivity {
     private static final String TAG = "ActivityConnected";
     public static int noInteractionTime;
+    public static int cumulativeNoInteractionTime;
     private boolean exitFlag = false;
     private GestureDetectorCompat mDetector;
     Thread heartbeatThread;
     private AlertDialog.Builder exitDialog;
+    private final int DETECTION_INTERVAL = 1000;
 
     class CustomGestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
@@ -50,20 +53,24 @@ public class ActivityConnected extends AppCompatActivity {
         Toast.makeText(this, R.string.connected, Toast.LENGTH_LONG).show();
         mDetector = new GestureDetectorCompat(this, new CustomGestureListener());
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         heartbeatThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (true) {
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(DETECTION_INTERVAL);
                     } catch (InterruptedException e) {
                         return;
                     }
                     if (exitFlag) {
                         return;
                     }
-                    noInteractionTime++;
-                    if (noInteractionTime >= 3) {
+                    noInteractionTime += DETECTION_INTERVAL;
+                    cumulativeNoInteractionTime += DETECTION_INTERVAL;
+                    if (cumulativeNoInteractionTime == 60000) {
+                        PermanentConnection.identifyAndSend(Controls.SUSPEND_ACTION);
+                    } else if (noInteractionTime > 3000 && cumulativeNoInteractionTime < 60000) {
                         PermanentConnection.identifyAndSend(Controls.HEARTBEAT_ACTION);
                         noInteractionTime = 0;
                     }

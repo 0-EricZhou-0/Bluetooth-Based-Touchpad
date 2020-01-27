@@ -529,9 +529,10 @@ class Controls {
     static final byte THREE_FINGERS = 0b11000;      //24
     static final byte FOUR_FINGERS = 0b100000;      //32
     static final byte FIVE_FINGERS = 0b101000;      //40
-    static final byte HEARTBEAT_ACTION = 0b110000;  //48 Functional Control
+    static final byte INPUT_TEXT = 0b110000;        //48 Functional Control
     static final byte MOVE_CANCEL = 0b110001;       //49 Functional Control
-    static final byte INPUT_TEXT = 0b110010;   //50 Functional Control
+    static final byte HEARTBEAT_ACTION = 0b110010;  //50 Functional Control
+    static final byte SUSPEND_ACTION = 0b110011;    //51 Functional Control
     /* Combined Action is the combination of one Action and one Action FingerCount.
     It represents the action that user did on the screen. */
 
@@ -552,15 +553,17 @@ class Controls {
     private static final int SWITCH_TAB = 15;
     private static final int INPUT_TEXT_FUNCTIONAL = 16;
 
-    private static final int CANCEL_LAST_ACTION_FUNCTIONAL = 100;
-    private static final int HEARTBEAT_FUNCTIONAL = 101;
-    private static final int ACTION_NOT_FOUND_FUNCTIONAL = 102;
+    private static final int ACTION_NOT_FOUND_FUNCTIONAL = 100;
+    private static final int CANCEL_LAST_ACTION_FUNCTIONAL = 101;
+    private static final int HEARTBEAT_FUNCTIONAL = 102;
     private static final int EXITING_TOUCH_PAD_FUNCTIONAL = 103;
+    private static final int SUSPEND_CONNECTION_FUNCTIONAL = 104;
 
     // Functional outer controls
     private static final TaskDetail PASTE_TEXT = new TaskDetail(INPUT_TEXT_FUNCTIONAL, null, true, true);
     private static final TaskDetail CANCEL_LAST_ACTION = new TaskDetail(CANCEL_LAST_ACTION_FUNCTIONAL, null, true, true);
     private static final TaskDetail HEARTBEAT = new TaskDetail(HEARTBEAT_FUNCTIONAL, null, true, true);
+    private static final TaskDetail SUSPEND = new TaskDetail(SUSPEND_CONNECTION_FUNCTIONAL, null, true, false);
     static final TaskDetail ACTION_NOT_FOUND = new TaskDetail(ACTION_NOT_FOUND_FUNCTIONAL, null, true, false);
 
     // Coordinate pairs used in comparisons
@@ -629,7 +632,7 @@ class Controls {
         // This will not be reached by the identifyAndSend method
         TaskDetail actionExitingTouchPad = new TaskDetail(EXITING_TOUCH_PAD_FUNCTIONAL, R.string.exitTouchPad, true, false).add();
         // Functional outer controls
-        addMapping(PASTE_TEXT, CANCEL_LAST_ACTION, HEARTBEAT, ACTION_NOT_FOUND);
+        addMapping(ACTION_NOT_FOUND, PASTE_TEXT, CANCEL_LAST_ACTION, HEARTBEAT, SUSPEND);
 
         vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
@@ -658,6 +661,7 @@ class Controls {
             actionToTask.append(MOVE_CANCEL, CANCEL_LAST_ACTION);
             actionToTask.append(HEARTBEAT_ACTION, HEARTBEAT);
             actionToTask.append(INPUT_TEXT, PASTE_TEXT);
+            actionToTask.append(SUSPEND_ACTION, SUSPEND);
 
             // Save the default actionToTask file
             saveJsonFile();
