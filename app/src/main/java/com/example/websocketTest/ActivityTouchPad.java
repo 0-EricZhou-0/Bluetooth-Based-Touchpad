@@ -269,12 +269,12 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         // Move up/down actions of two fingers
                         // Cannot be customized
                         CoordinatePair motion2 = eventGroup[1].moveTo(currentX, currentY);
-                        if (!((int) motion2.getY() == 0)) {
+                        if (!motion2.equals(ZERO)) {
                             lastMoved = true;
                             if (forwardScrollMode) {
-                                PermanentConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.MOVE), (int) motion2.getY());
+                                PermanentConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.MOVE), (int) motion2.getX(), (int) motion2.getY());
                             } else {
-                                PermanentConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.MOVE), -(int) motion2.getY());
+                                PermanentConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.MOVE), (int) motion2.getX(), -(int) motion2.getY());
                             }
                         }
                         break;

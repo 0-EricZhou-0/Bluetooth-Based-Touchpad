@@ -158,12 +158,7 @@ public class ConnectionSettingFragment extends Fragment {
                         }
                         String mac = deviceMac.getText().toString();
                         currentDevices.add(new Controls.DeviceDetail(mac, name));
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                loadDeviceList();
-                            }
-                        }).start();
+                        loadDeviceList();
                     }
                 })
                 .setNegativeButton(R.string.abort, new DialogInterface.OnClickListener() {

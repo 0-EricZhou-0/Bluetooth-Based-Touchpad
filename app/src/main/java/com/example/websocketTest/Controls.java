@@ -658,9 +658,9 @@ class Controls {
             actionToTask.append(THREE_FINGERS + MOVE_RIGHT, switchApplication);
             actionToTask.append(FOUR_FINGERS + MOVE_DOWN, actionExitingTouchPad);
 
+            actionToTask.append(INPUT_TEXT, PASTE_TEXT);
             actionToTask.append(MOVE_CANCEL, CANCEL_LAST_ACTION);
             actionToTask.append(HEARTBEAT_ACTION, HEARTBEAT);
-            actionToTask.append(INPUT_TEXT, PASTE_TEXT);
             actionToTask.append(SUSPEND_ACTION, SUSPEND);
 
             // Save the default actionToTask file

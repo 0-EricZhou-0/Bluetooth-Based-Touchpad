@@ -105,16 +105,7 @@ public class PermanentConnection {
                     OutputStream outStream = btSocket.getOutputStream();
                     outWriter = new PrintWriter(new OutputStreamWriter(new DataOutputStream(outStream), StandardCharsets.UTF_8), true);
                     Log.i(TAG, "inReader: " + inReader);
-                    Thread.sleep(200);
-                    if (inReader.ready()) {
-                        String lineIn = inReader.readLine();
-                        if (!lineIn.equals("CONNECTED")) {
-                            throw new IllegalArgumentException("MESSAGE ERROR");
-                        }
-                        Log.i(TAG, "Connected");
-                    } else {
-                        throw new Exception("Overtime");
-                    }
+                    Thread.sleep(500);
                 }
 
                 isConnecting = false;
@@ -123,7 +114,7 @@ public class PermanentConnection {
                 context.startActivity(intent);
                 ((Activity) context).finish();
             } catch (Exception ex1) {
-                Log.i(TAG, "Connection not established");
+                Log.i(TAG, "Connection not established", ex1);
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -176,29 +167,28 @@ public class PermanentConnection {
         }
 
         private static void identifyAndSend(byte innerAction, Object[] parameters) {
+            Log.i(TAG, "InnerAction: " + innerAction);
             Controls.TaskDetail detail = mapping.get(innerAction, Controls.ACTION_NOT_FOUND);
-            if (detail != null) {
-                int outerAction = detail.getTask();
-                if (outerAction != Controls.ACTION_NOT_FOUND.getTask()) {
-                    if (!detail.getCanBeRepeated()) {
-                        return;
-                    }
-                    if (!Controls.TaskDetail.correspondsTo(outerAction).getCanBeRepeated() && detail.getCanBeRepeated()) {
-                        detail.setCanBeRepeated(false);
-                    }
-                    StringBuilder toSend = new StringBuilder(Integer.toString(outerAction));
-                    if (parameters != null) {
-                        for (Object param : parameters) {
-                            toSend.append(separator).append(param);
-                        }
-                    }
-                    PermanentConnection.sendMessage(toSend.toString());
-                    ActivityConnected.noInteractionTime = 0;
+            int outerAction = detail.getTask();
+            if (outerAction != Controls.ACTION_NOT_FOUND.getTask()) {
+                if (!detail.getCanBeRepeated()) {
+                    return;
                 }
-                if (innerAction == Controls.MOVE_CANCEL) {
-                    for (int i = 0; i < mapping.size(); i++) {
-                        mapping.valueAt(i).setCanBeRepeated(true);
+                if (!Controls.TaskDetail.correspondsTo(outerAction).getCanBeRepeated() && detail.getCanBeRepeated()) {
+                    detail.setCanBeRepeated(false);
+                }
+                StringBuilder toSend = new StringBuilder(Integer.toString(outerAction));
+                if (parameters != null) {
+                    for (Object param : parameters) {
+                        toSend.append(separator).append(param);
                     }
+                }
+                PermanentConnection.sendMessage(toSend.toString());
+                ActivityConnected.noInteractionTime = 0;
+            }
+            if (innerAction == Controls.MOVE_CANCEL) {
+                for (int i = 0; i < mapping.size(); i++) {
+                    mapping.valueAt(i).setCanBeRepeated(true);
                 }
             }
         }
