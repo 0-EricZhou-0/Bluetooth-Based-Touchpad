@@ -6,4 +6,4 @@ This are two links to its server side
 <p>
 Implemented using Java: https://github.com/0-EricZhou-0/Bluetooth-Based-Touchpad
 <p>
-Implemented using Python: https://github.com/0-EricZhou-0/bluetooth-based-touchpad-server-python (partially complete)
+Implemented using Python: https://github.com/0-EricZhou-0/bluetooth-based-touchpad-server-python (half complete)
