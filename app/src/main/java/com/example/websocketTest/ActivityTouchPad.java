@@ -81,14 +81,14 @@ public class ActivityTouchPad extends AppCompatActivity implements
     private boolean touchWarningMode;
     private boolean cursorMode;
 
-    private AlertDialog.Builder exitDialog;
+    private AlertDialog exitDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_touchpad);
         final ConstraintLayout background = findViewById(R.id.touchPadBackground);
-
+        Controls.WindowManagement.enableImmersiveMode(this);
         background.setBackgroundColor(Color.argb(255,
                 0, 0, 0));
 /*
@@ -158,7 +158,8 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         PermanentConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + Controls.MOVE_DOWN));
                         finish();
                     }
-                });
+                }).create();
+
 
         if (Controls.SettingDetail.getStatusOfSetting(Controls.ORIENTATION_SETTING).equals(getString(R.string.vertical))) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -312,7 +313,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                             }
                             if (setDirection == Controls.MOVE_DOWN && direction != 0) {
                                 direction = 0;
-                                exitDialog.show();
+                                Controls.WindowManagement.showDialogSilence(exitDialog, this);
                             }
                             if (setDirection == Controls.MOVE_UP && direction != 0) {
                                 Log.i(TAG, "On-Screen keyboard show");
@@ -343,6 +344,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         if (direction == -1) {
                             Toast.makeText(ActivityTouchPad.this, maxNumPointers + "", Toast.LENGTH_LONG).show();
                             if (touchWarningMode) {
+                                Controls.WindowManagement.showDialogSilence(
                                 new AlertDialog.Builder(ActivityTouchPad.this)
                                         .setTitle("Warning")
                                         .setMessage("Touching actions with more than 5 fingers is disabled for accuracy reason.\n"
@@ -360,7 +362,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                                                 startActivity(intent);
                                                 finish();
                                             }
-                                        }).show();
+                                        }).create(), this);
                             }
                             direction = 0;
                         }

@@ -1,6 +1,8 @@
 package com.example.websocketTest;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
@@ -12,6 +14,7 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -27,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 class Controls {
 
@@ -978,5 +982,29 @@ class Controls {
             return toReturn;
         }
         return toReturn + " --- " + detail.getDescription();
+    }
+
+
+    static class WindowManagement {
+        static void enableImmersiveMode(Activity activity) {
+            activity.getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                            View.SYSTEM_UI_FLAG_FULLSCREEN |
+                            View.SYSTEM_UI_FLAG_IMMERSIVE |
+                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+        }
+
+        static void showDialogSilence(AlertDialog dialog, Activity activity) {
+            Objects.requireNonNull(dialog.getWindow()).setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+            dialog.getWindow().getDecorView().setSystemUiVisibility(
+                    activity.getWindow().getDecorView().getSystemUiVisibility());
+            dialog.show();
+            dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+            WindowManager wm = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
+            wm.updateViewLayout(activity.getWindow().getDecorView(), activity.getWindow().getAttributes());
+        }
     }
 }
