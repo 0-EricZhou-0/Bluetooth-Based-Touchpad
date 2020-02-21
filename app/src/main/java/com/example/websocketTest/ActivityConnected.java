@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,7 +13,6 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GestureDetectorCompat;
 
 public class ActivityConnected extends AppCompatActivity {
@@ -69,9 +67,9 @@ public class ActivityConnected extends AppCompatActivity {
                     noInteractionTime += DETECTION_INTERVAL;
                     cumulativeNoInteractionTime += DETECTION_INTERVAL;
                     if (cumulativeNoInteractionTime == 60000) {
-                        PermanentConnection.identifyAndSend(Controls.SUSPEND_ACTION);
+                        BluetoothConnection.identifyAndSend(Controls.SUSPEND_ACTION);
                     } else if (noInteractionTime > 3000 && cumulativeNoInteractionTime < 60000) {
-                        PermanentConnection.identifyAndSend(Controls.HEARTBEAT_ACTION);
+                        BluetoothConnection.identifyAndSend(Controls.HEARTBEAT_ACTION);
                         noInteractionTime = 0;
                     }
                 }
@@ -89,7 +87,7 @@ public class ActivityConnected extends AppCompatActivity {
                 })
                 .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface arg0, int arg1) {
-                        PermanentConnection.sendMessage("EXIT");
+                        BluetoothConnection.sendMessage("EXIT");
                         exitFlag = true;
                         Intent intent = new Intent(ActivityConnected.this, MainActivity.class);
                         startActivity(intent);
@@ -104,7 +102,7 @@ public class ActivityConnected extends AppCompatActivity {
         launchPad.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PermanentConnection.sendMessage("TOUCH_PAD");
+                BluetoothConnection.sendMessage("TOUCH_PAD");
                 Intent intent = new Intent(ActivityConnected.this, ActivityTouchPad.class);
                 startActivity(intent);
             }
@@ -113,7 +111,7 @@ public class ActivityConnected extends AppCompatActivity {
         launchGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PermanentConnection.sendMessage("GAME");
+                BluetoothConnection.sendMessage("GAME");
                 Intent intent = new Intent(ActivityConnected.this, ActivityJoystick.class);
                 startActivity(intent);
             }

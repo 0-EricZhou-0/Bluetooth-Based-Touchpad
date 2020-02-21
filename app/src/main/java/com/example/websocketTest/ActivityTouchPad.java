@@ -134,7 +134,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                             .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    PermanentConnection.identifyAndSend(Controls.INPUT_TEXT, content);
+                                    BluetoothConnection.identifyAndSend(Controls.INPUT_TEXT, content);
                                 }
                             })
                             .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -155,7 +155,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                 })
                 .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface arg0, int arg1) {
-                        PermanentConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + Controls.MOVE_DOWN));
+                        BluetoothConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + Controls.MOVE_DOWN));
                         finish();
                     }
                 }).create();
@@ -212,7 +212,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
             @Override
             public void afterTextChanged(Editable s) {
                 Log.i(TAG, "Type character " + s.toString());
-                PermanentConnection.identifyAndSend(Controls.INPUT_TEXT, s.toString().substring(1));
+                BluetoothConnection.identifyAndSend(Controls.INPUT_TEXT, s.toString().substring(1));
                 s.clear();
             }
         });
@@ -239,7 +239,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                 for (FingerEvent fingerEvent : eventGroup) {
                     fingerEvent.reset();
                 }
-                PermanentConnection.identifyAndSend(Controls.MOVE_CANCEL);
+                BluetoothConnection.identifyAndSend(Controls.MOVE_CANCEL);
             }
             if (mDetector.onTouchEvent(event)) {
                 switch (maxNumPointers) {
@@ -257,11 +257,11 @@ public class ActivityTouchPad extends AppCompatActivity implements
                                 if (cursorMode) {
                                     int deltaX = (int) pair.getX();
                                     int deltaY = (int) pair.getY();
-                                    PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), deltaX, deltaY);
+                                    BluetoothConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), deltaX, deltaY);
                                 } else {
                                     int targetX = (int) (currentX / Controls.phoneScreenSize.getX() * 10000);
                                     int targetY = (int) (currentY / Controls.phoneScreenSize.getY() * 10000);
-                                    PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), targetX, targetY);
+                                    BluetoothConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), targetX, targetY);
                                 }
                             }
                         }
@@ -273,9 +273,9 @@ public class ActivityTouchPad extends AppCompatActivity implements
                         if (!motion2.equals(ZERO)) {
                             lastMoved = true;
                             if (forwardScrollMode) {
-                                PermanentConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.MOVE), (int) motion2.getX(), (int) motion2.getY());
+                                BluetoothConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.MOVE), (int) motion2.getX(), (int) motion2.getY());
                             } else {
-                                PermanentConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.MOVE), (int) motion2.getX(), -(int) motion2.getY());
+                                BluetoothConnection.identifyAndSend((byte) (Controls.TWO_FINGERS + Controls.MOVE), (int) motion2.getX(), -(int) motion2.getY());
                             }
                         }
                         break;
@@ -290,7 +290,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                                     && (direction == Controls.MOVE_LEFT || direction == Controls.MOVE_RIGHT))
                                     || ((setDirection == Controls.MOVE_UP || setDirection == Controls.MOVE_DOWN)
                                     && (direction == Controls.MOVE_UP || direction == Controls.MOVE_DOWN))) {
-                                PermanentConnection.identifyAndSend((byte) (Controls.THREE_FINGERS + direction), setDirection);
+                                BluetoothConnection.identifyAndSend((byte) (Controls.THREE_FINGERS + direction), setDirection);
                                 direction = setDirection;
                             }
                         }
@@ -303,12 +303,12 @@ public class ActivityTouchPad extends AppCompatActivity implements
                             lastMoved = true;
                             int setDirection = motion4.getDirection(ZERO);
                             if (direction == -1) {
-                                PermanentConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + direction), setDirection);
+                                BluetoothConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + direction), setDirection);
                                 direction = setDirection;
                             }
                             if (((setDirection == Controls.MOVE_LEFT || setDirection == Controls.MOVE_RIGHT)
                                     && (direction == Controls.MOVE_LEFT || direction == Controls.MOVE_RIGHT))) {
-                                PermanentConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + direction), setDirection);
+                                BluetoothConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + direction), setDirection);
                                 direction = setDirection;
                             }
                             if (setDirection == Controls.MOVE_DOWN && direction != 0) {
@@ -334,7 +334,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                                     && (direction == Controls.MOVE_LEFT || direction == Controls.MOVE_RIGHT))
                                     || ((setDirection == Controls.MOVE_UP || setDirection == Controls.MOVE_DOWN)
                                     && (direction == Controls.MOVE_UP || direction == Controls.MOVE_DOWN))) {
-                                PermanentConnection.identifyAndSend((byte) (Controls.FIVE_FINGERS + direction), setDirection);
+                                BluetoothConnection.identifyAndSend((byte) (Controls.FIVE_FINGERS + direction), setDirection);
                                 direction = setDirection;
                             }
                         }
@@ -357,7 +357,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                                         })
                                         .setPositiveButton("Settings", new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface arg0, int arg1) {
-                                                PermanentConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + Controls.MOVE_DOWN));
+                                                BluetoothConnection.identifyAndSend((byte) (Controls.FOUR_FINGERS + Controls.MOVE_DOWN));
                                                 Intent intent = new Intent(ActivityTouchPad.this, ActivitySettings.class);
                                                 startActivity(intent);
                                                 finish();
@@ -399,7 +399,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
                             Log.i(TAG, currentMaxNumPointers + " Finger long press examination started in " + pressHandler.toString());
                             if (maxNumPointers == currentMaxNumPointers && eventGroup[currentMaxNumPointers - 1].isPointerNotMoved()) {
                                 Log.i(TAG, currentMaxNumPointers + " Finger long press confirmed in " + pressHandler.toString());
-                                PermanentConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.LONG_TAP));
+                                BluetoothConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.LONG_TAP));
                                 Controls.vibrate();
                             }
                         }
@@ -418,10 +418,10 @@ public class ActivityTouchPad extends AppCompatActivity implements
                             isSinglePress = true;
                             Log.i(TAG, "Double pressed assign at " + System.currentTimeMillis());
                             pressHandler.removeCallbacks(confirmLongPress);
-                            PermanentConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.DOUBLE_TAP));
+                            BluetoothConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.DOUBLE_TAP));
                         } else if (maxNumPointers < currentMaxNumPointers) {
                             Log.i(TAG, currentMaxNumPointers + " Finger single press confirmed in " + pressHandler.toString());
-                            PermanentConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.TAP));
+                            BluetoothConnection.identifyAndSend((byte) (fingerNumInnerControl + Controls.TAP));
                             pressHandler.removeCallbacks(confirmLongPress);
                         }
                     }
@@ -446,7 +446,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
     @Override
     public void onLongPress(MotionEvent event) {
         if (eventGroup[0].isPointerNotMoved()) {
-            PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.LONG_TAP));
+            BluetoothConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.LONG_TAP));
             Controls.vibrate();
         }
     }
@@ -471,7 +471,7 @@ public class ActivityTouchPad extends AppCompatActivity implements
 
     @Override
     public boolean onDoubleTap(MotionEvent event) {
-        PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.DOUBLE_TAP));
+        BluetoothConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.DOUBLE_TAP));
         return true;
     }
 
@@ -483,12 +483,12 @@ public class ActivityTouchPad extends AppCompatActivity implements
     @Override
     public boolean onSingleTapConfirmed(MotionEvent event) {
         if (cursorMode) {
-            PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.TAP));
+            BluetoothConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.TAP));
         } else {
             int targetX = (int) (event.getRawX() / Controls.phoneScreenSize.getX() * 10000);
             int targetY = (int) (event.getRawY() / Controls.phoneScreenSize.getY() * 10000);
-            PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), targetX, targetY);
-            PermanentConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.TAP));
+            BluetoothConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.MOVE), targetX, targetY);
+            BluetoothConnection.identifyAndSend((byte) (Controls.SINGLE_FINGER + Controls.TAP));
         }
         return true;
     }

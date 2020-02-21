@@ -407,7 +407,7 @@ class Controls {
 
         /**
          * Set the current selected device to the device at specific index. Also update the mac to
-         * PermanentConnection.
+         * BluetoothConnection.
          *
          * @param index index of currently selected device
          */
@@ -418,9 +418,9 @@ class Controls {
                             "Index of device exceeds device count. Currently requesting %d, but only have%d",
                             index, deviceDetails.size()));
                 }
-                PermanentConnection.setServerMac(deviceDetails.get(index).getMacAddress());
+                BluetoothConnection.setServerMac(deviceDetails.get(index).getMacAddress());
             } else {
-                PermanentConnection.setServerMac(null);
+                BluetoothConnection.setServerMac(null);
             }
             indexSelected = index;
         }
@@ -707,7 +707,7 @@ class Controls {
     }
 
     static void updateAllSetting(boolean saveFile) {
-        PermanentConnection.TouchEventMappingControl.updateMapping();
+        BluetoothConnection.TouchEventMappingControl.updateMapping();
         changeCursorMoveMode(SettingDetail.settingDetails.get(CURSOR_MODE_SETTING).getCurrentState()
                 .equals(context.getString(R.string.relative)));
         if (saveFile) {
@@ -726,7 +726,7 @@ class Controls {
         } else {
             TaskDetail.actionToTask.put(SINGLE_FINGER + MOVE, TaskDetail.taskDetails.get(MOVE_CURSOR_ABSOLUTE));
         }
-        PermanentConnection.TouchEventMappingControl.updateMapping();
+        BluetoothConnection.TouchEventMappingControl.updateMapping();
     }
 
     /**

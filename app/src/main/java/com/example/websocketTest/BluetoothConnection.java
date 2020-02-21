@@ -26,8 +26,8 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-public class PermanentConnection {
-    private static final String TAG = "PermanentConnection";
+public class BluetoothConnection {
+    private static final String TAG = "BluetoothConnection";
     private static final String separator = Character.toString((char) 9);
 
     /**
@@ -183,7 +183,7 @@ public class PermanentConnection {
                         toSend.append(separator).append(param);
                     }
                 }
-                PermanentConnection.sendMessage(toSend.toString());
+                BluetoothConnection.sendMessage(toSend.toString());
                 ActivityConnected.noInteractionTime = 0;
             }
             if (innerAction == Controls.MOVE_CANCEL) {

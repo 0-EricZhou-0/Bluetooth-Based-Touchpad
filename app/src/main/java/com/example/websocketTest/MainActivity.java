@@ -11,6 +11,11 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -53,8 +58,8 @@ public class MainActivity extends AppCompatActivity {
         startConnection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (PermanentConnection.hasServerMac()) {
-                    PermanentConnection.connect();
+                if (BluetoothConnection.hasServerMac()) {
+                    BluetoothConnection.connect();
                 } else {
                     new AlertDialog.Builder(MainActivity.this)
                             .setTitle(R.string.warning)
@@ -89,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         };
         exit.setOnClickListener(exitApplication);
 
-        PermanentConnection.init(MainActivity.this, MainActivity.this, startConnection, mainWindow);
+        BluetoothConnection.init(MainActivity.this, MainActivity.this, startConnection, mainWindow);
     }
 
     @Override

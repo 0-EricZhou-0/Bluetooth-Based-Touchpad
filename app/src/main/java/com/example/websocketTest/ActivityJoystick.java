@@ -53,7 +53,7 @@ public class ActivityJoystick extends AppCompatActivity {
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     startPos = Controls.NOT_STARTED;
                     lastSend = "N";
-                    PermanentConnection.sendMessage("N");
+                    BluetoothConnection.sendMessage("N");
                 } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
                     currentPos = new CoordinatePair(currentX, currentY);
                     double angle = startPos.getPreciseDirection(currentPos);
@@ -61,7 +61,7 @@ public class ActivityJoystick extends AppCompatActivity {
                         leftControl.setText("N");
                         if (!lastSend.equals("N")) {
                             lastSend = "N";
-                            PermanentConnection.sendMessage("N");
+                            BluetoothConnection.sendMessage("N");
                         }
                         return true;
                     }
@@ -93,7 +93,7 @@ public class ActivityJoystick extends AppCompatActivity {
                     }
                     leftControl.setText(toSend);
                     if (!lastSend.equals(toSend)) {
-                        PermanentConnection.sendMessage(toSend);
+                        BluetoothConnection.sendMessage(toSend);
                         lastSend = toSend;
                     }
                 }
@@ -105,9 +105,9 @@ public class ActivityJoystick extends AppCompatActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    PermanentConnection.sendMessage("Q");
+                    BluetoothConnection.sendMessage("Q");
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    PermanentConnection.sendMessage("R");
+                    BluetoothConnection.sendMessage("R");
                 }
                 return true;
             }
@@ -126,7 +126,7 @@ public class ActivityJoystick extends AppCompatActivity {
                 })
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface arg0, int arg1) {
-                        PermanentConnection.sendMessage("X");
+                        BluetoothConnection.sendMessage("X");
                         finish();
                     }
                 }).show();

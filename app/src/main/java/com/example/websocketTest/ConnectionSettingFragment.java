@@ -95,7 +95,7 @@ public class ConnectionSettingFragment extends Fragment {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     if (selection.isChecked()) {
-                                        PermanentConnection.setServerMac(null);
+                                        BluetoothConnection.setServerMac(null);
                                         Controls.DeviceDetail.setIndexSelected(-1);
                                     }
                                     currentDevices.remove(detail);
