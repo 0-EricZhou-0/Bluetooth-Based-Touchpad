@@ -95,6 +95,15 @@ public class MainActivity extends AppCompatActivity {
         exit.setOnClickListener(exitApplication);
 
         BluetoothConnection.init(MainActivity.this, MainActivity.this, startConnection, mainWindow);
+
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        Intent intent = new Intent(this, Test.class);
+        startActivity(intent);
     }
 
     @Override
